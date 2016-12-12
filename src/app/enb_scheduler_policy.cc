@@ -123,15 +123,21 @@ void flexran::app::scheduler::enb_scheduler_policy::push_code(int agent_id, std:
 // this fucntion will be called by the rest API as this is already registered as a valide URI 
 void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string policy_name) {
   
+  std::string policy_file;
+  policy_file +="../tests/delegation_control/";
+  policy_file +=policy_name;
+
+  // check if the policy file exist.
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
   
   // this might be different 
   for (const auto& agent_id : agent_ids) {
     
-    std::cout << "reconfigure the agent: apply policy " << policy_name << std::endl;
-    reconfigure_agent(agent_id, "../tests/delegation_control/"+policy_name);
-  
+    std::cout << "reconfigure the agent: applying the policy file: " << policy_file << std::endl;
+    
+    reconfigure_agent(agent_id, policy_file);
+    
   }
 }
 

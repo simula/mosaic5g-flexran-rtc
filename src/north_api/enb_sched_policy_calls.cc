@@ -31,7 +31,7 @@ void flexran::north_api::enb_sched_policy_calls::register_calls(Net::Rest::Route
   // the URL example : curl -x  POST http://localhost:9999/dl_sched/0 
   // : means that this is variable 
   // give the policyname, policyname will be a variable
-  // for policyname: curl -x  POST http://localhost:9999/dl_sched/policy.yaml 
+  // for policyname: curl -x  POST http://localhost:9999/dl_policy/policy.yaml 
   Net::Rest::Routes::Post(router, "/dl_policy/:policyname", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::apply_policy, this));
   // Net::Rest::Routes::Post(router, "/dl_policy/:rb_share", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::set_policy, this));
   
@@ -43,9 +43,9 @@ void flexran::north_api::enb_sched_policy_calls::apply_policy(const Net::Rest::R
   std::string resp;
   if (policy_name != "") { // Local scheduler
     sched_app->apply_policy(policy_name);
-    response.send(Net::Http::Code::Ok, "Set the policy to the agent");
+    response.send(Net::Http::Code::Ok, "Set the policy to the agent\n");
   } else { // Scheduler policy not set
-    response.send(Net::Http::Code::Not_Found, "Policy not set");
+    response.send(Net::Http::Code::Not_Found, "Policy not set\n");
   }
   
 }

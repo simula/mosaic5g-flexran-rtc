@@ -1,4 +1,4 @@
 mac:
  - dl_scheduler:
       parameters:
-         group_percentage : [!!float 0.4, !!float 0.6]
+         slice_percentage : [!!float 0.2, !!float 0.4, !!float 0.0, !!float 0.0]

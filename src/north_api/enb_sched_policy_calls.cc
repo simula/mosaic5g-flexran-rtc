@@ -28,12 +28,12 @@
 
 void flexran::north_api::enb_sched_policy_calls::register_calls(Net::Rest::Router& router) {
 
-  // the URL example : curl -x  POST http://localhost:9999/dl_sched/0 
+  // the URL example : curl -x  POST http://localhost:9999/rrm/0 
   // : means that this is variable 
   // give the policyname, policyname will be a variable
-  // for policyname: curl -x  POST http://localhost:9999/dl_policy/policy.yaml 
-  Net::Rest::Routes::Post(router, "/dl_policy/:policyname", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::apply_policy, this));
-  // Net::Rest::Routes::Post(router, "/dl_policy/:rb_share", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::set_policy, this));
+  // for policyname: curl -x  POST http://localhost:9999/rrm/policy.yaml 
+  Net::Rest::Routes::Post(router, "/rrm/:policyname", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::apply_policy, this));
+  // Net::Rest::Routes::Post(router, "/rrm/:rb_share", Net::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::set_policy, this));
   
 }
 

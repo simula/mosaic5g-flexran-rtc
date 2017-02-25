@@ -41,7 +41,7 @@ namespace flexran {
 
       public:
 
-	enb_scheduler_policy(const rib::Rib& rib, const core::requests_manager& rm)
+	enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm), code_pushed_(false) {
 	  
 	  // false: the scheduler is local at the agent/eNB.
@@ -88,5 +88,5 @@ namespace flexran {
 }
 
 
-#endif /* FLEXIBLE_SCHEDULER_H_ */
+#endif /* ENB_SCHEDULER_POLICY_H_ */
 

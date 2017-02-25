@@ -304,10 +304,13 @@ uint16_t flexran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
 uint8_t flexran::app::scheduler::get_mi(const protocol::flex_cell_config& cell_config,
 					flexran::rib::subframe_t subframe) {
 
+  _unused(subframe);
+  
   if (cell_config.duplex_mode() == protocol::FLDM_FDD) {
     return 1;
   }
 
+  return 1;
   /* TODO implement for TDD */
 }
 
@@ -353,4 +356,40 @@ uint32_t flexran::app::scheduler::allocate_prbs_sub(int nb_rb,
     check = check+1;
   }
   return (rballoc_dci);
+}
+
+uint8_t flexran::app::scheduler::get_aggregation(uint8_t bw_index, uint8_t cqi, protocol::flex_dci_format dci_fmt) {
+  //  uint8_t aggregation = 3;
+
+  switch(dci_fmt) {
+  case protocol::FLDCIF_1:
+  case protocol::FLDCIF_1A:
+  case protocol::FLDCIF_1B:
+  case protocol::FLDCIF_1D:
+    return rib::cqi2fmt1x_agg[bw_index][cqi];
+  case protocol::FLDCIF_2:
+  case protocol::FLDCIF_2A:
+  case protocol::FLDCIF_2B:
+    return rib::cqi2fmt2x_agg[bw_index][cqi];
+  case protocol::FLDCIF_1C:
+  case protocol::FLDCIF_3:
+  case protocol::FLDCIF_3A:
+  default:
+    return 3;
+  }
+}
+
+int flexran::app::scheduler::get_bw_index(int n_rb_dl) {
+  switch(n_rb_dl) {
+  case 6: // 1.4 MHz
+    return 0;
+  case 25: // 5MHz
+    return 1;
+  case 50: // 10 MHz
+    return 2; 
+  case 100: // 20 MHz
+    return 3;
+  default:
+    return 1;
+  }
 }

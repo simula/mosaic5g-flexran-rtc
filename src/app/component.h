@@ -35,11 +35,11 @@ namespace flexran {
     class component : public core::rt::rt_task {
     public:
   
-    component(const rib::Rib& rib, const core::requests_manager& rm)
-      : rib_(rib), req_manager_(rm), rt_task(Policy::DEADLINE,
-					     8 * 100 * 1000,
-					     8 * 100 * 1000,
-					     1000 * 1000) {}
+    component(rib::Rib& rib, const core::requests_manager& rm)
+      : rt_task(Policy::DEADLINE, 8 * 100 * 1000, 8 * 100 * 1000, 1000 * 1000), rib_(rib), req_manager_(rm) {}
+				
+		
+		
 
       virtual void run_app() = 0;
 

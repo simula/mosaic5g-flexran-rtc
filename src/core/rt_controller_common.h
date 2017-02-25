@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2016 Xenofon Foukas
+   Copyright (c) 2017 Xenofon Foukas
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,9 @@
    SOFTWARE.
 */
 
-#include "call_manager.h"
+#ifndef RT_CONTROLLER_COMMON_H_
+#define RT_CONTROLLER_COMMON_H_
 
-#include <iostream>
+#define _unused(x) ((void)(x))
 
-
-void flexran::north_api::manager::call_manager::init(size_t thr) {
-  auto opts = Net::Http::Endpoint::options().threads(thr);
-  httpEndpoint->init(opts);
-}
-
-void flexran::north_api::manager::call_manager::start() {
-  httpEndpoint->setHandler(router_.handler());
-  httpEndpoint->serve();
-}
-
-void flexran::north_api::manager::call_manager::shutdown() {
-  httpEndpoint->shutdown();
-}
-
-void flexran::north_api::manager::call_manager::register_calls(flexran::north_api::app_calls& calls) {
-
-  calls.register_calls(router_);
-  
-}
+#endif

@@ -13,8 +13,9 @@ endmacro(use_cxx11)
 use_cxx11()
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wstrict-prototypes -fno-strict-aliasing ")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3 -O2") 
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3")
+#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3 -O2") 
+set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
 
 # Enable low-latency kernel (for kernel 3.14 and above)
 option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)" ON)
@@ -104,7 +105,7 @@ include_directories (${FLPT_CC_DIR})
 
 set(Boost_USE_STATIC_LIBS OFF)
 
-find_package(Boost 1.54.0 REQUIRED COMPONENTS system thread)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS system thread program_options)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
@@ -166,14 +167,14 @@ include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
-  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
   ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
   ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
-  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
-  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
-  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
+#  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
   ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
 )

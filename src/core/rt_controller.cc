@@ -28,6 +28,8 @@
 #include <sched.h>
 #include <linux/sched.h>
 
+#include <boost/program_options.hpp>
+
 #include "rt_wrapper.h"
 
 #include "async_xface.h"
@@ -59,11 +61,50 @@
 #include <string.h>
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+namespace po = boost::program_options;
 
+int main(int argc, char* argv[]) {
+
+  int cport = 2210;
+  int north_port = 9999;
+  
+  try {
+    po::options_description desc("Help");
+    desc.add_options()
+      ("port,p", po::value<int>()->default_value(2210),
+       "Port for incoming agent connections")
+      ("nport,n", po::value<int>()->default_value(9999),
+       "Port for northbound API calls")
+      ("help,h", "Prints this help message");
+    
+    po::variables_map opts;
+    po::store(po::parse_command_line(argc, argv, desc), opts);
+
+    if ( opts.count("help")  ) { 
+      std::cout << "FlexRAN real-time controller" << std::endl 
+		<< desc << std::endl; 
+      return 0; 
+    } 
+    
+    try {
+      po::notify(opts);
+    } catch (po::error& e) {
+      std::cerr << "Error: Unrecognized parameter\n";
+      return 1;
+    }
+    
+    cport = opts["port"].as<int>(); 
+    north_port = opts["nport"].as<int>();
+    
+  } catch(std::exception& e) {
+    std::cerr << "Error: Unrecognized parameter\n";
+    return 2;
+  } 
+  
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
   
-  flexran::network::async_xface net_xface(2210);
+  std::cout << "Listening on port " << cport << " for incoming agent connections" << std::endl;
+  flexran::network::async_xface net_xface(cport);
   
   // Create the rib
   flexran::rib::Rib rib;
@@ -120,7 +161,7 @@ int main(int argc, char *argv[]) {
   // Initialize the northbound API
 
   // Set the port and the IP to listen for REST calls and initialize the call manager
-  Net::Port port(9999);
+  Net::Port port(north_port);
   Net::Address addr(Net::Ipv4::any(), port);
   flexran::north_api::manager::call_manager north_api(addr);
 

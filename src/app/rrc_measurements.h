@@ -35,43 +35,43 @@ namespace flexran {
 
   namespace app {
 
-    namespace scheduler {
+    namespace rrc {
 
-      class flexible_scheduler : public periodic_component {
+      class rrc_measurements : public periodic_component {
 
       public:
 
-	flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false) {
+	rrc_measurements(rib::Rib& rib, const core::requests_manager& rm)
+	  : periodic_component(rib, rm) {
 
-	  central_scheduling.store(false);
+	  // central_scheduling.store(false);
 	  
 	}
 
-	void run_periodic_task();
+	// void run_periodic_task();
 
-	void push_code(int agent_id, std::string function_name, std::string lib_name);
+	// void push_code(int agent_id, std::string function_name, std::string lib_name);
 
 	void reconfigure_agent(int agent_id);
 
 	void enable_central_scheduling(bool central_sch);
 	
-	static int32_t tpc_accumulated;
+	// static int32_t tpc_accumulated;
 
       private:
 
-	void run_central_scheduler();
+	// void run_central_scheduler();
 	
-	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
+	// ::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
 	
-	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
+	// ::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
 	
 	// Set these values internally for now
 
-	std::atomic<bool> central_scheduling;
+	// std::atomic<bool> central_scheduling;
 	const int schedule_ahead = 0;
-	bool code_pushed_;
-	int prev_val_, current_val;
+	// bool code_pushed_;
+	// int prev_val_, current_val;
 	
       };
       
@@ -82,5 +82,4 @@ namespace flexran {
 }
 
 
-#endif /* FLEXIBLE_SCHEDULER_H_ */
-
+#endif /* RRC_MEASUREMENTS_H_ */

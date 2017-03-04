@@ -130,6 +130,11 @@ int main(int argc, char* argv[]) {
   // SCHED policy app 
   std::shared_ptr<flexran::app::component> sched_policy(new flexran::app::scheduler::enb_scheduler_policy(rib, rm));
   tm.register_app(sched_policy);
+
+  // RRC measurements
+  // std::shared_ptr<flexran::app::component> rrc_measurements(new flexran::app::rrc::rrc_measurements(rib, rm));
+  // tm.register_app(rrc_m);
+
   
   /* More examples of developed applications are available in the commented section.
      WARNING: Some of them might still contain bugs or might be from previous versions of the controller. */

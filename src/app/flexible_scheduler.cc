@@ -71,16 +71,16 @@ void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
 }
 
 
-void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id, std::string policy_name) {
-  std::ifstream policy_file(policy_name);
-  std::string str_policy;
+void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id) {
+  // std::ifstream policy_file(policy_name);
+  // std::string str_policy;
 
-  policy_file.seekg(0, std::ios::end);
-  str_policy.reserve(policy_file.tellg());
-  policy_file.seekg(0, std::ios::beg);
+  // policy_file.seekg(0, std::ios::end);
+  // str_policy.reserve(policy_file.tellg());
+  // policy_file.seekg(0, std::ios::beg);
 
-  str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
-		    std::istreambuf_iterator<char>());
+  // str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
+		//     std::istreambuf_iterator<char>());
 
   protocol::flexran_message config_message;
   // Create control delegation message header
@@ -92,7 +92,7 @@ void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id
   protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
   agent_reconfiguration_msg->set_allocated_header(config_header);
 
-  agent_reconfiguration_msg->set_policy(str_policy);
+  // agent_reconfiguration_msg->set_policy(str_policy);
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
@@ -128,17 +128,17 @@ void flexran::app::scheduler::flexible_scheduler::push_code(int agent_id, std::s
 }
 
 void flexran::app::scheduler::flexible_scheduler::enable_central_scheduling(bool central_sch) {
-  central_scheduling.store(central_sch);
+  // central_scheduling.store(central_sch);
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
   
   for (auto& agent_id : agent_ids) {
 
-    if (central_sch) {
-      reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy.yaml");
-    } else {
-      reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
-    }
+  //   if (central_sch) {
+      reconfigure_agent(agent_id);
+  //   } else {
+  //     reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
+  //   }
   }
 }
 

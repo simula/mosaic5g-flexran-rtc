@@ -21,66 +21,37 @@
    SOFTWARE.
 */
 
-#ifndef FLEXIBLE_SCHEDULER_H_
-#define FLEXIBLE_SCHEDULER_H_
+#ifndef FLEXIBLE_SCHED_CALLS_H_
+#define FLEXIBLE_SCHED_CALLS_H_
 
-#include "periodic_component.h"
-#include "enb_scheduling_info.h"
-#include "ue_scheduling_info.h"
-#include "rib_common.h"
+#include <pistache/http.h>
 
-#include <atomic>
+#include "app_calls.h"
+#include "rrc_measurements.h"
 
 namespace flexran {
 
-  namespace app {
+  namespace north_api {
 
-    namespace scheduler {
+    class flexible_rrc_calls : public app_calls {
 
-      class flexible_scheduler : public periodic_component {
+    public:
 
-      public:
-
-	flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false) {
-
-	  central_scheduling.store(false);
-	  
-	}
-
-	void run_periodic_task();
-
-	void push_code(int agent_id, std::string function_name, std::string lib_name);
-
-	void reconfigure_agent(int agent_id);
-
-	void enable_central_scheduling(bool central_sch);
-	
-	static int32_t tpc_accumulated;
-
-      private:
-
-	void run_central_scheduler();
-	
-	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
-	
-	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
-	
-	// Set these values internally for now
-
-	std::atomic<bool> central_scheduling;
-	const int schedule_ahead = 0;
-	bool code_pushed_;
-	int prev_val_, current_val;
-	
-      };
+      flexible_rrc_calls(std::shared_ptr<flexran::app::rrc::rrc_measurements> flex_sched)
+	: rrc_trigger(flex_sched)
+      { }
       
-    }
-    
-  }
+      void register_calls(Net::Rest::Router& router);
 
+      void change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+
+    private:
+
+      std::shared_ptr<flexran::app::rrc::rrc_measurements> rrc_trigger;
+
+    };
+  }
 }
 
 
-#endif /* FLEXIBLE_SCHEDULER_H_ */
-
+#endif /* FLEXIBLE_SCHED_CALLS_H_ */

@@ -33,11 +33,11 @@ namespace flexran {
 
   namespace north_api {
 
-    class flexible_rrc_calls : public app_calls {
+    class rrc_triggering_calls : public app_calls {
 
     public:
 
-      flexible_rrc_calls(std::shared_ptr<flexran::app::rrc::rrc_triggering> flex_trigger)
+      rrc_triggering_calls(std::shared_ptr<flexran::app::rrc::rrc_triggering> flex_trigger)
 	: rrc_trigger(flex_trigger)
       { }
       

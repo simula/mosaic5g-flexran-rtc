@@ -25,13 +25,13 @@
 
 #include "rrc_triggering_calls.h"
 
-void flexran::north_api::flexible_rrc_calls::register_calls(Net::Rest::Router& router) {
+void flexran::north_api::rrc_triggering_calls::register_calls(Net::Rest::Router& router) {
 
-  Net::Rest::Routes::Post(router, "/rrc_trigger/:trigger_type", Net::Rest::Routes::bind(&flexran::north_api::flexible_rrc_calls::change_rrc, this));
+  Net::Rest::Routes::Post(router, "/rrc_trigger/:trigger_type", Net::Rest::Routes::bind(&flexran::north_api::rrc_triggering_calls::change_rrc, this));
   
 }
 
-void flexran::north_api::flexible_rrc_calls::change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+void flexran::north_api::rrc_triggering_calls::change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
 
   auto Trigger_type = request.param(":trigger_type").as<int>();
   

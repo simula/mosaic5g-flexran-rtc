@@ -28,12 +28,48 @@
 
 
 #include "rrc_triggering.h"
-#include "remote_scheduler_helper.h"
-#include "remote_scheduler_primitives.h"
 #include "flexran.pb.h"
 #include "rib_common.h"
-#include "cell_mac_rib_info.h"
 
+
+void flexran::app::rrc::rrc_triggering::run_periodic_task() {
+
+  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+
+  // for (auto& agent_id : agent_ids) {
+
+    // push the code for the first time to the agent to make them available for future use. 
+    // this code will reside in the cache of agent, and will be activated upon the controller command
+ //    if (!code_pushed_) {
+ //      std::string path = "";
+ //      std::string remote_sched = "";
+ //      std::string default_sched = "";
+      
+ //      if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+	// path = path + env_p + "/tests/delegation_control/";
+ //      } else {
+	// path = "../tests/delegation_control/";
+ //      }
+
+ //      remote_sched = path + "libremote_sched.so";
+ //      default_sched = path + "libdefault_sched.so";
+      
+ //      push_code(agent_id, "flexran_schedule_ue_spec_remote", remote_sched);
+ //      push_code(agent_id, "flexran_schedule_ue_spec_default", default_sched); 
+      
+ //      code_pushed_ = true;
+ //    }
+  // } 
+  
+  // this is set in the constructor to flase. 
+  // however, this could be also set to true by the rest api
+  // if (central_scheduling.load() == true) {
+    // applies a modifed version of the legacy eNB scheduler
+    // run_central_scheduler();
+  // } else {
+  //   return;
+  // }
+}
 
 
 void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id) {

@@ -25,8 +25,8 @@
 #define RRC_TRIGGERING_H_
 
 #include "periodic_component.h"
-#include "enb_scheduling_info.h"
-#include "ue_scheduling_info.h"
+// #include "enb_scheduling_info.h"
+// #include "ue_scheduling_info.h"
 #include "rib_common.h"
 
 #include <atomic>
@@ -42,13 +42,13 @@ namespace flexran {
       public:
 
 	rrc_triggering(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false) {
+	  : periodic_component(rib, rm) {
 
-	  central_scheduling.store(false);
+	  // central_scheduling.store(false);
 	  
 	}
 
-	// void run_periodic_task();
+	void run_periodic_task();
 
 	// void push_code(int agent_id, std::string function_name, std::string lib_name);
 
@@ -58,7 +58,7 @@ namespace flexran {
 	
 	// static int32_t tpc_accumulated;
 
-      private:
+      // private:
 
 	// void run_central_scheduler();
 	
@@ -68,9 +68,9 @@ namespace flexran {
 	
 	// Set these values internally for now
 
-	std::atomic<bool> central_scheduling;
+	// std::atomic<bool> central_scheduling;
 	// const int schedule_ahead = 0;
-	bool code_pushed_;
+	// bool code_pushed_;
 	// int prev_val_, current_val;
 	
       };

@@ -1,0 +1,11 @@
+package protocol;
+
+
+
+message flex_rrc_trigger {
+	
+    optional uint32 report_interval;
+    optional uint32 report_amount;
+
+
+}

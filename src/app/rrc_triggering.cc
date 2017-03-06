@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2016 Xenofon Foukas
+   Copyright (c) 2017
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <fstream>
 
 
-#include "flexible_scheduler.h"
+#include "rrc_triggering.h"
 #include "remote_scheduler_helper.h"
 #include "remote_scheduler_primitives.h"
 #include "flexran.pb.h"
@@ -36,7 +36,7 @@
 
 
 
-void flexran::app::rrc::rrc_measurements::reconfigure_agent(int agent_id) {
+void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id) {
   // std::ifstream policy_file(policy_name);
   // std::string str_policy;
 
@@ -65,7 +65,7 @@ void flexran::app::rrc::rrc_measurements::reconfigure_agent(int agent_id) {
 }
 
 
-void flexran::app::rrc::rrc_measurements::enable_central_scheduling() {
+void flexran::app::rrc::rrc_triggering::enable_central_scheduling() {
   // central_scheduling.store(central_sch);
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());

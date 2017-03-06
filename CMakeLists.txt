@@ -65,6 +65,9 @@ set (msgs
     ${PROTOBUF_IMPORT_DIR}/config_messages.proto
     ${PROTOBUF_IMPORT_DIR}/config_common.proto
     ${PROTOBUF_IMPORT_DIR}/control_delegation.proto
+
+
+
 )
 
 set(GENERATED_PROTO_DIR proto_messages)
@@ -87,6 +90,9 @@ set(FLPT_RT_CONTROLLER_generated
     ${FLPT_CC_DIR}/config_messages.pb.cc
     ${FLPT_CC_DIR}/config_common.pb.cc
     ${FLPT_CC_DIR}/control_delegation.pb.cc    
+
+
+
     )
   
 file(GLOB flpt_h ${FLPT_CC_DIR}/*.h)
@@ -177,6 +183,8 @@ set(APP_SRC
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
   ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
+  ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
+
 )
 
 add_library(RT_CONTROLLER_APP_LIB
@@ -196,6 +204,8 @@ set(NORTH_API_SRC
   ${RT_CONTROLLER_NORTH_API_DIR}/flexible_sched_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/stats_manager_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/enb_sched_policy_calls.cc
+  ${RT_CONTROLLER_NORTH_API_DIR}/rrc_triggering_calls.cc
+
 )
 
 add_library(RT_CONTROLLER_NORTH_API_LIB

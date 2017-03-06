@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2016 
+   Copyright (c) 2017
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,37 @@
    SOFTWARE.
 */
 
+#ifndef RRC_TRIGGERING_CALLS_H_
+#define RRC_TRIGGERING_CALLS_H_
+
 #include <pistache/http.h>
 
-#include "flexible_sched_calls.h"
+#include "app_calls.h"
+#include "rrc_triggering.h"
 
-void flexran::north_api::flexible_rrc_calls::register_calls(Net::Rest::Router& router) {
+namespace flexran {
 
-  Net::Rest::Routes::Post(router, "/rrc_trigger/:trigger_type", Net::Rest::Routes::bind(&flexran::north_api::rrc_measurements_calls::change_rrc, this));
-  
-}
+  namespace north_api {
 
-void flexran::north_api::flexible_rrc_calls::change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+    class flexible_rrc_calls : public app_calls {
 
-  auto Trigger_type = request.param(":trigger_type").as<int>();
-  
-  if (Trigger_type == 0) { // Local scheduler
-    sched_app->enable_central_scheduling();
-    response.send(Net::Http::Code::Ok, "Trigger 0");
-  } else if (Trigger_type == 1) { //Remote scheduler 
-    sched_app->enable_central_scheduling();
-    response.send(Net::Http::Code::Ok, "Trigger 1");
-  } else { // Scheduler type not supported
-    response.send(Net::Http::Code::Not_Found, "Trigger type does not exist");
+    public:
+
+      flexible_rrc_calls(std::shared_ptr<flexran::app::rrc::rrc_triggering> flex_trigger)
+	: rrc_trigger(flex_trigger)
+      { }
+      
+      void register_calls(Net::Rest::Router& router);
+
+      void change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+
+    private:
+
+      std::shared_ptr<flexran::app::rrc::rrc_triggering> rrc_trigger;
+
+    };
   }
-  
 }
+
+
+#endif /* RRC_TRIGGERING_CALLS_H_ */

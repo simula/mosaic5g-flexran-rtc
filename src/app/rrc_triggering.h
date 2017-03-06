@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2016 Xenofon Foukas
+   Copyright (c) 2017
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
    SOFTWARE.
 */
 
-#ifndef FLEXIBLE_SCHEDULER_H_
-#define FLEXIBLE_SCHEDULER_H_
+#ifndef RRC_TRIGGERING_H_
+#define RRC_TRIGGERING_H_
 
 #include "periodic_component.h"
 #include "enb_scheduling_info.h"
@@ -37,14 +37,14 @@ namespace flexran {
 
     namespace rrc {
 
-      class rrc_measurements : public periodic_component {
+      class rrc_triggering : public periodic_component {
 
       public:
 
-	rrc_measurements(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm) {
+	rrc_triggering(rib::Rib& rib, const core::requests_manager& rm)
+	  : periodic_component(rib, rm), code_pushed_(false) {
 
-	  // central_scheduling.store(false);
+	  central_scheduling.store(false);
 	  
 	}
 
@@ -54,7 +54,7 @@ namespace flexran {
 
 	void reconfigure_agent(int agent_id);
 
-	void enable_central_scheduling(bool central_sch);
+	void enable_central_scheduling();
 	
 	// static int32_t tpc_accumulated;
 
@@ -68,9 +68,9 @@ namespace flexran {
 	
 	// Set these values internally for now
 
-	// std::atomic<bool> central_scheduling;
-	const int schedule_ahead = 0;
-	// bool code_pushed_;
+	std::atomic<bool> central_scheduling;
+	// const int schedule_ahead = 0;
+	bool code_pushed_;
 	// int prev_val_, current_val;
 	
       };
@@ -82,4 +82,4 @@ namespace flexran {
 }
 
 
-#endif /* RRC_MEASUREMENTS_H_ */
+#endif /* RRC_TRIGGERING_H_ */

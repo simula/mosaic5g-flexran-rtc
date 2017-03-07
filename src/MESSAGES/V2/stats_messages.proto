@@ -46,7 +46,7 @@ message flex_ue_stats_report {
 	optional flex_dl_cqi_report dl_cqi_report = 7;
 	optional flex_paging_buffer_report pbr = 8;
 	optional flex_ul_cqi_report ul_cqi_report = 9;
-        optional flex_rrc_measurements rrc_measurements = 10;
+	optional flex_rrc_measurements rrc_measurements = 10;
 }
 
 //

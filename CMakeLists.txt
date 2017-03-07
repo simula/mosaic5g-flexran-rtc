@@ -65,7 +65,7 @@ set (msgs
     ${PROTOBUF_IMPORT_DIR}/config_messages.proto
     ${PROTOBUF_IMPORT_DIR}/config_common.proto
     ${PROTOBUF_IMPORT_DIR}/control_delegation.proto
-    ${PROTOBUF_IMPORT_DIR}/rrc_trigger.proto
+    ${PROTOBUF_IMPORT_DIR}/rrc_trigger_measure.proto
 
 
 )
@@ -89,8 +89,8 @@ set(FLPT_RT_CONTROLLER_generated
     ${FLPT_CC_DIR}/mac_primitives.pb.cc
     ${FLPT_CC_DIR}/config_messages.pb.cc
     ${FLPT_CC_DIR}/config_common.pb.cc
-    ${FLPT_CC_DIR}/control_delegation.pb.cc    
-    ${FLPT_CC_DIR}/rrc_trigger.pb.cc    
+    ${FLPT_CC_DIR}/control_delegation.pb.cc     
+    ${FLPT_CC_DIR}/rrc_trigger_measure.pb.cc    
 
 
     )

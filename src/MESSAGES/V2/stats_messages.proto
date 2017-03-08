@@ -77,7 +77,7 @@ enum flex_cell_stats_type {
 // Flags for UE-related statistics
 enum flex_ue_stats_type {
      FLUST_BSR = 1;
-     FLUST_PRH = 2;
+     FLUST_PHR = 2;
      FLUST_RLC_BS = 4;
      FLUST_MAC_CE_BS = 8;
      FLUST_DL_CQI = 16;

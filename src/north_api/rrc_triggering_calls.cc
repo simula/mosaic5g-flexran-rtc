@@ -33,14 +33,17 @@ void flexran::north_api::rrc_triggering_calls::register_calls(Net::Rest::Router&
 
 void flexran::north_api::rrc_triggering_calls::change_rrc(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
 
-  auto Trigger_type = request.param(":trigger_type").as<int>();
+  auto Trigger_type = request.param(":trigger_type").as<std::string>();
   
-  if (Trigger_type == 0) { // Local scheduler
-    rrc_trigger->enable_central_scheduling();
-    response.send(Net::Http::Code::Ok, "Trigger 0");
-  } else if (Trigger_type == 1) { //Remote scheduler 
-    rrc_trigger->enable_central_scheduling();
-    response.send(Net::Http::Code::Ok, "Trigger 1");
+  if (Trigger_type.compare("one_shot") == 0) { 
+    rrc_trigger->enable_central_scheduling(Trigger_type);
+    response.send(Net::Http::Code::Ok, "Trigger one shot");
+  } else if (Trigger_type.compare("periodical") == 0) { //Remote scheduler 
+    rrc_trigger->enable_central_scheduling(Trigger_type);
+    response.send(Net::Http::Code::Ok, "Trigger periodical");
+   } else if (Trigger_type.compare("event_driven") == 0) { //Remote scheduler 
+    rrc_trigger->enable_central_scheduling(Trigger_type);
+    response.send(Net::Http::Code::Ok, "Trigger event_driven"); 
   } else { // Scheduler type not supported
     response.send(Net::Http::Code::Not_Found, "Trigger type does not exist");
   }

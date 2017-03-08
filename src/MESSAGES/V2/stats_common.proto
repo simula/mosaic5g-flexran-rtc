@@ -236,4 +236,9 @@ message flex_plmn_identity {
         repeated uint32 tac = 3;
 }
 
-
+message flex_eutra_ref_signal_meas {
+	// Neighboring Cell RSRP
+	optional int32 rsrp = 1;
+	// Neighboring Cell RSRQ	
+	optional int32 rsrq = 2;
+}

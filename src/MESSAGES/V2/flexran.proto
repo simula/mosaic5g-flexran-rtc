@@ -191,7 +191,8 @@ message flex_control_delegation {
 message flex_agent_reconfiguration {
 	optional flex_header header = 1;
 	optional string policy = 2;		// The policy changes using YAML syntax in string format
-	optional flex_rrc_trigger rrc_trig = 3;
+	//optional flex_rrc_trigger rrc_trig = 3;
+	optional string rrc_trigger = 4;
     
 }
 

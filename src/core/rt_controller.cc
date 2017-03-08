@@ -134,8 +134,8 @@ int main(int argc, char* argv[]) {
   tm.register_app(sched_policy);
 
   // RRC measurements
-  std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
-  tm.register_app(rrc_trigger);
+   std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
+   tm.register_app(rrc_trigger);
 
   
   /* More examples of developed applications are available in the commented section.
@@ -176,14 +176,14 @@ int main(int argc, char* argv[]) {
   flexran::north_api::enb_sched_policy_calls policy_calls(std::dynamic_pointer_cast<flexran::app::scheduler::enb_scheduler_policy>(sched_policy));
 
   // REgister Rrc Triggering Application
-  flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
+   flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
 
   // Register API calls for the developed applications
   flexran::north_api::flexible_sched_calls scheduler_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
 
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
   
-  north_api.register_calls(rrc_calls);
+   north_api.register_calls(rrc_calls);
   north_api.register_calls(policy_calls);
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);

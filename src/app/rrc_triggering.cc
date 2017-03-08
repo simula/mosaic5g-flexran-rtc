@@ -72,17 +72,8 @@ void flexran::app::rrc::rrc_triggering::run_periodic_task() {
 }
 
 
-void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id) {
-  // std::ifstream policy_file(policy_name);
-  // std::string str_policy;
-
-  // policy_file.seekg(0, std::ios::end);
-  // str_policy.reserve(policy_file.tellg());
-  // policy_file.seekg(0, std::ios::beg);
-
-  // str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
-		//     std::istreambuf_iterator<char>());
-
+void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::string freq_measure) {
+  
   protocol::flexran_message config_message;
   // Create control delegation message header
   protocol::flex_header *config_header(new protocol::flex_header);
@@ -93,7 +84,40 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id) {
   protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
   agent_reconfiguration_msg->set_allocated_header(config_header);
 
-  // agent_reconfiguration_msg->set_policy(str_policy);
+  agent_reconfiguration_msg->set_rrc_trigger(freq_measure);
+
+  
+ // RRC report config editing through controller
+  // protocol::flex_rrc_trigger *agent_rrc_trigger(new protocol::flex_rrc_trigger);
+
+  // if (freq_measure == 0){
+
+  //     agent_rrc_trigger->set_report_interval(0); // 1 time
+  //     agent_rrc_trigger->set_report_amount(0);
+
+  // }
+
+  // else if (freq_measure == 1){
+
+  //     agent_rrc_trigger->set_report_interval(6); // 4 seconds
+  //     agent_rrc_trigger->set_report_amount(2);  
+
+  // }
+
+  // else if (freq_measure == 2){
+
+  //     agent_rrc_trigger->set_report_interval(1); //240ms
+  //     agent_rrc_trigger->set_report_amount(7);
+
+  // }
+
+  // else {
+
+  // 	std::cout << "Your frequency measurements is not in listed policies." << std::endl;
+  // }
+
+  
+  // agent_reconfiguration_msg->set_allocated_rrc_trig(agent_rrc_trigger);
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
@@ -101,17 +125,14 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id) {
 }
 
 
-void flexran::app::rrc::rrc_triggering::enable_central_scheduling() {
-  // central_scheduling.store(central_sch);
+void flexran::app::rrc::rrc_triggering::enable_central_scheduling(std::string freq_measure) {
+  
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
   
   for (auto& agent_id : agent_ids) {
 
-  //   if (central_sch) {
-      reconfigure_agent(agent_id);
-  //   } else {
-  //     reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
-  //   }
+      reconfigure_agent(agent_id, freq_measure);
+  
   }
 }

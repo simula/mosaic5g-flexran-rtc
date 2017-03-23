@@ -76,15 +76,15 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::str
   
   protocol::flexran_message config_message;
   // Create control delegation message header
-  protocol::flex_header *config_header(new protocol::flex_header);
-  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
-  config_header->set_version(0);
-  config_header->set_xid(0);
+  protocol::flex_header *header(new protocol::flex_header);
+  header->set_type(protocol::FLPT_RRC_TRIGGERING);
+  header->set_version(0);
+  header->set_xid(0);
   
-  protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
-  agent_reconfiguration_msg->set_allocated_header(config_header);
+  protocol::flex_rrc_triggering *agent_rrc_triggering(new protocol::flex_rrc_triggering);
+  agent_rrc_triggering->set_allocated_header(header);
 
-  agent_reconfiguration_msg->set_rrc_trigger(freq_measure);
+  agent_rrc_triggering->set_rrc_trigger(freq_measure);
 
   
  // RRC report config editing through controller
@@ -120,7 +120,7 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::str
   // agent_reconfiguration_msg->set_allocated_rrc_trig(agent_rrc_trigger);
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-  config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
+  config_message.set_allocated_rrc_triggering(agent_rrc_triggering);
   req_manager_.send_message(agent_id, config_message);
 }
 

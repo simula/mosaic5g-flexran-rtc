@@ -51,7 +51,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       ue_flags |= protocol::FLUST_RLC_BS;
       ue_flags |= protocol::FLUST_MAC_CE_BS;
       ue_flags |= protocol::FLUST_UL_CQI;
-      ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
+      // ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
       complete_stats_request->set_ue_report_flags(ue_flags);
       int cell_flags = 0;
       cell_flags |= protocol::FLCST_NOISE_INTERFERENCE;

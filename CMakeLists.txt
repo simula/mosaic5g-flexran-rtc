@@ -179,6 +179,8 @@ set(APP_SRC
 #  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
+  ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc	
+
 )
 
 add_library(RT_CONTROLLER_APP_LIB

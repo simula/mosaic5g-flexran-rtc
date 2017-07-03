@@ -61,10 +61,14 @@ namespace flexran {
 
       std::string dump_mac_stats_to_string() const;
 
+      std::string dump_mac_stats_to_json_string() const;
+
       void dump_configs() const;
 
       std::string dump_configs_to_string() const;
-      
+
+      std::string dump_configs_to_json_string() const;
+
       frame_t get_current_frame() const { return current_frame_; }
 
       subframe_t get_current_subframe() const { return current_subframe_; }

@@ -29,6 +29,7 @@
 void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Router& router) {
 
   Pistache::Rest::Routes::Get(router, "/stats_manager/:stats_type", Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
+  Net::Rest::Routes::Get(router, "/stats_manager/json/:stats_type", Net::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
   
 }
 
@@ -49,5 +50,25 @@ void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest:
     response.send(Pistache::Http::Code::Ok, resp);
   } else {
     response.send(Pistache::Http::Code::Not_Found, "Statistics type does not exist");
+  }
+}
+
+void flexran::north_api::stats_manager_calls::obtain_json_stats(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+
+  auto stats_type = request.param(":stats_type").as<std::string>();
+
+  std::string resp;
+
+  if (stats_type.compare("all") == 0) {
+    resp = stats_app->all_stats_to_json_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else if (stats_type.compare("enb_config") == 0) {
+    resp = stats_app->enb_config_to_json_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else if (stats_type.compare("mac_stats") == 0) {
+    resp = stats_app->mac_config_to_json_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else {
+    response.send(Net::Http::Code::Not_Found, "Statistics type does not exist");
   }
 }

@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <string>
+#include <google/protobuf/util/json_util.h>
 
 #include "ue_mac_rib_info.h"
 
@@ -138,6 +139,35 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {
   }
   str += "  |";
   str += "\n";
+
+  return str;
+
+}
+
+std::string flexran::rib::ue_mac_rib_info::dump_stats_to_json_string() const {
+
+  std::string str;
+  std::string json_buffer;
+  str += "{";
+  str += "\"rnti\": ";
+  str += std::to_string(rnti_);
+  str += ",";
+  str += "\"mac_stats\":";
+  google::protobuf::util::MessageToJsonString(mac_stats_report_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  str += json_buffer;
+  json_buffer.clear();
+  str += ",";
+  str += "\"harq\":[";
+  for (int i = 0; i < 8; i++) {
+    if (i!=0) str += ",";
+    if (harq_stats_[0][i][0] == protocol::FLHS_ACK) {
+      str += "\"ACK\"";
+    } else {
+      str += "\"NACK\"";
+    }
+  }
+  str += "]";
+  str += "}";
 
   return str;
 

@@ -45,9 +45,15 @@ namespace flexran {
 
 	std::string all_stats_to_string();
 
+  std::string all_stats_to_json_string();
+
 	std::string enb_config_to_string();
 
+  std::string enb_config_to_json_string();
+
 	std::string mac_config_to_string();
+
+  std::string mac_config_to_json_string();
 	
 	
       private:

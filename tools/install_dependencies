@@ -10,6 +10,7 @@ function install_pistache {
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
     make
     sudo make install
+    cd - 
 }
 
 function install_log4cxx {
@@ -23,40 +24,125 @@ function install_log4cxx {
 }
 
 function install_protobuf {
-    echo "Downloading protobuf"
-    wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
-    tar -xzvf protobuf-2.6.1.tar.gz --owner $USER --group $USER --no-same-owner
-    cd protobuf-2.6.1/
+    local version=$1
+    if [ $version == "3" ]; then 
+	echo "Downloading protobuf V3.3"
+	wget https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
+    	tar -xzvf protobuf-cpp-3.3.0.tar.gz --owner $USER --group $USER --no-same-owner
+    	cd protobuf-3.3.0	
+    else
+	echo "Downloading protobuf V2.6"
+    	wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
+    	tar -xzvf protobuf-2.6.1.tar.gz --owner $USER --group $USER --no-same-owner
+    	cd protobuf-2.6.1/
+    fi     
     ./configure 
     echo "Compiling protobuf"
     make -j`nproc`
     sudo make install
     sudo ldconfig
+    cd -
 }
 
-#Check if running in Ubuntu or Arch Linux
-os_version=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
-
-if [[ $os_version == *"Arch Linux"* ]]
-then
-    echo "Detected Arch Linux"
-    echo "Installing required packages"
-    sudo pacman -Syu
-    sudo pacman --noconfirm -S base-devel cmake protobuf boost boost-libs git
-    sudo pacman --noconfirm -S apr-util libxml2 autoconf automake gzip libtool patch sed zip 
-    install_pistache
-    install_log4cxx
-elif [[ $os_version == *"Ubuntu"* ]]
-then
-    echo "Detected Ubuntu"
-    echo "Installing required packages"
+function print_help() {
+  echo ' Install FlexRAN software
+Options
+-h | --help 
+   Print this help
+-p | --protobuf-version
+	Set the protobuf version, Valid options: 2 and 3.
+'
+}
+function pre_install_packages(){
     sudo apt-get update -y
+    sudo apt-get install gawk -y
     sudo apt-get install build-essential g++ -y
     sudo apt-get install git -y
     sudo apt-get install cmake -y
+}
+
+function post_install_packages(){
+    echo "Installing required packages"
     sudo apt-get install libboost-all-dev -y
     sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
-    install_protobuf
+    install_protobuf $protobuf_version
     install_pistache
-fi
+}
 
+function install_flexran_app_dev(){
+    sudo apt-get install -y python3-dev
+    sudo apt-get install -y python3-pip
+    sudo apt-get install -y python3-pexpect
+    
+
+    # install python packages
+    sudo pip install pyyaml 
+    sudo pip install watchdog
+    
+    
+    #creat an isolated space on your server for Python projects
+    #sudo apt-get install -y python3-venv
+}
+
+function main() {
+
+    protobuf_version="2"
+    clean="0"
+    flexran_sdk="0"
+    
+    until [ -z "$1" ]
+    do
+	case "$1" in
+	    -c | --clean)
+		clean=1
+		shift;;
+	    -a | --app-dev)
+		echo "install required packages for python flexran app dev" 
+		flexran_sdk=1
+		shift ;;
+	    -p | --protobuf-version)
+		echo "setting protobuf version to $2" 
+		protobuf_version=$2
+		shift 2;;
+	    *)
+		print_help
+		if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-help" ]; then 
+		    echo "Unknown option $1"
+		fi 
+		exit 1;;
+	esac
+    done
+
+    pre_install_packages
+    #Check if running in Ubuntu or Arch Linux
+    os_version=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
+    ubuntu_distrib=$(lsb_release -si)$(lsb_release -sr)
+    
+    
+    if [[ $os_version == *"Arch Linux"* ]]; then
+	
+	echo "Detected Arch Linux"
+	echo "Installing required packages"
+	sudo pacman -Syu
+	sudo pacman --noconfirm -S base-devel cmake protobuf boost boost-libs git
+	sudo pacman --noconfirm -S apr-util libxml2 autoconf automake gzip libtool patch sed zip 
+	install_pistache
+	install_log4cxx
+    elif [[ $os_version == *"Ubuntu"* ]]; then
+	
+	if [[ $ubuntu_distrib == *"16"* ]]; then 
+	    echo "Detected $ubuntu_distrib"
+	else 
+	    echo "FlexRAN may not properly work in $ubuntu_distrib"
+	    echo "Try Ubuntu 16.04"
+	fi 
+	post_install_packages
+	
+	if [ "$flexran_sdk" == "1" ]; then
+	    install_flexran_app_dev
+	fi 
+    fi
+    
+}
+
+main "$@"

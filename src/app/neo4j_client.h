@@ -26,13 +26,16 @@
 
 #include <map>
 #include <memory>
-#include <neo4j-client.h>
+
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-
-#include "component.h"
-#include "ue_scheduling_info.h"
+#include "periodic_component.h"
+#include "enb_rib_info.h"
+// #include "component.h"
+// #include "ue_scheduling_info.h"
+#include "enb_scheduling_info.h"
 #include "rib_common.h"
 #include "flexran.pb.h"
 
@@ -42,24 +45,31 @@ namespace flexran {
 
     namespace management {
 
-      class neo4j_client {
+      class neo4j_client : public periodic_component {
 	
-      public:
-		
-	void update_graph(int frame);
+      public:	
+	
+    neo4j_client(rib::Rib& rib, const core::requests_manager& rm)
+	  : periodic_component(rib, rm) {}
+	void update_graph();
 	
 	void update_node(rib::subframe_t subframe);
-	
-	void update_edge(rib::rnti_t rnti);
-		
-	
-      private:
-	
-	rib::frame_t testpurpose;
-	
-      };
 
-    }
+	void create_neo4j_graph();
+    
+    void run_periodic_task();	
+
+	// void update_edge(rib::rnti_t rnti);
+		
+	private:
+
+	int xyz;	
+
+    };
+
+
+   }
+   
 
   }
 

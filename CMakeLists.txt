@@ -12,7 +12,7 @@ endmacro(use_cxx11)
 
 use_cxx11()
 
-set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_FLAGS "-lneo4j-client -Wall -Wextra ${CMAKE_CXX_FLAGS}")
 
 # Enable low-latency kernel (for kernel 3.14 and above)
 option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)" ON)
@@ -169,7 +169,7 @@ set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
 include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
-  ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
+ ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
@@ -243,6 +243,7 @@ if(REST_NORTHBOUND)
 target_link_libraries(rt_controller
   RT_CONTROLLER_NORTH_API_LIB
   ${PISTACHE_LIB}
+  neo4j-client
 )
 
 endif()

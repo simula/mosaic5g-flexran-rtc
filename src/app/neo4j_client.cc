@@ -25,36 +25,7 @@
  
 #include "neo4j_client.h"  
 
-int x = 0;
 
-
-
-void flexran::app::management::neo4j_client::run_periodic_task() {
-
-::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-
-for (auto& agent_id : agent_ids) {
-
-// ::std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
-::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-
-for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
-   protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
-
-   /*TODO*/   
-
-  }
-
-
-}
-
-if (x == 0){
-    create_neo4j_graph();
-    x++;
-}
-
-}
 
 
 #ifdef __cplusplus
@@ -63,6 +34,125 @@ extern "C" {
 
 #include <neo4j-client.h>
 
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+int y = 0;
+int x = 0;
+int num_UEs_now = 0;
+int num_UEs_pre = 0;
+
+void flexran::app::management::neo4j_client::run_periodic_task() {
+
+
+if (y == 0){
+    create_neo4j_graph();
+    y++;
+}
+
+
+::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+
+for (auto& agent_id : agent_ids) {
+
+::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
+protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+
+
+
+   num_UEs_now = ue_configs.ue_config_size();
+
+   if ((num_UEs_now - num_UEs_pre) > 0){
+
+
+    neo4j_connection_t *connection =
+            neo4j_connect("neo4j://neo4j:flexran@localhost:7687", NULL, NEO4J_INSECURE);
+    if (connection == NULL)
+    {
+        neo4j_perror(stderr, errno, "Connection failed");
+        exit(1);
+    }
+
+   neo4j_result_stream_t *results =
+            neo4j_run(connection, "CREATE (u:Person { name: 'UE'}) RETURN u", neo4j_null);
+
+   // neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB'", neo4j_null);         
+  
+  
+
+    neo4j_result_t *result = neo4j_fetch_next(results);
+    if (results == NULL)
+    {
+        neo4j_perror(stderr, errno, "Failed to fetch result");
+        exit(1);
+    }
+
+    neo4j_value_t value = neo4j_result_field(result, 0);
+    char buf[128];
+    printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
+
+
+   } else if ((num_UEs_now - num_UEs_pre) < 0){
+
+
+    neo4j_connection_t *connection =
+            neo4j_connect("neo4j://neo4j:flexran@localhost:7687", NULL, NEO4J_INSECURE);
+    if (connection == NULL)
+    {
+        neo4j_perror(stderr, errno, "Connection failed");
+        exit(1);
+    }
+
+   neo4j_result_stream_t *results =
+            neo4j_run(connection, "MATCH (u:Person {name:'UE'}) DELETE u", neo4j_null);
+
+   // neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB'", neo4j_null);         
+  
+  
+
+    neo4j_result_t *result = neo4j_fetch_next(results);
+    if (results == NULL)
+    {
+        neo4j_perror(stderr, errno, "Failed to fetch result");
+        exit(1);
+    }
+
+    neo4j_value_t value = neo4j_result_field(result, 0);
+    char buf[128];
+    printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
+
+
+
+
+   }
+
+   num_UEs_pre = num_UEs_now;
+  // neo4j_register(current_subframe);
+
+  
+
+
+}
+
+
+  x++;  
+
+  if (x == 1000){
+
+    x = 0;
+  }
+  
+
+}
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 void flexran::app::management::neo4j_client::create_neo4j_graph(){
@@ -110,6 +200,27 @@ void flexran::app::management::neo4j_client::create_neo4j_graph(){
 }
 #endif
 
+
+
+// void flexran::app::management::neo4j_client::neo4j_register(rib::frame_t current_subframe) {
+
+
+// ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+
+// for (auto& agent_id : agent_ids) {
+
+// ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
+// protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+
+// num_UEs_pre = ue_configs.ue_config_size();
+
+// }
+
+
+
+// }   
+
+
 void flexran::app::management::neo4j_client::update_graph() {
   
   /*TODO*/
@@ -117,7 +228,7 @@ void flexran::app::management::neo4j_client::update_graph() {
 
 }
 
-void flexran::app::neo4j_client::update_node(rib::subframe_t subframe){
+void flexran::app::management::neo4j_client::update_node(rib::subframe_t subframe){
 
 
 

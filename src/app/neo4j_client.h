@@ -59,6 +59,8 @@ namespace flexran {
     
     void run_periodic_task();	
 
+    // void neo4j_register();
+
 	// void update_edge(rib::rnti_t rnti);
 		
 	private:

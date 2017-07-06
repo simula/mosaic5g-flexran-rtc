@@ -9,3 +9,4 @@ mac:
        parameters:
             n_active_slices : !!int 1
             slice_percentage: [!!float 1.0, !!float 0.4, !!float 0.0, !!float 0.0]
+            slice_maxmcs : [!!int 16, !!int 16, !!int 16, !!int 16]

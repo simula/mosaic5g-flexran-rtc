@@ -40,12 +40,6 @@ extern "C" {
 #endif
 
 
-
-int y = 0;
-int x = 0;
-int num_UEs_now = 0;
-int num_UEs_pre = 0;
-
 void flexran::app::management::neo4j_client::run_periodic_task() {
 
 
@@ -59,8 +53,8 @@ if (y == 0){
 
 for (auto& agent_id : agent_ids) {
 
-::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+   ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
+   protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
 
 
 
@@ -77,11 +71,8 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
         exit(1);
     }
 
-   // neo4j_result_stream_t *results =
-   //          neo4j_run(connection, "CREATE (u:Person { name: 'UE'}) RETURN u", neo4j_null);
 
-   // neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB'", neo4j_null);         
-  neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB' CREATE (u:Person { name: 'UE'}), (n)-[:CONN]->(u)", neo4j_null);
+   neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB' CREATE (u:Person { name: 'UE'}), (n)-[:CONN]->(u)", neo4j_null);
   
 
     neo4j_result_t *result = neo4j_fetch_next(results);
@@ -91,9 +82,9 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
         exit(1);
     }
 
-    neo4j_value_t value = neo4j_result_field(result, 0);
-    char buf[128];
-    printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
+     neo4j_value_t value = neo4j_result_field(result, 0);
+     // char buf[128]; // Test purpose
+    // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
 
    } else if ((num_UEs_now - num_UEs_pre) < 0){
@@ -119,9 +110,9 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
         exit(1);
     }
 
-    neo4j_value_t value = neo4j_result_field(result, 0);
-    char buf[128];
-    printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
+     neo4j_value_t value = neo4j_result_field(result, 0);
+     // char buf[128]; // Test purpose
+    // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
 
 
@@ -129,9 +120,7 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
    }
 
    num_UEs_pre = num_UEs_now;
-  // neo4j_register(current_subframe);
 
-  
 
 
 }
@@ -182,8 +171,8 @@ void flexran::app::management::neo4j_client::create_neo4j_graph(){
     }
 
     neo4j_value_t value = neo4j_result_field(result, 0);
-    char buf[128];
-    printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
+    // char buf[128];
+    // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
     neo4j_close_results(results);
     neo4j_close(connection);

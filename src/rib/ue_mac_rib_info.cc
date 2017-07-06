@@ -121,7 +121,7 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {
   
   for (int i = 0; i < 8; i++) {
     str +=  "  |   ";
-    str += i;
+    str += std::to_string(i);
   }
 
   str += "   |   ";

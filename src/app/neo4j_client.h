@@ -51,13 +51,14 @@ namespace flexran {
 	
     neo4j_client(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm) {}
+
 	void update_graph();
 	
 	void update_node(rib::subframe_t subframe);
 
 	void create_neo4j_graph();
     
-    void run_periodic_task();	
+  void run_periodic_task();	
 
     // void neo4j_register();
 
@@ -65,7 +66,10 @@ namespace flexran {
 		
 	private:
 
-	int xyz;	
+	int y = 0;
+  int x = 0;
+  int num_UEs_now = 0;
+  int num_UEs_pre = 0;	
 
     };
 

@@ -77,11 +77,11 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
         exit(1);
     }
 
-   neo4j_result_stream_t *results =
-            neo4j_run(connection, "CREATE (u:Person { name: 'UE'}) RETURN u", neo4j_null);
+   // neo4j_result_stream_t *results =
+   //          neo4j_run(connection, "CREATE (u:Person { name: 'UE'}) RETURN u", neo4j_null);
 
    // neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB'", neo4j_null);         
-  
+  neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB' CREATE (u:Person { name: 'UE'}), (n)-[:CONN]->(u)", neo4j_null);
   
 
     neo4j_result_t *result = neo4j_fetch_next(results);
@@ -108,12 +108,10 @@ protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
     }
 
    neo4j_result_stream_t *results =
-            neo4j_run(connection, "MATCH (u:Person {name:'UE'}) DELETE u", neo4j_null);
+            neo4j_run(connection, "MATCH (n)-[rel:CONN]->(r) WHERE n.name='EnodeB' AND r.name='UE' DELETE rel", neo4j_null);
 
-   // neo4j_result_stream_t *results = neo4j_run(connection, "MATCH (n:Person) WHERE n.name = 'EnodeB'", neo4j_null);         
-  
-  
-
+    neo4j_run(connection, "MATCH (n:Person) WHERE n.name='UE' DELETE n", neo4j_null);
+    
     neo4j_result_t *result = neo4j_fetch_next(results);
     if (results == NULL)
     {

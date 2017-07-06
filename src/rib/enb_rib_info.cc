@@ -22,8 +22,10 @@
 */
 
 #include <iostream>
-
+#include "neo4j_client.h"
 #include "enb_rib_info.h"
+
+
 
 flexran::rib::enb_rib_info::enb_rib_info(int agent_id)
   : agent_id_(agent_id) {
@@ -38,6 +40,7 @@ void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_conf
 void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config_reply& ue_config_update) {
   ue_config_.CopyFrom(ue_config_update);
   rnti_t rnti;
+  
   // Check if UE exists and if not create a ue_mac_rib_info entry
   for (int i = 0; i < ue_config_update.ue_config_size(); i++) {
     rnti = ue_config_update.ue_config(i).rnti();

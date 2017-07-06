@@ -44,7 +44,7 @@
 #include "flexible_scheduler.h"
 #include "delegation_manager.h"
 #include "requests_manager.h"
-
+#include "neo4j_client.h"
 // Fort RESTful northbound API
 #ifdef REST_NORTHBOUND
 
@@ -172,6 +172,10 @@ int main(int argc, char* argv[]) {
   // Delegation manager (TEST purposes)
   //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
+
+  std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+  tm.register_app(n4j_client);
+
 
   // Start the network thread
   std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);

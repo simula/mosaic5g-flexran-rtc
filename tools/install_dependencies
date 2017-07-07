@@ -48,7 +48,9 @@ function print_help() {
   echo ' Install FlexRAN software
 Options
 -h | --help 
-   Print this help
+   Print this help 
+-a | --app-dev)
+	install required packages for python flexran app dev" 
 -p | --protobuf-version
 	Set the protobuf version, Valid options: 2 and 3.
 '
@@ -73,12 +75,16 @@ function install_flexran_app_dev(){
     sudo apt-get install -y python3-dev
     sudo apt-get install -y python3-pip
     sudo apt-get install -y python3-pexpect
-    
+    sudo apt-get install -y libyaml-dev
+    sudo apt-get install -y python-yaml
+
 
     # install python packages
     sudo pip install pyyaml 
-    sudo pip install watchdog
-    
+    sudo pip install requests
+    sudo pip install enum
+    #sudo pip install watchdog
+
     
     #creat an isolated space on your server for Python projects
     #sudo apt-get install -y python3-venv

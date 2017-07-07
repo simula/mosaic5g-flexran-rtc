@@ -1,0 +1,7 @@
+mac:
+ - ul_scheduler:
+       parameters:
+                 n_active_slices_uplink : !!int 2
+                 slice_percentage_uplink : [!!float 0.2, !!float 0.8, !!float 0.0, !!float 0.0]
+                 slice_maxmcs : [!!int 28, !!int 28, !int 28, !!int 28]
+		 #update_dl_scheduler : [!!int 1, !!int 1, !!int 0, !!int 0]

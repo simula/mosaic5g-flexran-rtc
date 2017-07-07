@@ -41,11 +41,11 @@ namespace flexran {
 	: sched_app(flex_sched)
       { }
       
-      void register_calls(Net::Rest::Router& router);
+      void register_calls(Pistache::Rest::Router& router);
 
-      void change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+      void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
-      void apply_policy(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+      void apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       
     private:
 

@@ -141,7 +141,7 @@ class rrm_policy (object):
         self.log = log
         # NB APIs endpoints
         self.rrm_api='/rrm'
-        self.rrm_policy_api='/rrm_confif'
+        self.rrm_policy_api='/rrm_policy'
         # stats manager data requeted by the endpoint
         # could be extended to have data per API endpoint
         self.policy_data = ''

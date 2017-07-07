@@ -59,6 +59,8 @@ namespace flexran {
      void dump_stats() const;
 
      std::string dump_stats_to_string() const;
+
+     std::string dump_stats_to_json_string() const;
      
      protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
      

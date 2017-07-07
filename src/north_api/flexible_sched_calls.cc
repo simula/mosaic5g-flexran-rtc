@@ -30,6 +30,11 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
   Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
 
   Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
+
+
+
+  Pistache::Rest::Routes::Post(router, "/rrm_confif/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
+
 }
 
 void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
@@ -62,4 +67,19 @@ void flexran::north_api::flexible_sched_calls::apply_policy(const Pistache::Rest
     response.send(Pistache::Http::Code::Not_Found, "Policy not set\n");
   }
   
+}
+
+void flexran::north_api::flexible_sched_calls::apply_policy_string(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+
+  auto policy = request.body();
+
+  if (policy.length() != 0) {
+    if (sched_app->apply_agent_rrm_policy_string(policy)) {
+      response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
+    } else {
+      response.send(Pistache::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive. Cannot set policy\n");
+    }
+  } else {
+    response.send(Pistache::Http::Code::Not_Found, "No policy defined in request\n");
+  }
 }

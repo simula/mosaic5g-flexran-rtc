@@ -50,6 +50,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       int ue_flags = 0;
       ue_flags |= protocol::FLUST_PRH;                                                                            
       ue_flags |= protocol::FLUST_DL_CQI;
+      ue_flags |= protocol::FLUST_BSR;
       ue_flags |= protocol::FLUST_RLC_BS;
       ue_flags |= protocol::FLUST_MAC_CE_BS;
       ue_flags |= protocol::FLUST_UL_CQI;
@@ -74,12 +75,32 @@ std::string flexran::app::stats::stats_manager::all_stats_to_string() {
   return enb_config_to_string() + "\n\n\n" + mac_config_to_string() + "\n";
 }
 
+std::string flexran::app::stats::stats_manager::all_stats_to_json_string() {
+  std::string str;
+  str += "{";
+  str += rib_.dump_enb_configurations_to_json_string();
+  str += ",";
+  str += rib_.dump_mac_stats_to_json_string();
+  str += "}";
+
+  return str;
+}
+
 std::string flexran::app::stats::stats_manager::enb_config_to_string() {
   std::string str;
   str += "*********************\n";
   str += "Agent Configurations\n";
   str += "*********************\n";
   str += rib_.dump_enb_configurations_to_string();
+
+  return str;
+}
+
+std::string flexran::app::stats::stats_manager::enb_config_to_json_string() {
+  std::string str;
+  str += "{";
+  str += rib_.dump_enb_configurations_to_json_string();
+  str += "}";
 
   return str;
 }
@@ -92,6 +113,15 @@ std::string flexran::app::stats::stats_manager::mac_config_to_string() {
   str += "****************\n";
   str += rib_.dump_mac_stats_to_string();
 
+  return str;
+}
+
+std::string flexran::app::stats::stats_manager::mac_config_to_json_string() {
+
+  std::string str;
+  str += "{";
+  str += rib_.dump_mac_stats_to_json_string();
+  str += "}";
   return str;
 }
 	

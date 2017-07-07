@@ -46,6 +46,11 @@ namespace flexran {
       void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
+
+
+      void apply_policy_string(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
       
     private:
 

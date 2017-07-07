@@ -157,6 +157,24 @@ std::string flexran::rib::Rib::dump_mac_stats_to_string() const {
   return str;
 }
 
+std::string flexran::rib::Rib::dump_mac_stats_to_json_string() const {
+
+  std::string str;
+  bool first = true;
+
+  str += "\"mac_stats\":[";
+  for (auto enb_config : eNB_configs_) {
+    if(!first) str += ",";
+    str += "{";
+    str += enb_config.second->dump_mac_stats_to_json_string();
+    str += "}";
+    first = false;
+  }
+  str += "]";
+
+  return str;
+}
+
 void flexran::rib::Rib::dump_enb_configurations() const {
   for (auto eNB_config : eNB_configs_) {
     eNB_config.second->dump_configs();
@@ -175,4 +193,21 @@ std::string flexran::rib::Rib::dump_enb_configurations_to_string() const {
   return str;
 }
 
+std::string flexran::rib::Rib::dump_enb_configurations_to_json_string() const {
+
+  std::string str;
+  bool first = true;
+
+  str += "\"eNB_config\":[";
+  for (auto eNB_config : eNB_configs_) {
+    if(!first) str += ",";
+    str += "{";
+    str += eNB_config.second->dump_configs_to_json_string();
+    str += "}";
+    first = false;
+  }
+  str += "]";
+
+  return str;
+}
 

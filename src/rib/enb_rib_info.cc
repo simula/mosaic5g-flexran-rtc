@@ -22,7 +22,12 @@
 */
 
 #include <iostream>
-#include "neo4j_client.h"
+
+
+
+#include <google/protobuf/util/json_util.h>
+
+
 #include "enb_rib_info.h"
 
 
@@ -180,6 +185,23 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_string() const {
   return str;
 }
 
+std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
+  std::string str;
+  bool first = true;
+
+  str += "\"agent_id\":";
+  str += std::to_string(agent_id_);
+  str += ",";
+  str += "\"ue_mac_stats\":[";
+  for (auto ue_stats : ue_mac_info_) {
+    if(!first) str += ",";
+    str += ue_stats.second->dump_stats_to_json_string();
+  }
+  str += "]";
+
+  return str;
+}
+
 void flexran::rib::enb_rib_info::dump_configs() const {
   std::cout << eNB_config_.DebugString() << std::endl;
   std::cout << ue_config_.DebugString() << std::endl;
@@ -194,6 +216,27 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
   str += "\n";
   str += lc_config_.DebugString();
   str += "\n";
+
+  return str;
+}
+
+std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const {
+  std::string str;
+  std::string json_buffer;
+  str += "\"eNB\":";
+  google::protobuf::util::MessageToJsonString(eNB_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  str += json_buffer;
+  json_buffer.clear();
+  str += ",";
+  str += "\"UE\":";
+  google::protobuf::util::MessageToJsonString(ue_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  str += json_buffer;
+  json_buffer.clear();
+  str += ",";
+  str += "\"LC\":";
+  google::protobuf::util::MessageToJsonString(lc_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  str += json_buffer;
+  json_buffer.clear();
 
   return str;
 }

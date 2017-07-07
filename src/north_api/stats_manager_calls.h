@@ -45,6 +45,11 @@ namespace flexran {
 
       void obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+
+
+      void obtain_json_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
+
     private:
 
       std::shared_ptr<flexran::app::stats::stats_manager> stats_app;

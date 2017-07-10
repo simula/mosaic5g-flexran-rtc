@@ -115,18 +115,20 @@ class rrm_app(object):
         # RRM App local data
         self.policy_data = {}
 
+	# TBD: init for max enb and ue 
+	rrm_app.enb_sfn[0,0]={0}
         
     def get_statistics(self, sm):
             
         for enb in range(0, sm.get_num_enb()) :
-            rrm_app.enb_sfn[enb]  = sm.get_enb_sfn(enb)
-            rrm_app.enb_dlrb[enb] = sm.get_cell_rb(enb,dir='DL')
+	    rrm_app.enb_dlrb[enb] = sm.get_cell_rb(enb,dir='DL')
             rrm_app.enb_ulrb[enb] = sm.get_cell_rb(enb,dir='UL')
             rrm_app.enb_ulmaxmcs[enb] = sm.get_cell_maxmcs(enb,dir='UL')
             rrm_app.enb_dlmaxmcs[enb] = sm.get_cell_maxmcs(enb,dir='DL')
             
             for ue in range(0, sm.get_num_ue(enb=enb)) :
-                rrm_app.ue_dlwcqi[enb,ue]=sm.get_ue_dlwbcqi(enb,ue)
+          	rrm_app.enb_sfn[enb,ue]  = sm.get_enb_sfn(enb,ue)
+		rrm_app.ue_dlwcqi[enb,ue]=sm.get_ue_dlwbcqi(enb,ue)
                 rrm_app.ue_phr[enb,ue] =sm.get_ue_phr(enb,ue)
                 
                 # skip the control channels, SRB1 and SRB2 
@@ -194,13 +196,13 @@ class rrm_app(object):
                 rrm_app.ue_ultbs[enb,ue]=rrm_app_vars.tbs_table[ul_itbs][rrm_app.ue_ulrb[enb,ue]]
                 rrm_app.ue_dltbs[enb,ue]=rrm_app_vars.tbs_table[dl_itbs][rrm_app.ue_dlrb[enb,ue]]
         
-                log.info( 'eNB ' + str(enb) + ' UE ' + str(ue) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                log.info( 'eNB ' + str(enb) + ' UE ' + str(ue) + ' SFN ' + str(rrm_app.enb_sfn[enb,ue]) + 
                           ' DL TBS ' + str(rrm_app.ue_dltbs[enb,ue]) +
                           ' ue_dlrb ' + str(rrm_app.ue_dlrb[enb,ue]) +
                           ' ue_dlmcs ' + str(rrm_app.ue_dlmcs[enb,ue]) +
                           ' --> expected DL throughput ' +  str(float(rrm_app.ue_dltbs[enb,ue]/1000.0)) + ' Mbps')
                 
-                log.info( 'eNB ' + str(enb) + ' UE ' + str(ue) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                log.info( 'eNB ' + str(enb) + ' UE ' + str(ue) + ' SFN ' + str(rrm_app.enb_sfn[enb,ue]) + 
                           ' UL TBS ' + str(rrm_app.ue_ultbs[enb,ue])   +
                           ' ue_ulrb ' + str(rrm_app.ue_ulrb[enb,ue])   +
                           ' ue_ulmcs ' + str(rrm_app.ue_ulmcs[enb,ue]) +
@@ -234,7 +236,7 @@ class rrm_app(object):
                 if rrm_app.slice_dlrb_share[enb,sid] < 0.1 and rrm_app.slice_dlrb_share[enb,sid] > 0.0:
                     rrm_app.slice_dlrb_share[enb,sid]= 0.1
 
-                log.debug( 'S1: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+	        log.debug( 'S1: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb,0]) + 
                           ' slice_ulrb_share: ' + str(rrm_app.slice_ulrb_share[enb,sid]) +
                           ' slice_dlrb_share: ' + str(rrm_app.slice_dlrb_share[enb,sid]) )
 
@@ -256,11 +258,11 @@ class rrm_app(object):
                     rrm_app.enb_dlrb_share[enb]+=extra_dl
                     
                     
-                log.debug( 'S2: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                log.debug( 'S2: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb,0]) + 
                           ' slice_ulrb_share: ' + str(rrm_app.slice_ulrb_share[enb,sid]) +
                           ' slice_dlrb_share: ' + str(rrm_app.slice_dlrb_share[enb,sid]) )
 
-                log.info( 'eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                log.info( 'eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb,0]) + 
                       ' ulrb_share: ' + str(rrm_app.enb_ulrb_share[enb]) +
                       ' dlrb_share: ' + str(rrm_app.enb_dlrb_share[enb]) )
             
@@ -279,10 +281,13 @@ class rrm_app(object):
                 rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_dl[sid],rrm_app.enb_dlmaxmcs[enb]), dir='DL')
 
                 # ToDO: check if we should push sth
-            rrm.apply_policy()
-            rrm.save_policy(time=rrm_app.enb_sfn[enb])
-            log.info('_____________eNB' + str(enb)+' enforced policy______________')
-            print rrm.dump_policy()
+            if sm.get_num_ue(enb) > 0 : 
+	        if rrm.apply_policy() == 'connected' :
+		    rrm.save_policy(time=rrm_app.enb_sfn[enb,0])
+		    log.info('_____________eNB' + str(enb)+' enforced policy______________')
+		    print rrm.dump_policy()
+	    else: 
+		log.info('No UE is attached yet')
 
         
     def run(self, sm,rrm):
@@ -303,7 +308,7 @@ class rrm_app(object):
         log.info('6. Check for new RRM Slice policy')
         rrm_app.enforce_policy(sm,rrm)
         
-        t = Timer(10, self.run,kwargs=dict(sm=sm,rrm=rrm))
+        t = Timer(1, self.run,kwargs=dict(sm=sm,rrm=rrm))
         t.start()
         
         

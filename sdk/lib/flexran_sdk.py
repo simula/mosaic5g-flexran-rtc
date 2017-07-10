@@ -254,9 +254,9 @@ class rrm_policy (object):
         elif self.op_mode == 'sdk' :
           #headers = {'Content-type': 'application/json'}
           #rsp = requests.post(url, json=datas, headers=headers)
-
             try :
                 req = requests.post(url, data=str(dump_policy(pdata)))
+               
                 if req.status_code == 200:
                     self.log.error('successfully applied the policy ' )
                     self.status='connected'
@@ -267,7 +267,9 @@ class rrm_policy (object):
                 self.log.error('Failed to apply the policy ' )
             
         else :
-            self.log.warn('Unknown operation mode ' + op_mode ) 
+            self.log.warn('Unknown operation mode ' + op_mode )
+	    self.status='unknown'
+        return self.status 
 
     def dump_policy(self, policy_data=''):
         
@@ -545,6 +547,8 @@ class stats_manager(object):
 
     # don't need UE
     def get_enb_sfn(self,enb=0,ue=0):
-        return self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['dlCqiReport']['sfnSn']
-    
+	if self.get_num_ue(enb) > 0 :
+            return self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['dlCqiReport']['sfnSn']
+   	else:
+            return 0 
    

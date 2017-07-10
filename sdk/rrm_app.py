@@ -1,3 +1,39 @@
+'''
+   The MIT License (MIT)
+
+   Copyright (c) 2017
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+   
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+'''
+
+'''
+    File name: rrm_app.py
+    Author: navid nikaein
+    Description: This app dynamically updates the RRM policy based on the statistics received through FLEXRAN SDK
+    version: 1.0
+    Date created: 7 July 2017
+    Date last modified: 7 July 2017 
+    Python Version: 2.7
+    
+'''
+
+
 
 import json
 # Make it work for Python 2+3 and with Unicode
@@ -8,16 +44,14 @@ import logging
 import argparse
 import os
 import pprint
-
-import rrm_app_vars
+import sys 
+from sys import *
 
 from array import *
-
-#periodic task
 from threading import Timer
 from time import sleep
-from sys import version_info
 
+import rrm_app_vars
 
 from lib import flexran_sdk 
 from lib import logger
@@ -25,6 +59,8 @@ from lib import logger
 class rrm_app(object):
     """RRM network app to enforce poliy to the underlying RAN
     """
+    #
+    nb_slice=1
     # stats vars 
     maxmcs_dl= {}
     maxmcs_ul={}
@@ -63,16 +99,19 @@ class rrm_app(object):
     slice_dlrb = {}
     slice_ulrb_share = {}
     slice_dlrb_share = {}
+    enb_ulrb_share = {}
+    enb_dlrb_share = {}
 
 
-    def __init__(self, log, url='http://localhost:9999',log_level='info', op_mode='test'):
+    def __init__(self, log, template=rrm_app_vars.template_1, url='http://localhost',port='9999',log_level='info', op_mode='test'):
         super(rrm_app, self).__init__()
         
-        self.url = url
+        self.template=template
+        self.url = url+port
         self.log_level = log_level
         self.status = 0
         self.op_mode = op_mode
-        
+               
         # RRM App local data
         self.policy_data = {}
 
@@ -168,15 +207,18 @@ class rrm_app(object):
                           ' --> expected UL throughput ' +  str(float(rrm_app.ue_ultbs[enb,ue]/1000.0)) + ' Mbps')
 
 
-    def enforce_policy(self,sm,rrm):
+    def determine_rb_share(self,sm,rrm):
 
         for enb in range(0, sm.get_num_enb()) :
+
+            rrm_app.enb_ulrb_share[enb]=0.0
+            rrm_app.enb_dlrb_share[enb]=0.0
             for sid in range(0, rrm.get_num_slices()):
                 rrm_app.slice_ulrb[enb,sid]=0.0
                 rrm_app.slice_dlrb[enb,sid]=0.0
                 rrm_app.slice_ulrb_share[enb,sid]=0.0
                 rrm_app.slice_dlrb_share[enb,sid]=0.0
-             
+                 
                 for ue in range(0, sm.get_num_ue(enb=enb)) :
                     # simple ue to slice mapping 
                     if ue % rrm_app_vars.max_num_slice == sid :  
@@ -192,20 +234,55 @@ class rrm_app(object):
                 if rrm_app.slice_dlrb_share[enb,sid] < 0.1 and rrm_app.slice_dlrb_share[enb,sid] > 0.0:
                     rrm_app.slice_dlrb_share[enb,sid]= 0.1
 
+                log.debug( 'S1: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                          ' slice_ulrb_share: ' + str(rrm_app.slice_ulrb_share[enb,sid]) +
+                          ' slice_dlrb_share: ' + str(rrm_app.slice_dlrb_share[enb,sid]) )
+
+                rrm_app.enb_ulrb_share[enb]+=rrm_app.slice_ulrb_share[enb,sid]
+                rrm_app.enb_dlrb_share[enb]+=rrm_app.slice_dlrb_share[enb,sid]
+            
+            # disribute the remaing rb at the second stage
+            # TODO: allocate based on SLA
+            extra_ul=((1.0 - rrm_app.enb_ulrb_share[enb])/rrm.get_num_slices())
+            extra_dl=((1.0 - rrm_app.enb_dlrb_share[enb])/rrm.get_num_slices())
+            for sid in range(0, rrm.get_num_slices()):
+
+                if  extra_ul > 0 :
+                    rrm_app.slice_ulrb_share[enb,sid]+=extra_ul
+                    rrm_app.enb_ulrb_share[enb]+=extra_ul
+                    
+                if  extra_dl > 0 :
+                    rrm_app.slice_dlrb_share[enb,sid]+=extra_dl
+                    rrm_app.enb_dlrb_share[enb]+=extra_dl
+                    
+                    
+                log.debug( 'S2: eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
+                          ' slice_ulrb_share: ' + str(rrm_app.slice_ulrb_share[enb,sid]) +
+                          ' slice_dlrb_share: ' + str(rrm_app.slice_dlrb_share[enb,sid]) )
+
                 log.info( 'eNB ' + str(enb) + ' Slice ' + str(sid) + ' SFN ' + str(rrm_app.enb_sfn[enb]) + 
-                        ' slice_ulrb_share: ' + str(rrm_app.slice_ulrb_share[enb,sid]) +
-                        ' slice_dlrb_share: ' + str(rrm_app.slice_dlrb_share[enb,sid]) )
+                      ' ulrb_share: ' + str(rrm_app.enb_ulrb_share[enb]) +
+                      ' dlrb_share: ' + str(rrm_app.enb_dlrb_share[enb]) )
+            
+                                
+            
+    def enforce_policy(self,sm,rrm):
+
+        for enb in range(0, sm.get_num_enb()) :
+            for sid in range(0, rrm.get_num_slices()):
+                
                 # set the policy files
                 rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='UL')
-                rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_dlrb_share[enb,sid], dir='DL')
+                rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='DL')
 
                 rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_ul[sid],rrm_app.enb_ulmaxmcs[enb]), dir='UL')
                 rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_dl[sid],rrm_app.enb_dlmaxmcs[enb]), dir='DL')
-                
-                rrm.apply_policy()
-                rrm.save_policy(time=rrm_app.enb_sfn[enb])
-                log.info('_____________Policy enforced______________')
-                print rrm.dump_policy()
+
+                # ToDO: check if we should push sth
+            rrm.apply_policy()
+            rrm.save_policy(time=rrm_app.enb_sfn[enb])
+            log.info('_____________eNB' + str(enb)+' enforced policy______________')
+            print rrm.dump_policy()
 
         
     def run(self, sm,rrm):
@@ -220,22 +297,31 @@ class rrm_app(object):
         log.info('4. Calculate the expected performance')
         rrm_app.calculate_exp_perf(sm)
         
-        log.info('5. Check for new RRM Slice policy')
-        rrm_app.enforce_policy(sm,rrm)
+        log.info('5. Determine RB share per slice')
+        rrm_app.determine_rb_share(sm,rrm)
 
+        log.info('6. Check for new RRM Slice policy')
+        rrm_app.enforce_policy(sm,rrm)
+        
         t = Timer(10, self.run,kwargs=dict(sm=sm,rrm=rrm))
         t.start()
-
+        
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     
     parser.add_argument('--url', metavar='[option]', action='store', type=str,
-                        required=False, default='http://localhost:9999', 
+                        required=False, default='http://localhost', 
                         help='set the FlexRAN RTC URL: loalhost (default)')
+    parser.add_argument('--port', metavar='[option]', action='store', type=str,
+                        required=False, default='9999', 
+                        help='set the FlexRAN RTC port: 9999 (default)')
+    parser.add_argument('--template', metavar='[option]', action='store', type=str,
+                        required=False, default='template_1', 
+                        help='set the slice template to indicate the type of each slice: template_1(default), .... template_4')
     parser.add_argument('--op-mode', metavar='[option]', action='store', type=str,
-                        required=False, default='test', 
-                        help='Test SDK with already generated json files: test (default), sdk')
+                        required=False, default='sdk', 
+                        help='Set the app operation mode either with FlexRAN or with the test json files: test, sdk(default)')
     parser.add_argument('--log',  metavar='[level]', action='store', type=str,
                         required=False, default='info', 
                         help='set the log level: debug, info (default), warning, error, critical')
@@ -246,17 +332,21 @@ if __name__ == '__main__':
     log=flexran_sdk.logger(log_level=args.log).init_logger()
     
     rrm_app = rrm_app(log=log,
+                      template=args.template,
                       url=args.url,
+                      port=args.port,
                       log_level=args.log,
                       op_mode=args.op_mode)
 
     rrm = flexran_sdk.rrm_policy(log=log,
                                  url=args.url,
+                                 port=args.port,
                                  op_mode=args.op_mode)
     policy=rrm.read_policy()
     
     sm = flexran_sdk.stats_manager(log=log,
                                    url=args.url,
+                                   port=args.port,
                                    op_mode=args.op_mode)
        
     py3_flag = version_info[0] > 2 
@@ -266,21 +356,25 @@ if __name__ == '__main__':
 
     
     while True:
-        # assume the number of slices or slice types (eMBB, uRLLC, mMTC) to be an input
-        # prompt the user?
-        # predefined slice templates can also be used 
-        log.info('1. setting the number of slices')
-        
 
-        if py3_flag:
-            n = input("Please enter number of slices: ")
-        else:
-            n = raw_input("Please enter number of slices: ")
+        try:
+       # assume the number of slices or slice types (eMBB, uRLLC, mMTC) to be an input
+       # prompt the user?
+       # predefined slice templates can also be used 
+            log.info(str(rrm_app.nb_slice) + ' slice defined with template ' + rrm_app.template)
+            
+            if py3_flag:
+                rrm_app.nb_slice = input("Update the number of slices: ")
+            else:
+                rrm_app.nb_slice = raw_input("Update the number of slices: ")
+                
+            if int(rrm_app.nb_slice) < 0 or int(rrm_app.nb_slice) > 4 :
+                log.error('wrong number of slices + ' + str(rrm_app.nb_slice) + '!')
+        
+            rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='DL')
+            rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
 
-        if int(n) < 0 or int(n) > 4 :
-            log.error('wrong number of slices')
+        except KeyboardInterrupt:
+            print "Exiting : Wait for the timer to expires... Bye"
+            sys.exit(0)
         
-        rrm.set_num_slices(n=int(n), dir='DL')
-        rrm.set_num_slices(n=int(n), dir='UL')
-        
-        sleep(10)

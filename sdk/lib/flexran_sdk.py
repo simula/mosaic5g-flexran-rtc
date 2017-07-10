@@ -1,3 +1,36 @@
+'''
+   The MIT License (MIT)
+
+   Copyright (c) 2017
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+   
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+'''
+
+'''
+    File name: flexran_sdk.py
+    Author: navid nikaein
+    Description: Library to get and set accessible paramters and operation through the FlexRAN RTC
+    version: 1.0
+    Date created: 7 July 2017
+    Date last modified: 7 July 2017 
+    Python Version: 2.7
+'''
 
 import json
 # Make it work for Python 2+3 and with Unicode
@@ -32,17 +65,41 @@ class cd_actions(Enum):
     #def __str__(self):
         #return '%s' % self._value_
 
+class flexran_rest_api(object):
 
+    # policy file
+    pf_all='outputs/all_2.json'
+    pf_mac='outputs/mac_stats_2.json'
+    pf_enb='outputs/enb_config_2.json'
+
+    # relateive to flexran apps
+    pf_name='enb_scheduling_policy.yaml'
+    pf_yaml='../tests/delegation_control/'+pf_name
+    pf_json='{"mac": [{"dl_scheduler": {"parameters": {"n_active_slices": 1,"slice_percentage": [1,0.4,0,0],"slice_maxmcs": [28,28,28,28 ]}}}]}'
+
+    # APIs 
+    rrc_trigger='/rrc_trigger'
+
+    cd_dl='/dl_sched'
+    cd_ul='/ul_sched'
+
+    rrm='/rrm'  
+    rrm_policy='/rrm_config'  
+
+    sm_all='/stats_manager/json/all'
+    sm_enb='/stats_manager/json/enb_config'
+    sm_mac='/stats_manager/json/mac_stats'
+        
 class rrc_trigger_meas(object):
-    def __init__(self, log, url='http://localhost:9999', op_mode='test'):
+    def __init__(self, log, url='http://localhost', port='9999', op_mode='test'):
         super(rrc_trigger_meas, self).__init__()
         
-        self.url = url
+        self.url = url+':'+port
         self.status = ''
         self.op_mode = op_mode
         self.log = log
 
-        self.rrc_trigger='/rrc_trigger/'
+        self.rrc_trigger_api=flexran_rest_api.rrc_trigger
 
         self.rrc_meas = {}
         self.rrc_meas[rrc_triggers.ONE_SHOT]      = 'ONE_SHOT'
@@ -53,11 +110,11 @@ class rrc_trigger_meas(object):
     def trigger_meas(self, type='PERIODIC'):
 
         if type == self.rrc_meas[rrc_triggers.ONE_SHOT] :
-            url = self.url+self.rrc_trigger+type.lower()
+            url = self.url+self.rrc_trigger_api+'/'+type.lower()
         elif type == self.rrc_meas[rrc_triggers.PERIODIC] :
-            url = self.url+self.rrc_trigger+type.lower()
+            url = self.url+self.rrc_trigger_api+'/'+type.lower()
         elif type == self.rrc_meas[rrc_triggers.EVENT_DRIVEN] :
-            url = self.url+self.rrc_trigger+type.lower()
+            url = self.url+self.rrc_trigger_api+'/'+type.lower()
         else:
             self.log.error('Type ' + type + 'not supported')
             return
@@ -81,16 +138,16 @@ class rrc_trigger_meas(object):
             self.log.warn('Unknown operation mode ' + op_mode )       
 
 class control_delegate(object):
-    def __init__(self, log, url='http://localhost:9999', op_mode='test'):
+    def __init__(self, log, url='http://localhost', port='9999', op_mode='test'):
         super(control_delegate, self).__init__()
 
-        self.url = url
+        self.url = url+':'+port
         self.status = ''
         self.op_mode = op_mode
         self.log = log
         # NB APIs endpoints
-        self.dl_cd_api='/dl_sched'
-        self.ul_cd_api='/ul_sched'
+        self.cd_dl_api=flexran_rest_api.cd_dl
+        self.cd_ul_api=flexran_rest_api.cd_ul
         #self.cd_actions[cd_actions.PULL]='PULL'
         #self.cd_actions[cd_actions.PUSH]='PUSH'
         self.actions = {}
@@ -99,9 +156,9 @@ class control_delegate(object):
         
     def delegate_agent(self, func='dl_sched', action='PUSH'):
         if func == 'dl_sched' : 
-            url = self.url+self.dl_cd_api
+            url = self.url+self.cd_dl_api
         elif func == 'ul_sched' :
-            url = self.url+self.ul_cd_api
+            url = self.url+self.cd_ul_api
         else :
             self.log.error('Func ' + fucn + 'not supported')
             return 
@@ -132,16 +189,16 @@ class control_delegate(object):
             self.log.warn('Unknown operation mode ' + op_mode )                 
         
 class rrm_policy (object):
-    def __init__(self, log, url='http://localhost:9999', op_mode='test'):
+    def __init__(self, log, url='http://localhost', port='9999', op_mode='test'):
         super(rrm_policy, self).__init__()
         
-        self.url = url
+        self.url = url+':'+port
         self.status = 0
         self.op_mode = op_mode
         self.log = log
         # NB APIs endpoints
-        self.rrm_api='/rrm'
-        self.rrm_policy_api='/rrm_confif'
+        self.rrm_api=flexran_rest_api.rrm
+        self.rrm_policy_api=flexran_rest_api.rrm_policy
         # stats manager data requeted by the endpoint
         # could be extended to have data per API endpoint
         self.policy_data = ''
@@ -149,18 +206,18 @@ class rrm_policy (object):
         # test files
         # location must be reletaive to app and not SDK
         # To do: create env vars 
-        self.policy_file='../tests/delegation_control/enb_scheduling_policy.yaml'
-        self.policy_json = '{"mac": [{"dl_scheduler": {"parameters": {"n_active_slices": 1,"slice_percentage": [1,0.4,0,0],"slice_maxmcs": [28,28,28,28 ]}}}]}'
+        self.pf_yaml=flexran_rest_api.pf_yaml
+        self.pf_json=flexran_rest_api.pf_json
 
     # read the policy file     
-    def read_policy(self, policy_file=''):
+    def read_policy(self, pf=''):
 
-        if os.path.isfile(policy_file) :
-            pfile=policy_file
-        elif os.path.isfile(self.policy_file) :
-            pfile=self.policy_file
+        if os.path.isfile(pf) :
+            pfile=pf
+        elif os.path.isfile(self.pf_yaml) :
+            pfile=self.pf_yaml
         else :
-            self.log.error('cannot find the policy file '  + self.policy_file + ' and ' + policy_file)
+            self.log.error('cannot find the policy file '  + self.pf_yaml + ' or ' + pf)
             return
 
                 
@@ -187,7 +244,7 @@ class rrm_policy (object):
         if as_payload == True :
             url = self.url+self.rrm_policy_api
         else: 
-            url = self.url+self.rrm_api
+            url = self.url+self.rrm_api+'/'+flexran_rest_api.pf_name
         
         if self.op_mode == 'test' :
             self.log.info('POST ' + str(url))
@@ -337,27 +394,28 @@ class rrm_policy (object):
  
         return self.policy_data['mac'][index][key]['parameters']['slice_maxmcs'][sid]
 
+    
 class stats_manager(object):
-    def __init__(self, log, url='http://localhost:9999', op_mode='test'):
+    def __init__(self, log, url='http://localhost', port='9999', op_mode='test'):
         super(stats_manager, self).__init__()
         
-        self.url = url
+        self.url = url+':'+port
         self.status = 0
         self.op_mode = op_mode
         self.log = log
         # NB APIs endpoints
-        self.all_stats_api='/stats_manager/json/all'
-        self.enb_stats_api='/stats_manager/json/enb_config'
-        self.mac_stats_api='/stats_manager/json/mac_stats'
+        self.sm_all_api=flexran_rest_api.sm_all
+        self.sm_enb_api=flexran_rest_api.sm_enb
+        self.sm_mac_api=flexran_rest_api.sm_mac
 
         # stats manager data requeted by the endpoint
         # could be extended to have data per API endpoint
         self.stats_data = ''
         
         # test files
-        self.file_all='outputs/all_2.json'
-        self.file_mac='outputs/mac_stats_2.json'
-        self.file_enb='outputs/enb_config_2.json'
+        self.pfile_all=flexran_rest_api.pf_all
+        self.pfile_mac=flexran_rest_api.pf_mac
+        self.pfile_enb=flexran_rest_api.pf_enb
         
 
     def stats_manager(self, api):
@@ -367,11 +425,11 @@ class stats_manager(object):
         if self.op_mode == 'test' :
             
             if 'all' in api :
-                file =  self.file_all
+                file =  self.pfile_all
             elif 'mac' in api :
-                file =  self.file_mac
+                file =  self.pfile_mac
             elif 'enb' in api :
-                file =  self.file_enb
+                file =  self.pfile_enb
             
             try:
                 with open(file) as data_file:
@@ -379,16 +437,16 @@ class stats_manager(object):
                     self.status='connected'
             except :
                 self.status='disconnected'
-                self.log.error('cannot find the output file'  + self.file_all )       
+                self.log.error('cannot find the output file'  + file )       
 
         elif self.op_mode == 'sdk' :
 
             if 'all' in api :
-                url = self.url+self.all_stats_api
+                url = self.url+self.sm_all_api
             elif 'mac' in api :
-                url = self.url+self.mac_stats_api
+                url = self.url+self.sm_mac_api
             elif 'enb' in api :
-                url = self.url+self.enb_stats_api
+                url = self.url+self.sm_enb_api
             
             
             self.log.info('the request url is: ' + url)

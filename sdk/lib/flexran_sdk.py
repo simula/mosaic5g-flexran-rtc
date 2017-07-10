@@ -227,20 +227,24 @@ class rrm_policy (object):
                 self.log.debug(yaml.dump(self.policy_data, default_flow_style=False))
         except yaml.YAMLError, exc:
             self.log.error('error in policy file'  + pfile + exc )
+	    return	
             
         return self.policy_data
 
-    # apply policy data 
+    # apply policy with policy data 
+    # TBD: apply policy from a file
     def apply_policy(self, policy_data='',as_payload=True):
-        
+
+        self.status=''
+
         if policy_data != '' :
             pdata=policy_data
         elif self.policy_data != '' :
-            pdata=self.policy_data
+            pdata=self.policy_data 
         else:
-            self.log.error('cannot find the policy data '  + self.policy_data + ' and ' + policy_data)
+            self.log.error('cannot find the policy data '  + pdata)
             return
-
+	
         if as_payload == True :
             url = self.url+self.rrm_policy_api
         else: 
@@ -255,14 +259,15 @@ class rrm_policy (object):
           #headers = {'Content-type': 'application/json'}
           #rsp = requests.post(url, json=datas, headers=headers)
             try :
-                req = requests.post(url, data=str(dump_policy(pdata)))
+            	req = requests.post(url, data=str(self.dump_policy(pdata)))
+                #req = requests.post(url, data=str(pdata))
                
-                if req.status_code == 200:
-                    self.log.error('successfully applied the policy ' )
-                    self.status='connected'
-                else :
-                    self.status='disconnected'
-                    self.log.error('Request error code : ' + req.status_code)
+            	if req.status_code == 200:
+            	    self.log.info('successfully applied the policy')
+            	    self.status='connected'
+            	else :
+            	    self.status='disconnected'
+            	    self.log.error('Request error code : ' + req.status_code)
             except :
                 self.log.error('Failed to apply the policy ' )
             

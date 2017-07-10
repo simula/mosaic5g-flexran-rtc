@@ -56,11 +56,23 @@ import rrm_app_vars
 from lib import flexran_sdk 
 from lib import logger
 
+import signal
+
+def sigint_handler(signum,frame):
+    print 'Exiting, wait for the timer to expire... Bye'
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, sigint_handler)
+
 class rrm_app(object):
     """RRM network app to enforce poliy to the underlying RAN
     """
     #
     nb_slice=1
+    nb_slice_current=0
+    #
+    pf=''
+    pf_current=''
     # stats vars 
     maxmcs_dl= {}
     maxmcs_ul={}
@@ -283,9 +295,10 @@ class rrm_app(object):
                 # ToDO: check if we should push sth
             if sm.get_num_ue(enb) > 0 : 
 	        if rrm.apply_policy() == 'connected' :
-		    rrm.save_policy(time=rrm_app.enb_sfn[enb,0])
+		    rrm_app.pf=rrm.save_policy(time=rrm_app.enb_sfn[enb,0])
 		    log.info('_____________eNB' + str(enb)+' enforced policy______________')
 		    print rrm.dump_policy()
+                    
 	    else: 
 		log.info('No UE is attached yet')
 
@@ -308,7 +321,7 @@ class rrm_app(object):
         log.info('6. Check for new RRM Slice policy')
         rrm_app.enforce_policy(sm,rrm)
         
-        t = Timer(1, self.run,kwargs=dict(sm=sm,rrm=rrm))
+        t = Timer(5, self.run,kwargs=dict(sm=sm,rrm=rrm))
         t.start()
         
         
@@ -366,20 +379,28 @@ if __name__ == '__main__':
        # assume the number of slices or slice types (eMBB, uRLLC, mMTC) to be an input
        # prompt the user?
        # predefined slice templates can also be used 
-            log.info(str(rrm_app.nb_slice) + ' slice defined with template ' + rrm_app.template)
-            
+         
             if py3_flag:
-                rrm_app.nb_slice = input("Update the number of slices: ")
+                rrm_app.nb_slice = int(input("Update the number of slices: "))
             else:
-                rrm_app.nb_slice = raw_input("Update the number of slices: ")
+                rrm_app.nb_slice = int(raw_input("Update the number of slices: "))
                 
-            if int(rrm_app.nb_slice) < 0 or int(rrm_app.nb_slice) > 4 :
-                log.error('wrong number of slices + ' + str(rrm_app.nb_slice) + '!')
-        
+        except ValueError:
+            log.warning('Please entre an integer between 1-4')
+            
+        if rrm_app.nb_slice < 0 or rrm_app.nb_slice > 4 :
+            log.warning('wrong number of slices + ' + str(rrm_app.nb_slice) + '!')
+            log.warning('Please entre an integer between 1-4')
+        else:   
             rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='DL')
             #rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
 
-        except KeyboardInterrupt:
-            print "Exiting : Wait for the timer to expires... Bye"
-            sys.exit(0)
+        if rrm_app.nb_slice != rrm_app.nb_slice_current :
+            log.info('Number of slices is set to ' + str(rrm_app.nb_slice))
+            rrm_app.nb_slice_current = rrm_app.nb_slice
+            
+        sleep(5)
+#except KeyboardInterrupt:
+#            print "Exiting : Wait for the timer to expires... Bye"
+#            sys.exit(0)
         

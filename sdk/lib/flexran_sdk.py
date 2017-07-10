@@ -303,6 +303,8 @@ class rrm_policy (object):
         else :
             self.log.error('unsupported format')
             
+        return self.policy_data
+            
     def set_num_slices(self, n, dir='dl'):
         if dir == 'dl' or dir == "DL":
             index = 0
@@ -543,7 +545,6 @@ class stats_manager(object):
             return self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['bsr'][0]
         elif lc == 2 :
             aggregated_bsr= self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['bsr'][1]+self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['bsr'][2]+self.stats_data['mac_stats'][enb]['ue_mac_stats'][ue]['mac_stats']['bsr'][3]
-            print aggregated_bsr
             return aggregated_bsr
         else :
             return 0

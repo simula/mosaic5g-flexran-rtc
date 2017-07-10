@@ -142,8 +142,8 @@ class rrm_app(object):
         for sid in range(0, rrm.get_num_slices()):
             rrm_app.maxmcs_dl[sid] = rrm.get_slice_maxmcs(sid=sid)
             
-        for sid in range(0, rrm.get_num_slices(dir='UL')):
-            rrm_app.maxmcs_ul[sid] = rrm.get_slice_maxmcs(sid=sid, dir='UL')
+        #for sid in range(0, rrm.get_num_slices(dir='UL')):
+        #    rrm_app.maxmcs_ul[sid] = rrm.get_slice_maxmcs(sid=sid, dir='UL')
  
     def calculate_exp_perf (self, sm) :
 
@@ -274,10 +274,10 @@ class rrm_app(object):
             for sid in range(0, rrm.get_num_slices()):
                 
                 # set the policy files
-                rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='UL')
+                #rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='UL')
                 rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='DL')
 
-                rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_ul[sid],rrm_app.enb_ulmaxmcs[enb]), dir='UL')
+                #rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_ul[sid],rrm_app.enb_ulmaxmcs[enb]), dir='UL')
                 rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_dl[sid],rrm_app.enb_dlmaxmcs[enb]), dir='DL')
 
                 # ToDO: check if we should push sth
@@ -377,7 +377,7 @@ if __name__ == '__main__':
                 log.error('wrong number of slices + ' + str(rrm_app.nb_slice) + '!')
         
             rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='DL')
-            rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
+            #rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
 
         except KeyboardInterrupt:
             print "Exiting : Wait for the timer to expires... Bye"

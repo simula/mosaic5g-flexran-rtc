@@ -73,7 +73,7 @@ class flexran_rest_api(object):
     pf_enb='outputs/enb_config_2.json'
 
     # relateive to flexran apps
-    pf_name='enb_scheduling_policy.yaml'
+    pf_name='enb_dl_scheduling_policy.yaml'
     pf_yaml='../tests/delegation_control/'+pf_name
     pf_json='{"mac": [{"dl_scheduler": {"parameters": {"n_active_slices": 1,"slice_percentage": [1,0.4,0,0],"slice_maxmcs": [28,28,28,28 ]}}}]}'
 
@@ -226,9 +226,11 @@ class rrm_policy (object):
                 self.policy_data = yaml.load(data_file)
                 self.log.debug(yaml.dump(self.policy_data, default_flow_style=False))
         except yaml.YAMLError, exc:
-            self.log.error('error in policy file'  + pfile + exc )
+            self.log.error('error in policy file'  + pfile + str(exc) )
 	    return	
-            
+
+	self.print_policy() 
+   
         return self.policy_data
 
     # apply policy with policy data 
@@ -256,12 +258,11 @@ class rrm_policy (object):
             self.status='connected'
             
         elif self.op_mode == 'sdk' :
-          #headers = {'Content-type': 'application/json'}
-          #rsp = requests.post(url, json=datas, headers=headers)
+            print self.dump_policy(pdata)
             try :
-            	req = requests.post(url, data=str(self.dump_policy(pdata)))
-                #req = requests.post(url, data=str(pdata))
-               
+		# post data as binary
+            	req = requests.post(url, data=self.dump_policy(pdata),headers={'Content-Type': 'application/octet-stream'})
+		
             	if req.status_code == 200:
             	    self.log.info('successfully applied the policy')
             	    self.status='connected'
@@ -279,15 +280,15 @@ class rrm_policy (object):
     def dump_policy(self, policy_data=''):
         
         if policy_data != '' :
-            return yaml.dump(policy_data, default_flow_style=False)
+            return yaml.dump(policy_data, default_flow_style=False, default_style='"')
         elif self.policy_data != '' :
-            return yaml.dump(self.policy_data, default_flow_style=False)
+            return yaml.dump(self.policy_data, default_flow_style=False, default_style='"')
         else:
-            self.log.error('cannot find the policy data '  + self.policy_data + ' and ' + policy_data)
+            self.log.error('cannot find the policy data ' + policy_data)
             return
 
     def print_policy(self):
-        print dump_policy()
+        print self.dump_policy()
 
     def save_policy(self, basedir='./', basefn='policy', time=0, format='yaml'):
 

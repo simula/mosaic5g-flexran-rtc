@@ -42,6 +42,7 @@
 #include "remote_scheduler_delegation.h"
 #include "remote_scheduler_eicic.h"
 #include "flexible_scheduler.h"
+#include "rrc_triggering.h"
 #include "delegation_manager.h"
 #include "requests_manager.h"
 #include "neo4j_client.h"
@@ -50,7 +51,9 @@
 
 #include "call_manager.h"
 #include "flexible_sched_calls.h"
+#include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
+#include "enb_sched_policy_calls.h"
 
 #endif
 
@@ -154,6 +157,15 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm));
   tm.register_app(flex_sched);
 
+  // SCHED policy app 
+  std::shared_ptr<flexran::app::component> sched_policy(new flexran::app::scheduler::enb_scheduler_policy(rib, rm));
+  tm.register_app(sched_policy);
+
+  // RRC measurements
+   std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
+   tm.register_app(rrc_trigger);
+
+  
   /* More examples of developed applications are available in the commented section.
      WARNING: Some of them might still contain bugs or might be from previous versions of the controller. */
   
@@ -193,10 +205,18 @@ int main(int argc, char* argv[]) {
   flexran::north_api::manager::call_manager north_api(addr);
 
   // Register API calls for the developed applications
+  flexran::north_api::enb_sched_policy_calls policy_calls(std::dynamic_pointer_cast<flexran::app::scheduler::enb_scheduler_policy>(sched_policy));
+
+  // REgister Rrc Triggering Application
+   flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
+
+  // Register API calls for the developed applications
   flexran::north_api::flexible_sched_calls scheduler_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
 
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
   
+   north_api.register_calls(rrc_calls);
+  north_api.register_calls(policy_calls);
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);
 

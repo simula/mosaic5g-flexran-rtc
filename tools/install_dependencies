@@ -24,6 +24,7 @@ function install_log4cxx {
 }
 
 function install_protobuf {
+
     local version=$1
     if [ $version == "3" ]; then 
 	echo "Downloading protobuf V3.3"

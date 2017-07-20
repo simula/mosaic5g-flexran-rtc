@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source flexran_rtc_env
+source ./flexran_rtc_env
 
 COMMAND="cmake"
 ARGS=""

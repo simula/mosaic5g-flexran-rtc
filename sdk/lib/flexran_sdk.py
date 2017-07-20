@@ -73,7 +73,7 @@ class flexran_rest_api(object):
     pf_enb='outputs/enb_config_2.json'
 
     # relateive to flexran apps
-    pf_name='enb_dl_scheduling_policy.yaml'
+    pf_name='enb_scheduling_policy.yaml'
     pf_yaml='../tests/delegation_control/'+pf_name
     pf_json='{"mac": [{"dl_scheduler": {"parameters": {"n_active_slices": 1,"slice_percentage": [1,0.4,0,0],"slice_maxmcs": [28,28,28,28 ]}}}]}'
 
@@ -305,95 +305,125 @@ class rrm_policy (object):
             
         return self.policy_data
             
-    def set_num_slices(self, n, dir='dl'):
-        if dir == 'dl' or dir == "DL":
-            index = 0
-            key = 'dl_scheduler'
-        elif dir == 'ul' or dir == "UL":
-            index = 1
-            key = 'ul_scheduler'
-            
-        self.log.debug('Setting the number of ' + dir + ' slices from ' + str(self.policy_data['mac'][index][key]['parameters']['n_active_slices']) + ' to ' + str(n) )
-        self.policy_data['mac'][index][key]['parameters']['n_active_slices']=n
-
-    def get_num_slices(self, dir='dl'):
-        if dir == 'dl' or dir == "DL":
-            index = 0
-            key = 'dl_scheduler'
-        elif dir == 'ul' or dir == "UL":
-            index = 1
-            key = 'ul_scheduler'
-            
-        return  self.policy_data['mac'][index][key]['parameters']['n_active_slices']
+    def set_num_slices(self, n=1, dir='dl'):
         
-
-    def set_slice_rb(self, sid, rb, dir='dl'):
         if dir == 'dl' or dir == "DL":
             index = 0
-            key = 'dl_scheduler'
+            key_sched = 'dl_scheduler'
+            key_slice = 'n_active_slices'
+            
         elif dir == 'ul' or dir == "UL":
             index = 1
-            key = 'ul_scheduler'
+            key_sched = 'ul_scheduler'
+            key_slice = 'n_active_slices_uplink'
         else :
             self.log.error('Unknown direction ' + dir)
             return
+        
             
+        self.log.debug('Setting the number of ' + dir + ' slices from ' + str(self.policy_data['mac'][index][key_sched]['parameters'][key_slice]) + ' to ' + str(n) )
+        self.policy_data['mac'][index][key_sched]['parameters'][key_slice]=n
+
+    def get_num_slices(self, dir='dl'):
+
+        if dir == 'dl' or dir == "DL":
+            index = 0
+            key_sched = 'dl_scheduler'
+            key_slice = 'n_active_slices'
+        elif dir == 'ul' or dir == "UL":
+            index = 1
+            key_sched = 'ul_scheduler'
+            key_slice = 'n_active_slices_uplink'
+        else :
+            self.log.error('Unknown direction ' + dir)
+            return
+        
+
+        return  self.policy_data['mac'][index][key_sched]['parameters'][key_slice]
+    
+                
+
+    def set_slice_rb(self, sid, rb, dir='dl'):
+
         if sid < 0 or sid > 4 :
             self.log.error('Out of Range slice id')
             return
-
+        # rb_percentage
         if rb < 0 or rb > 1 : 
             self.log.error('Out of Range RB percentage')
             return
-           
-        self.log.debug('Setting ' + dir + ' slice ' + str(sid) + ' RB from ' + str(self.policy_data['mac'][index][key]['parameters']['slice_percentage'][sid]) + ' to ' + str(rb) )
-        self.policy_data['mac'][index][key]['parameters']['slice_percentage'][sid]=rb
-        #print self.policy_data['mac'][index][key]['parameters']['slice_percentage'][sid]
+        
 
-    def get_slice_rb(self, sid, dir='dl'):
         if dir == 'dl' or dir == "DL":
             index = 0
-            key = 'dl_scheduler'
+            key_sched = 'dl_scheduler'
+            key_slice = 'slice_percentage'
         elif dir == 'ul' or dir == "UL":
             index = 1
-            key = 'ul_scheduler'
+            key_sched = 'ul_scheduler'
+            key_slice = 'slice_percentage_uplink'
         else :
             self.log.error('Unknown direction ' + dir)
             return
             
+        self.log.debug('Setting ' + dir + ' slice ' + str(sid) + ' RB from ' + str(self.policy_data['mac'][index][key_sched]['parameters'][key_slice][sid]) + ' to ' + str(rb) )
+        self.policy_data['mac'][index][key_sched]['parameters'][key_slice][sid]=rb
+        #print self.policy_data['mac'][index][key_sched]['parameters'][key_slice][sid]
+
+
+        
+    def get_slice_rb(self, sid, dir='dl'):
+
         if sid < 0 or sid > 4 :
             self.log.error('Out of Range slice id')
             return
- 
-        return self.policy_data['mac'][index][key]['parameters']['slice_percentage'][sid]
+        
+       
+        if dir == 'dl' or dir == "DL":
+            index = 0
+            key_sched = 'dl_scheduler'
+            key_slice = 'slice_percentage'
+        elif dir == 'ul' or dir == "UL":
+            index = 1
+            key_sched = 'ul_scheduler'
+            key_slice = 'slice_percentage_uplink'
+        else :
+            self.log.error('Unknown direction ' + dir)
+            return
+
+        return self.policy_data['mac'][index][key_sched]['parameters'][key_slice][sid]
 
     def set_slice_maxmcs(self, sid, maxmcs=28, dir='dl'):
 
         if dir == 'dl' or dir == "DL":
             index = 0
-            key = 'dl_scheduler'
+            key_sched = 'dl_scheduler'
+            key_mcs = 'slice_maxmcs'
             mcs=min(maxmcs,28)
         elif dir == 'ul' or dir == "UL":
             index = 1
-            key = 'ul_scheduler'
-            # use get_cell_maxmcs(enb) from sm
+            key_sched = 'ul_scheduler'
+            key_mcs   = 'slice_maxmcs_uplink'
+            # ToDO: use get_cell_maxmcs(enb) from sm
             mcs = min(maxmcs,16)
         else :
             self.log.error('Unknown direction ' + dir)
             return
             
  
-        self.log.debug('Setting ' + dir + ' slice ' + str(sid) + ' MCS from ' + str(self.policy_data['mac'][index][key]['parameters']['slice_maxmcs'][sid]) + ' to ' + str(mcs))
-        self.policy_data['mac'][index][key]['parameters']['slice_maxmcs'][sid]=mcs
-        #print self.policy_data['mac'][index][key]['parameters']['slice_maxmcs'][sid]
+        self.log.debug('Setting ' + dir + ' slice ' + str(sid) + ' MCS from ' + str(self.policy_data['mac'][index][key_sched]['parameters'][key_mcs][sid]) + ' to ' + str(mcs))
+        self.policy_data['mac'][index][key_sched]['parameters'][key_mcs][sid]=mcs
+        #print self.policy_data['mac'][index][key_sched]['parameters'][key_mcs][sid]
 
     def get_slice_maxmcs(self, sid, dir='dl'):
         if dir == 'dl' or dir == "DL":
             index = 0
-            key = 'dl_scheduler'
+            key_sched = 'dl_scheduler'
+            key_mcs = 'slice_maxmcs'
         elif dir == 'ul' or dir == "UL":
             index = 1
-            key = 'ul_scheduler'
+            key_sched = 'ul_scheduler'
+            key_mcs = 'slice_maxmcs_uplink'
         else :
             self.log.error('Unknown direction ' + dir)
             return
@@ -402,7 +432,7 @@ class rrm_policy (object):
             self.log.error('Out of Range slice id')
             return
  
-        return self.policy_data['mac'][index][key]['parameters']['slice_maxmcs'][sid]
+        return self.policy_data['mac'][index][key_sched]['parameters'][key_mcs][sid]
 
     
 class stats_manager(object):

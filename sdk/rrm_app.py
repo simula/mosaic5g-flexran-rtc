@@ -151,11 +151,13 @@ class rrm_app(object):
 
     def get_policy_maxmcs(self,rrm) :
         
-        for sid in range(0, rrm.get_num_slices()):
+        #for sid in range(0, rrm.get_num_slices()):
+        for sid in range(0, rrm_app_vars.max_num_slice):
             rrm_app.maxmcs_dl[sid] = rrm.get_slice_maxmcs(sid=sid)
             
         #for sid in range(0, rrm.get_num_slices(dir='UL')):
-        #    rrm_app.maxmcs_ul[sid] = rrm.get_slice_maxmcs(sid=sid, dir='UL')
+        for sid in range(0, rrm_app_vars.max_num_slice):
+            rrm_app.maxmcs_ul[sid] = rrm.get_slice_maxmcs(sid=sid, dir='UL')
  
     def calculate_exp_perf (self, sm) :
 
@@ -255,7 +257,7 @@ class rrm_app(object):
                 rrm_app.enb_ulrb_share[enb]+=rrm_app.slice_ulrb_share[enb,sid]
                 rrm_app.enb_dlrb_share[enb]+=rrm_app.slice_dlrb_share[enb,sid]
             
-            # disribute the remaing rb at the second stage
+            # disribute the remaining rb at the second stage
             # TODO: allocate based on SLA
             extra_ul=((1.0 - rrm_app.enb_ulrb_share[enb])/rrm.get_num_slices())
             extra_dl=((1.0 - rrm_app.enb_dlrb_share[enb])/rrm.get_num_slices())
@@ -286,10 +288,9 @@ class rrm_app(object):
             for sid in range(0, rrm.get_num_slices()):
                 
                 # set the policy files
-                #rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='UL')
+                rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='UL')
                 rrm.set_slice_rb(sid=sid,rb=rrm_app.slice_ulrb_share[enb,sid], dir='DL')
-
-                #rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_ul[sid],rrm_app.enb_ulmaxmcs[enb]), dir='UL')
+                rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_ul[sid],rrm_app.enb_ulmaxmcs[enb]), dir='UL')
                 rrm.set_slice_maxmcs(sid=sid,maxmcs=min(rrm_app.maxmcs_dl[sid],rrm_app.enb_dlmaxmcs[enb]), dir='DL')
 
                 # ToDO: check if we should push sth
@@ -393,7 +394,7 @@ if __name__ == '__main__':
             log.warning('Please entre an integer between 1-4')
         else:   
             rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='DL')
-            #rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
+            rrm.set_num_slices(n=int(rrm_app.nb_slice), dir='UL')
 
         if rrm_app.nb_slice != rrm_app.nb_slice_current :
             log.info('Number of slices is set to ' + str(rrm_app.nb_slice))

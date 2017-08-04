@@ -99,7 +99,7 @@ if __name__ == '__main__':
                                    port=args.port,
                                    op_mode=args.op_mode)
     sm.stats_manager('all')
-    if args.op_mode == 'sdk' :
+    if args.op_mode == 'test' :
         print 'enb'
         print json.dumps(sm.get_enb_config(), indent=2)
         print 'ue'

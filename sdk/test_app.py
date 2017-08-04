@@ -99,7 +99,7 @@ if __name__ == '__main__':
                                    port=args.port,
                                    op_mode=args.op_mode)
     sm.stats_manager('all')
-    if args.op_mode == 'test' :
+    if args.op_mode == 'sdk' :
         print 'enb'
         print json.dumps(sm.get_enb_config(), indent=2)
         print 'ue'
@@ -122,6 +122,14 @@ if __name__ == '__main__':
         print json.dumps(sm.get_ue_harq(), indent=2)
         print 'SFN'
         print json.dumps(sm.get_enb_sfn(), indent=2)
+        print 'cell bw'
+        print json.dumps(sm.get_cell_bw(), indent=2)
+        print 'cell power'
+        print json.dumps(sm.get_cell_power(dir='dl'), indent=2)        
+        print json.dumps(sm.get_cell_power(dir='ul'), indent=2)        
+        print 'cell freq'
+        print json.dumps(sm.get_cell_freq(dir='dl'), indent=2)        
+        print json.dumps(sm.get_cell_freq(dir='ul'), indent=2)        
 
         rrm = flexran_sdk.rrm_policy(log=log,
                                      url=args.url,

@@ -529,6 +529,40 @@ class stats_manager(object):
             self.log.warning('unknown direction ' + dir + 'set to DL')
             return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['dlBandwidth']
 
+    def get_cell_bw(self,enb=0,cc=0, dir='dl'):
+        rb=self.get_cell_rb(enb,cc,dir)
+        if rb == 6 :
+            return 1.4
+        elif rb == 25 :
+            return 5
+        elif rb == 50 :
+            return 10
+        elif rb == 75 :
+            return 15
+        elif rb == 100 :
+            return 20
+
+    def get_cell_freq(self,enb=0,cc=0, dir='dl'):
+        if dir == 'dl' or dir == 'DL' :
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['dlFreq']
+        elif dir == 'ul' or dir == 'UL' :
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['ulFreq']
+        else :
+            self.log.warning('unknown direction ' + dir + 'set to DL')
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['dlFreq']
+
+    def get_cell_power(self,enb=0,cc=0, dir='dl'):
+        if dir == 'dl' or dir == 'DL' :
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['dlPdschPower']
+        elif dir == 'ul' or dir == 'UL' :
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['ulPuschPower']
+        else :
+            self.log.warning('unknown direction ' + dir + 'set to DL')
+            return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['dlPdschPower']
+
+    def get_cell_band(self,enb=0,cc=0):
+        return self.stats_data['eNB_config'][enb]['eNB']['cellConfig'][cc]['eutraBand']
+               
     def get_cell_maxmcs(self,enb=0,cc=0, dir='dl'):
 
         if dir == 'dl' or dir == 'DL' :

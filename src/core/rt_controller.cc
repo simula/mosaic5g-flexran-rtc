@@ -185,8 +185,8 @@ int main(int argc, char* argv[]) {
   //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
 
-  std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
-  tm.register_app(n4j_client);
+ // std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+ // tm.register_app(n4j_client);
 
 
   // Start the network thread

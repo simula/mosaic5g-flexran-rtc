@@ -23,6 +23,13 @@ function install_log4cxx {
     cd ..
 }
 
+function install_neo4j {
+    sudo add-apt-repository ppa:cleishm/neo4j
+    sudo apt-get update
+    sudo apt-get install neo4j-client libneo4j-client-dev
+}
+
+
 function install_protobuf {
 
     local version=$1
@@ -70,6 +77,7 @@ function post_install_packages(){
     sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
     install_protobuf $protobuf_version
     install_pistache
+    install_neo4j
 }
 
 function install_flexran_app_dev(){
@@ -135,6 +143,7 @@ function main() {
 	sudo pacman --noconfirm -S apr-util libxml2 autoconf automake gzip libtool patch sed zip 
 	install_pistache
 	install_log4cxx
+        install_neo4j
     elif [[ $os_version == *"Ubuntu"* ]]; then
 	
 	if [[ $ubuntu_distrib == *"16"* ]]; then 

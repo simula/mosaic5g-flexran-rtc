@@ -22,6 +22,7 @@
 */
 
 #include <pistache/http.h>
+#include <pistache/http_header.h>
 #include <string>
 
 #include "stats_manager_calls.h"
@@ -41,7 +42,7 @@ void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest:
   auto stats_type = request.param(":stats_type").as<std::string>();
   
   std::string resp;
-  
+
   if (stats_type.compare("all") == 0) {
     resp = stats_app->all_stats_to_string();
     response.send(Pistache::Http::Code::Ok, resp);
@@ -63,16 +64,19 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats(const Pistache::
   auto stats_type = request.param(":stats_type").as<std::string>();
 
   std::string resp;
+  auto json = MIME(Application, Json);
+
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
   if (stats_type.compare("all") == 0) {
     resp = stats_app->all_stats_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp, json);
   } else if (stats_type.compare("enb_config") == 0) {
     resp = stats_app->enb_config_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp, json);
   } else if (stats_type.compare("mac_stats") == 0) {
     resp = stats_app->mac_config_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp, json);
   } else {
     response.send(Pistache::Http::Code::Not_Found, "Statistics type does not exist");
 

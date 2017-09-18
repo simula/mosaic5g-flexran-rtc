@@ -196,6 +196,7 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
   for (auto ue_stats : ue_mac_info_) {
     if(!first) str += ",";
     str += ue_stats.second->dump_stats_to_json_string();
+    first = false;
   }
   str += "]";
 

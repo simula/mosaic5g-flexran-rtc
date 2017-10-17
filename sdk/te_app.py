@@ -133,7 +133,7 @@ class te_app(object):
     def check_events(self, sm, event='cqi'):
         data =''
         if event == 'cqi' or event == 'CQI' : 
-            data={'congestion=0&bitrate='+self.get_link_quality(sm)}
+            data='congestion=0&bitrate='+self.get_link_quality(sm)
             self.post_event(data)
         else:
             self.log.warning('undefined trigger event ' + event)
@@ -148,7 +148,7 @@ class te_app(object):
             try :
                 self.log.debug('POST ' + self.url_app)
                 self.log.debug('Data ' + data)
-                req = requests.post(url_app,json.dumps(data),headers={'Content-Type': 'application/x-www-form-urlencoded'})
+                req = requests.post(url_app,str(data),headers={'Content-Type': 'application/x-www-form-urlencoded'})
                 if req.status_code == 200 :
                     self.log.error('successfully post the event' )
                     self.status='connected'

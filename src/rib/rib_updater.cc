@@ -184,8 +184,24 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
     // Must create a new eNB_config entry
     rib_.new_eNB_config_entry(agent_id);
     rib_.remove_pending_agent(agent_id);
-    rib_.eNB_config_update(agent_id, enb_config_reply_msg);
+   
   }// If agent was not pending we should ignore this message. Only for initialization
+
+  rib_.eNB_config_update(agent_id, enb_config_reply_msg);
+  // request again enb config file
+  protocol::flex_header *header1(new protocol::flex_header);
+  header1->set_type(protocol::FLPT_GET_ENB_CONFIG_REQUEST);
+  header1->set_version(0);
+  header1->set_xid(0);
+  
+  protocol::flex_enb_config_request *enb_config_request_msg(new protocol::flex_enb_config_request);
+  enb_config_request_msg->set_allocated_header(header1);
+  
+  protocol::flexran_message out_message1;
+  out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
+  out_message1.set_allocated_enb_config_request_msg(enb_config_request_msg);
+  usleep(1000000);
+  net_xface_.send_msg(out_message1, agent_id);
 }
 
 void flexran::rib::rib_updater::handle_message(int agent_id,

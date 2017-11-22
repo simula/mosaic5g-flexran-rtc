@@ -32,18 +32,10 @@ function install_neo4j {
 
 function install_protobuf {
 
-    local version=$1
-    if [ $version == "3" ]; then 
-	echo "Downloading protobuf V3.3"
-	wget https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
-    	tar -xzvf protobuf-cpp-3.3.0.tar.gz --owner $USER --group $USER --no-same-owner
-    	cd protobuf-3.3.0	
-    else
-	echo "Downloading protobuf V2.6"
-    	wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
-    	tar -xzvf protobuf-2.6.1.tar.gz --owner $USER --group $USER --no-same-owner
-    	cd protobuf-2.6.1/
-    fi     
+    echo "Downloading protobuf V3.3"
+    wget https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
+    tar -xzvf protobuf-cpp-3.3.0.tar.gz --owner $USER --group $USER --no-same-owner
+    cd protobuf-3.3.0
     ./configure 
     echo "Compiling protobuf"
     make -j`nproc`
@@ -59,8 +51,6 @@ Options
    Print this help 
 -a | --app-dev)
 	install required packages for python flexran app dev" 
--p | --protobuf-version
-	Set the protobuf version, Valid options: 2 and 3.
 '
 }
 function pre_install_packages(){
@@ -75,7 +65,7 @@ function post_install_packages(){
     echo "Installing required packages"
     sudo apt-get install libboost-all-dev -y
     sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
-    install_protobuf $protobuf_version
+    install_protobuf
     install_pistache
     install_neo4j
 }
@@ -101,7 +91,6 @@ function install_flexran_app_dev(){
 
 function main() {
 
-    protobuf_version="2"
     clean="0"
     flexran_sdk="0"
     
@@ -115,10 +104,6 @@ function main() {
 		echo "install required packages for python flexran app dev" 
 		flexran_sdk=1
 		shift ;;
-	    -p | --protobuf-version)
-		echo "setting protobuf version to $2" 
-		protobuf_version=$2
-		shift 2;;
 	    *)
 		print_help
 		if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-help" ]; then 

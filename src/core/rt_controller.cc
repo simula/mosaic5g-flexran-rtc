@@ -156,9 +156,11 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm));
   tm.register_app(flex_sched);
 
+#ifdef REST_NORTHBOUND
   // SCHED policy app 
   std::shared_ptr<flexran::app::component> sched_policy(new flexran::app::scheduler::enb_scheduler_policy(rib, rm));
   tm.register_app(sched_policy);
+#endif
 
   // RRC measurements
    std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));

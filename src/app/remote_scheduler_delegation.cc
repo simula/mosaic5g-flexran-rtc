@@ -333,7 +333,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total = data_to_request;
-		  //std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
+		  LOG4CXX_DEBUG(flexran::core::app_logger, "Need to request " << data_to_request << " from channel " << j);
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
@@ -423,7 +423,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	      //mcs = 27;
 	      //}
 	      
-	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
+	      LOG4CXX_DEBUG(flexran::core::app_logger, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 

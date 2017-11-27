@@ -82,8 +82,8 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
       enb_sched_info = get_scheduling_info(agent_id);
     }
     
-    //std::cout << "Checking id " << agent_id << std::endl;
-    //std::cout << "Current subframe " << current_subframe << std::endl;
+    LOG4CXX_DEBUG(flexran::core::app_logger, "Checking id " << agent_id);
+    LOG4CXX_DEBUG(flexran::core::app_logger, "Current subframe " << current_subframe);
 
     // Check if we have already run the scheduler for this particular time slot and if yes go to next eNB
     if (!needs_scheduling(enb_sched_info, current_frame, current_subframe)) {
@@ -124,7 +124,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	  // Get the MAC stats for this UE
 	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	
-	  //std::cout << "Got the MAC stats of the UE with rnti: " << ue_config.rnti() << std::endl;
+	  LOG4CXX_DEBUG(flexran::core::app_logger, "Got the MAC stats of the UE with rnti: " << ue_config.rnti());
 
 	  if (!ue_mac_info) {
 	    continue;
@@ -135,7 +135,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	  for (int j = 0; j < mac_report.rlc_report_size(); j++) {
 	    // If there is something to transmit in one of the pico cells, set the macro cell scheduling flag to false
 	    if (mac_report.rlc_report(j).tx_queue_size() > 0) {
-	      //std::cout << "We need to schedule the pico cell" << target_subframe << std::endl;
+	      LOG4CXX_DEBUG(flexran::core::app_logger, "We need to schedule the pico cell" << target_subframe);
 	      schedule_macro = false;
 	    }
 	  }

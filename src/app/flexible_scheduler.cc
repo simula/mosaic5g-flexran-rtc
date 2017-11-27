@@ -306,7 +306,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
-    //std::cout << "Scheduling for frame " << target_frame << " and subframe " << target_subframe << std::endl;
+    LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduling for frame " << target_frame << " and subframe " << target_subframe);
 
     // Create dl_mac_config message header
     protocol::flex_header *header(new protocol::flex_header);
@@ -611,7 +611,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
 	      
-	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
+	      LOG4CXX_DEBUG(flexran::core::app_logger, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
@@ -724,8 +724,8 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      //   std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
-    req_manager_.send_message(agent_id, out_message);
+      LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n");
+      req_manager_.send_message(agent_id, out_message);
     }
   }
 }

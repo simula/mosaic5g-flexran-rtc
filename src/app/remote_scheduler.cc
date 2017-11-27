@@ -101,7 +101,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
     if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
-    //std::cout << "Scheduling for frame " << target_frame << " and subframe " << target_subframe << std::endl;
+    LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduling for frame " << target_frame << " and subframe " << target_subframe);
 
     // Create dl_mac_config message header
     protocol::flex_header *header(new protocol::flex_header);
@@ -181,7 +181,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	  harq_pid = ue_mac_info->get_next_available_harq(cell_id);
 	  //harq_pid = ue_sched_info->get_active_harq_pid();
 	  
-	  //std::cout << "The current harq_pid is " << (int) harq_pid << std::endl;
+	  LOG4CXX_DEBUG(flexran::core::app_logger, "The current harq_pid is " << (int) harq_pid);
 
 	  round = ue_sched_info->get_harq_round(cell_id, harq_pid);
 	  
@@ -279,7 +279,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	      const protocol::flex_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len > 0) {
-		//std::cout << "Need to request " << rlc_report.tx_queue_size() << " from channel " << j << std::endl;
+		LOG4CXX_DEBUG(flexran::core::app_logger, "Need to request " << rlc_report.tx_queue_size() << " from channel " << j);
 		if (rlc_report.tx_queue_size() > 0) {
 		  data_to_request = ::std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
 		  if (data_to_request < 128) { // The header will be one byte less
@@ -384,7 +384,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
 	      
-	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
+	      LOG4CXX_DEBUG(flexran::core::app_logger, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
@@ -435,7 +435,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	      }
 	      ue_sched_info->toggle_ndi(cell_id, harq_pid);
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
-	      //std::cout << "Toggling NDI for harq " << (int) harq_pid << std::endl;
+	      LOG4CXX_DEBUG(flexran::core::app_logger, "Toggling NDI for harq " << (int) harq_pid);
 	      ue_has_transmission = true;
 	    } else { // There is no data to transmit, so don't schedule
 	      ue_has_transmission = false;
@@ -466,15 +466,14 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    
 	    //ue_sched_info->is_high_priority(false);
 
-	    //std::cout << "Rballoc for UE " << ue_config.rnti() << std::endl;
-	    //std::cout << "Allocated " << nb_rb << " RBs " << std::endl;
-	    //std::cout << "Harq pid/round: " << (int) harq_pid << "/" << (int) round << std::endl;
-	    //std::cout << "Ndi: " << (int) ndi << std::endl;
-	    //std::cout << "TPC: " << (int) tpc << std::endl;
-	    //std::cout << "MCS: " << (int) mcs << std::endl;
-	    //std::cout << "TBS: " << (int) dci_tbs << std::endl;
-	    //std::cout << "Frame: " << (int) target_frame << " Subframe: " << (int) target_subframe << std::endl;
-	    //std::cout << "Test: " << (int) get_TBS_DL(23, 2) << std::endl;
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "Rballoc for UE " << ue_config.rnti());
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "Allocated " << nb_rb << " RBs ");
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "Harq pid/round: " << (int) harq_pid << "/" << (int) round);
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "Ndi: " << (int) ndi);
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "TPC: " << (int) tpc);
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "MCS: " << (int) mcs);
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "TBS: " << (int) dci_tbs);
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "Frame: " << (int) target_frame << " Subframe: " << (int) target_subframe);
 	    
 	    //for (int j = 0; j <  get_nb_rbg(cell_config); j++) {
 	    //  std::cout << (int) ue_sched_info->get_rballoc_sub_scheduled(cell_id, harq_pid, j);
@@ -512,7 +511,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      // std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
+      LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round");
       req_manager_.send_message(agent_id, out_message);
 
     }

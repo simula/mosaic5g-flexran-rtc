@@ -69,6 +69,7 @@ void flexran::core::rt::rt_task::execute_task() {
       << "Can not set scheduler priority for thread. Exiting");
     LOG4CXX_INFO(flog::core, "Run with privileged rights or "
       << "consider compiling without low latency support.");
+    return;
   }
 
 #endif

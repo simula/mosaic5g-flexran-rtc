@@ -221,19 +221,21 @@ int main(int argc, char* argv[]) {
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);
 
-  // Start the call manager
+  // Start the call manager threaded. Once task_manager_thread and
+  // networkThread return, north_api will be shut down too
   north_api.init(1);
   north_api.start();
-  
-  north_api.shutdown();
+#endif
 
-#else
   if (task_manager_thread.joinable())
     task_manager_thread.join();
   
   if (networkThread.joinable())
     networkThread.join();
 
-#endif  
+#ifdef REST_NORTHBOUND
+  north_api.shutdown();
+#endif
+
   return 0;
 }

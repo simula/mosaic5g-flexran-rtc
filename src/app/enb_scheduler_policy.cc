@@ -33,6 +33,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "flexran_log.h"
 
 int32_t flexran::app::scheduler::enb_scheduler_policy::tpc_accumulated = 0;
 
@@ -153,7 +154,7 @@ void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string pol
   // this might be different 
   for (auto& agent_id : agent_ids) {
     
-    std::cout << "reconfigure the agent: applying the policy file: " << policy_file << std::endl;
+    LOG4CXX_INFO(flexran::core::app_logger, "reconfigure the agent: applying the policy file: " << policy_file);
     
     reconfigure_agent(agent_id, policy_file);
     
@@ -165,12 +166,10 @@ void flexran::app::scheduler::enb_scheduler_policy::set_policy(int rb_share) {
   
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-  
+
   // this might be different 
   for (auto& agent_id : agent_ids) {
-    
-    std::cout << "Set the policy with the following RB share (TBD)" << rb_share << std::endl;
-      
+    LOG4CXX_INFO(flexran::core::app_logger, "Set the policy with the following RB share (TBD)");
   }
 }
 
@@ -213,7 +212,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      LOG4CXX_INFO(flexran::core::app_logger, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -315,7 +314,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
 	  if (CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
-	    std::cout << "CCE allocation was infeasible" << std::endl;
+	    LOG4CXX_WARN(flexran::core::app_logger, "CCE allocation was infeasible");
 	    continue;
 	  }
 

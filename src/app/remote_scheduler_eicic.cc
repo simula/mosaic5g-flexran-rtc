@@ -29,6 +29,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "flexran_log.h"
 
 int32_t flexran::app::scheduler::remote_scheduler_eicic::tpc_accumulated = 0;
 
@@ -74,7 +75,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      LOG4CXX_INFO(flexran::app_logger, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -175,7 +176,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
       if (enb_sched_info) {
 	// Nothing to do if this exists
       } else { // eNB sched info was not found for this agent
-	::std::cout << "Config was not found. Creating" << ::std::endl;
+	LOG4CXX_INFO(flexran::core::app_logger, "Config was not found. Creating");
 	scheduling_info_.insert(::std::pair<int,
 				::std::shared_ptr<enb_scheduling_info>>(agent_id,
 									::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));

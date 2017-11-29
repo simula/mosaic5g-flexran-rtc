@@ -23,6 +23,7 @@
 
 #include "rt_task.h"
 #include <iostream>
+#include "flexran_log.h"
 
 flexran::core::rt::rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
 #ifdef LOWLATENCY
@@ -64,7 +65,10 @@ void flexran::core::rt::rt_task::execute_task() {
 #ifdef LOWLATENCY
   
   if (sched_setattr(0, &attr_, 0) < 0 ) {
-    std::cout << "sched_setattr failed" << std::endl;
+    LOG4CXX_FATAL(flexran::core::core_logger, "sched_setattr failed. "
+      << "Can not set scheduler priority for thread. Exiting");
+    LOG4CXX_INFO(flexran::core::core_logger, "Run with privileged rights or "
+      << "consider compiling without low latency support.");
   }
 
 #endif

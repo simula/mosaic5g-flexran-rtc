@@ -29,6 +29,7 @@
 
 
 #include "enb_rib_info.h"
+#include "flexran_log.h"
 
 
 
@@ -165,7 +166,7 @@ void flexran::rib::enb_rib_info::update_liveness() {
 }
 
 void flexran::rib::enb_rib_info::dump_mac_stats() const {
-  std::cout << "UE MAC stats for agent " << agent_id_ << std::endl;
+  LOG4CXX_INFO(flexran::core::rib_logger, "UE MAC stats for agent " << agent_id_);
   for (auto ue_stats : ue_mac_info_) {
     ue_stats.second->dump_stats();
   }
@@ -204,9 +205,9 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
 }
 
 void flexran::rib::enb_rib_info::dump_configs() const {
-  std::cout << eNB_config_.DebugString() << std::endl;
-  std::cout << ue_config_.DebugString() << std::endl;
-  std::cout << lc_config_.DebugString() << std::endl;
+  LOG4CXX_INFO(flexran::core::rib_logger, eNB_config_.DebugString());
+  LOG4CXX_INFO(flexran::core::rib_logger, ue_config_.DebugString());
+  LOG4CXX_INFO(flexran::core::rib_logger, lc_config_.DebugString());
 }
 
 std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {

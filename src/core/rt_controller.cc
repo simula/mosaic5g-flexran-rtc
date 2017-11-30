@@ -82,8 +82,7 @@ int main(int argc, char* argv[]) {
   } else {
     path = "../";
   }
-  
-  
+
   try {
     po::options_description desc("Help");
     desc.add_options()

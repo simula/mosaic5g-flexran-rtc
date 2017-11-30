@@ -46,4 +46,11 @@ namespace flexran {
   }
 }
 
+namespace flog {
+  static flexran_log::LoggerPtr core = flexran::core::core_logger;
+  static flexran_log::LoggerPtr net  = flexran::core::net_logger;
+  static flexran_log::LoggerPtr rib  = flexran::core::rib_logger;
+  static flexran_log::LoggerPtr app  = flexran::core::app_logger;
+}
+
 #endif

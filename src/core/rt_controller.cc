@@ -45,7 +45,11 @@
 #include "rrc_triggering.h"
 #include "delegation_manager.h"
 #include "requests_manager.h"
+
+#ifdef NEO4J_SUPPORT
 #include "neo4j_client.h"
+#endif
+
 // Fort RESTful northbound API
 #ifdef REST_NORTHBOUND
 
@@ -186,8 +190,10 @@ int main(int argc, char* argv[]) {
   //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
 
- // std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
- // tm.register_app(n4j_client);
+#ifdef NEO4J_SUPPORT
+  std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+  tm.register_app(n4j_client);
+#endif
 
 
   // Start the network thread

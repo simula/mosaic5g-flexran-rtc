@@ -166,7 +166,7 @@ void flexran::rib::enb_rib_info::update_liveness() {
 }
 
 void flexran::rib::enb_rib_info::dump_mac_stats() const {
-  LOG4CXX_INFO(flexran::core::rib_logger, "UE MAC stats for agent " << agent_id_);
+  LOG4CXX_INFO(flog::rib, "UE MAC stats for agent " << agent_id_);
   for (auto ue_stats : ue_mac_info_) {
     ue_stats.second->dump_stats();
   }
@@ -205,9 +205,9 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
 }
 
 void flexran::rib::enb_rib_info::dump_configs() const {
-  LOG4CXX_INFO(flexran::core::rib_logger, eNB_config_.DebugString());
-  LOG4CXX_INFO(flexran::core::rib_logger, ue_config_.DebugString());
-  LOG4CXX_INFO(flexran::core::rib_logger, lc_config_.DebugString());
+  LOG4CXX_INFO(flog::rib, eNB_config_.DebugString());
+  LOG4CXX_INFO(flog::rib, ue_config_.DebugString());
+  LOG4CXX_INFO(flog::rib, lc_config_.DebugString());
 }
 
 std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {

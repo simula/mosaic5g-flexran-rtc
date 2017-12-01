@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
     
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
 
-  LOG4CXX_INFO(flexran::core::core_logger, "Listening on port " << cport << " for incoming agent connections");
+  LOG4CXX_INFO(flog::core, "Listening on port " << cport << " for incoming agent connections");
   flexran::network::async_xface net_xface(cport);
   
   // Create the rib

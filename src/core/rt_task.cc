@@ -65,9 +65,9 @@ void flexran::core::rt::rt_task::execute_task() {
 #ifdef LOWLATENCY
   
   if (sched_setattr(0, &attr_, 0) < 0 ) {
-    LOG4CXX_FATAL(flexran::core::core_logger, "sched_setattr failed. "
+    LOG4CXX_FATAL(flog::core, "sched_setattr failed. "
       << "Can not set scheduler priority for thread. Exiting");
-    LOG4CXX_INFO(flexran::core::core_logger, "Run with privileged rights or "
+    LOG4CXX_INFO(flog::core, "Run with privileged rights or "
       << "consider compiling without low latency support.");
   }
 

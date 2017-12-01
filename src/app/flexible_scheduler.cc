@@ -94,7 +94,7 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::st
   // this might be different
   for (auto& agent_id : agent_ids) {
 
-    LOG4CXX_INFO(flexran::core::app_logger, "Reconfigure the agent: Applying the requested RRM policy from file " << policy_file);
+    LOG4CXX_INFO(flog::app, "Reconfigure the agent: Applying the requested RRM policy from file " << policy_file);
 
     reconfigure_agent_file(agent_id, policy_file);
 
@@ -119,7 +119,7 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy_string(
   // this might be different
   for (auto& agent_id : agent_ids) {
 
-    LOG4CXX_INFO(flexran::core::app_logger, "Reconfigure the agent: Applying the requested RRM policy");
+    LOG4CXX_INFO(flog::app, "Reconfigure the agent: Applying the requested RRM policy");
 
     reconfigure_agent_string(agent_id, policy);
 
@@ -135,14 +135,14 @@ void flexran::app::scheduler::flexible_scheduler::reconfigure_agent_file(int age
   int len;
 
   if (!policy_file.good()) {
-    LOG4CXX_WARN(flexran::core::app_logger, "The policy could not be loaded");
+    LOG4CXX_WARN(flog::app, "The policy could not be loaded");
     return;
   }
   
   policy_file.seekg(0, std::ios::end);
   len = policy_file.tellg();
   if (len <= 0) {
-    LOG4CXX_WARN(flexran::core::app_logger, "Policy could not be found. Make sure that it is stored in the proper directory");
+    LOG4CXX_WARN(flog::app, "Policy could not be found. Make sure that it is stored in the proper directory");
     return;
   }
   str_policy.reserve(len);
@@ -189,13 +189,13 @@ void flexran::app::scheduler::flexible_scheduler::push_code(int agent_id, std::s
   ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
   if (!fin.good()) {
     // TODO: Need to log this properly
-    LOG4CXX_WARN(flexran::core::app_logger, "The library could not be loaded");
+    LOG4CXX_WARN(flog::app, "The library could not be loaded");
     return;
   }
   fin.seekg(0, std::ios::end );  
   int len = fin.tellg();
   if (len <= 0) {
-    LOG4CXX_WARN(flexran::core::app_logger, "Library could not be found. Make sure that it is stored in the proper directory");
+    LOG4CXX_WARN(flog::app, "Library could not be found. Make sure that it is stored in the proper directory");
     return;
   }
   char *ret = new char[len];  
@@ -279,7 +279,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      LOG4CXX_INFO(flexran::core::app_logger, "Config was not found. Creating");
+      LOG4CXX_INFO(flog::app, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -306,7 +306,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
-    LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduling for frame " << target_frame << " and subframe " << target_subframe);
+    LOG4CXX_DEBUG(flog::app, "Scheduling for frame " << target_frame << " and subframe " << target_subframe);
 
     // Create dl_mac_config message header
     protocol::flex_header *header(new protocol::flex_header);
@@ -381,7 +381,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
 	  if (CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
-	    LOG4CXX_DEBUG(flexran::core::app_logger, "CCE allocation was infeasible");
+	    LOG4CXX_DEBUG(flog::app, "CCE allocation was infeasible");
 	    continue;
 	  }
 
@@ -611,7 +611,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
 	      
-	      LOG4CXX_DEBUG(flexran::core::app_logger, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
+	      LOG4CXX_DEBUG(flog::app, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
@@ -724,7 +724,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      LOG4CXX_DEBUG(flexran::core::app_logger, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n");
+      LOG4CXX_DEBUG(flog::app, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n");
       req_manager_.send_message(agent_id, out_message);
     }
   }

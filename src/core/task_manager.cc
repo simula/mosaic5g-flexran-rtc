@@ -41,7 +41,7 @@ flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
   its.it_interval.tv_nsec = its.it_value.tv_nsec;
   
   if (timerfd_settime(sfd, TFD_TIMER_ABSTIME, &its, NULL) == -1) {
-    LOG4CXX_ERROR(flexran::core::core_logger, "Failed to set timer for task manager");
+    LOG4CXX_ERROR(flog::core, "Failed to set timer for task manager");
   }
 }
 
@@ -85,7 +85,7 @@ void flexran::core::task_manager::wait_for_cycle() {
     res = read(sfd, &exp, sizeof(exp));
 
     if ((res < 0) || (res != sizeof(exp))) {
-      LOG4CXX_ERROR(flexran::core::core_logger, "Failed in task manager timer wait");
+      LOG4CXX_ERROR(flog::core, "Failed in task manager timer wait");
     }
   }
 }

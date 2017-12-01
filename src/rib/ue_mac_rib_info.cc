@@ -96,14 +96,14 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
 }
 
 void flexran::rib::ue_mac_rib_info::dump_stats() const {
-  LOG4CXX_INFO(flexran::core::rib_logger, "Rnti: " << rnti_);
-  LOG4CXX_INFO(flexran::core::rib_logger, mac_stats_report_.DebugString());
-  LOG4CXX_INFO(flexran::core::rib_logger, "Harq status");
+  LOG4CXX_INFO(flog::rib, "Rnti: " << rnti_);
+  LOG4CXX_INFO(flog::rib, mac_stats_report_.DebugString());
+  LOG4CXX_INFO(flog::rib, "Harq status");
   std::ostringstream oss;
   for (int i = 0; i < 8; i++) {
     oss << "  |  " << i;
   }
-  LOG4CXX_INFO(flexran::core::rib_logger, oss.str() << "  |");
+  LOG4CXX_INFO(flog::rib, oss.str() << "  |");
   oss.str(" ");
   oss.clear();
   for (int i = 0; i < 8; i++) {
@@ -113,7 +113,7 @@ void flexran::rib::ue_mac_rib_info::dump_stats() const {
       oss << " | " << "NACK";
     }
   }
-  LOG4CXX_INFO(flexran::core::rib_logger, oss.str() << "  |");
+  LOG4CXX_INFO(flog::rib, oss.str() << "  |");
 }
 
 std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {

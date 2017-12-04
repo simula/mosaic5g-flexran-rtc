@@ -32,10 +32,10 @@ function install_neo4j {
 
 function install_protobuf {
 
-    echo "Downloading protobuf V3.3"
-    wget https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
-    tar -xzvf protobuf-cpp-3.3.0.tar.gz --owner $USER --group $USER --no-same-owner
-    cd protobuf-3.3.0
+    echo "Installing protobuf from git repository"
+    git clone https://github.com/google/protobuf.git
+    cd protobuf
+    ./autogen.sh
     ./configure 
     echo "Compiling protobuf"
     make -j`nproc`

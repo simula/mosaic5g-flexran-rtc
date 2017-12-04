@@ -165,10 +165,12 @@ void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string pol
 void flexran::app::scheduler::enb_scheduler_policy::set_policy(int rb_share) {
   
 
+  _unused(rb_share);
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
   // this might be different 
   for (auto& agent_id : agent_ids) {
+    _unused(agent_id); 
     LOG4CXX_INFO(flog::app, "Set the policy with the following RB share (TBD)");
   }
 }

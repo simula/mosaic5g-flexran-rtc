@@ -94,7 +94,7 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::st
   // this might be different
   for (auto& agent_id : agent_ids) {
 
-    LOG4CXX_INFO(flog::app, "Reconfigure the agent: Applying the requested RRM policy from file " << policy_file);
+    LOG4CXX_INFO(flog::app, "Reconfigure agent " << agent_id << ": Applying the requested RRM policy from file " << policy_file);
 
     reconfigure_agent_file(agent_id, policy_file);
 
@@ -119,7 +119,7 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy_string(
   // this might be different
   for (auto& agent_id : agent_ids) {
 
-    LOG4CXX_INFO(flog::app, "Reconfigure the agent: Applying the requested RRM policy");
+    LOG4CXX_INFO(flog::app, "Reconfigure agent " << agent_id << ": Applying the requested RRM policy string:\n" << policy);
 
     reconfigure_agent_string(agent_id, policy);
 

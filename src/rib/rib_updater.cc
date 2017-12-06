@@ -42,7 +42,7 @@ void flexran::rib::rib_updater::update_rib() {
   while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
     /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
-      LOG4CXX_INFO(flog::rib, "A new agent connection was established");
+      LOG4CXX_INFO(flog::rib, "New agent connection established (agent ID " << tm->getTag() << ")");
       rib_.add_pending_agent(tm->getTag());
       protocol::flex_header *header(new protocol::flex_header);
       header->set_type(protocol::FLPT_HELLO);
@@ -61,9 +61,7 @@ void flexran::rib::rib_updater::update_rib() {
       in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
       // Update the RIB based on the message type
       if(in_message.has_hello_msg()) {
-	LOG4CXX_INFO(flog::rib, "Received a hello msg");
 	handle_message(tm->getTag(), in_message.hello_msg(), in_message.msg_dir());
-	LOG4CXX_INFO(flog::rib, "Handled the hello msg");
       } else if(in_message.has_echo_request_msg()) {
 	handle_message(tm->getTag(), in_message.echo_request_msg());
       } else if(in_message.has_echo_reply_msg()) {
@@ -71,21 +69,17 @@ void flexran::rib::rib_updater::update_rib() {
       } else if(in_message.has_stats_reply_msg()) {
 	handle_message(tm->getTag(), in_message.stats_reply_msg());
       } else if(in_message.has_sf_trigger_msg()) {
-	//std::cout<<"Got a sf trigger msg" << std::endl;
 	handle_message(tm->getTag(), in_message.sf_trigger_msg());
       } else if(in_message.has_ul_sr_info_msg()) {
 	/* TODO: Need to implement to enable UL scheduling */
+        LOG4CXX_WARN(flog::rib, "NOT IMPLEMENTED Agent " << tm->getTag() << ": received UL sr info msg");
       } else if(in_message.has_enb_config_reply_msg()) {
-	LOG4CXX_INFO(flog::rib, "Got an eNB config reply msg");
 	handle_message(tm->getTag(), in_message.enb_config_reply_msg());
       } else if(in_message.has_ue_config_reply_msg()) {
-	LOG4CXX_INFO(flog::rib, "Got a UE config reply msg");
 	handle_message(tm->getTag(), in_message.ue_config_reply_msg());
       } else if(in_message.has_lc_config_reply_msg()) {
-	LOG4CXX_INFO(flog::rib, "Got an LC config reply msg");
         handle_message(tm->getTag(), in_message.lc_config_reply_msg());
       } else if(in_message.has_ue_state_change_msg()) {
-	LOG4CXX_INFO(flog::rib, "Seems like a UE state changed");
 	handle_message(tm->getTag(), in_message.ue_state_change_msg());
       }
     }
@@ -98,6 +92,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_hello& hello_msg,
 					       protocol::flexran_direction dir) {
 
+  LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": hello msg");
   _unused(hello_msg);
   
   if (dir == protocol::SUCCESSFUL_OUTCOME) {
@@ -143,6 +138,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_echo_request& echo_request_msg) {
 
+  LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received echo request msg");
   // Need to send an echo reply
   protocol::flex_header *header(new protocol::flex_header);
   header->set_type(protocol::FLPT_ECHO_REPLY);
@@ -163,6 +159,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
   _unused(echo_reply_msg);  
 
   if (rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received echo reply msg");
     rib_.update_liveness(agent_id);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
@@ -174,6 +171,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_sf_trigger& sf_trigger_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received a subframe trigger msg");
     rib_.set_subframe_updates(agent_id, sf_trigger_msg);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
@@ -184,11 +182,12 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_enb_config_reply& enb_config_reply_msg) {
+  LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received an eNB config reply msg");
   if (rib_.agent_is_pending(agent_id)) {
     // Must create a new eNB_config entry
     rib_.new_eNB_config_entry(agent_id);
     rib_.remove_pending_agent(agent_id);
-   
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " was pending, created contiguration entry");
   }// If agent was not pending we should ignore this message. Only for initialization
 
   rib_.eNB_config_update(agent_id, enb_config_reply_msg);
@@ -211,6 +210,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_ue_config_reply& ue_config_reply_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received a UE config reply msg");
     rib_.ue_config_update(agent_id, ue_config_reply_msg);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
@@ -222,6 +222,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_lc_config_reply& lc_config_reply_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received an LC config reply msg");
     rib_.lc_config_update(agent_id, lc_config_reply_msg);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
@@ -233,6 +234,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_stats_reply& mac_stats_reply) {
   if(rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received stats reply msg");
     rib_.mac_stats_update(agent_id, mac_stats_reply);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
@@ -245,6 +247,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_ue_state_change& ue_state_change_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     /* TODO add the handler for the update of the state */
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": UE state changed");
     rib_.ue_config_update(agent_id, ue_state_change_msg);
     protocol::flexran_message out_message;
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);

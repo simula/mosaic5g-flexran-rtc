@@ -43,7 +43,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       header->set_version(0);
       // We need to store the xid for keeping context info
       header->set_xid(0);
-
+      
       protocol::flex_complete_stats_request *complete_stats_request(new protocol::flex_complete_stats_request);
       complete_stats_request->set_report_frequency(protocol::FLSRF_CONTINUOUS);
       complete_stats_request->set_sf(2);
@@ -54,7 +54,9 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       ue_flags |= protocol::FLUST_RLC_BS;
       ue_flags |= protocol::FLUST_MAC_CE_BS;
       ue_flags |= protocol::FLUST_UL_CQI;
-      // ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
+      ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
+      ue_flags |= protocol::FLUST_PDCP_STATS;
+      
       complete_stats_request->set_ue_report_flags(ue_flags);
       int cell_flags = 0;
       cell_flags |= protocol::FLCST_NOISE_INTERFERENCE;
@@ -89,9 +91,9 @@ std::string flexran::app::stats::stats_manager::all_stats_to_json_string() {
 
 std::string flexran::app::stats::stats_manager::enb_config_to_string() {
   std::string str;
-  str += "*********************\n";
-  str += "Agent Configurations\n";
-  str += "*********************\n";
+  str += "*************************\n";
+  str += "Agent/Cell Configurations\n";
+  str += "*************************\n";
   str += rib_.dump_enb_configurations_to_string();
 
   return str;
@@ -110,7 +112,7 @@ std::string flexran::app::stats::stats_manager::mac_config_to_string() {
 
   std::string str;
   str += "***************\n";
-  str += "MAC statistics\n";
+  str += "UE statistics\n";
   str += "****************\n";
   str += rib_.dump_mac_stats_to_string();
 

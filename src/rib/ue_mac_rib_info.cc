@@ -87,6 +87,10 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
     mac_stats_report_.mutable_ul_cqi_report()->CopyFrom(stats_report.ul_cqi_report());
   }
 
+  if (protocol::FLUST_PDCP_STATS & flags) {
+   mac_stats_report_.mutable_pdcp_stats()->CopyFrom(stats_report.pdcp_stats());
+  }
+
   if (protocol::FLUST_RRC_MEASUREMENTS & flags) {
    mac_stats_report_.mutable_rrc_measurements()->CopyFrom(stats_report.rrc_measurements());
   }

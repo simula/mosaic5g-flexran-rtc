@@ -69,7 +69,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       msg.set_msg_dir(protocol::INITIATING_MESSAGE);
       msg.set_allocated_stats_request_msg(stats_request_msg);
       req_manager_.send_message(agent_id, msg);
-      LOG4CXX_INFO(flexran::core::app_logger, "Time to make a new request for stats");
+      LOG4CXX_INFO(flog::app, "Time to make a new request for stats");
     }
   }
 }

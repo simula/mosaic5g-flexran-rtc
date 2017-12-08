@@ -29,6 +29,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "flexran_log.h"
 
 int32_t flexran::app::scheduler::remote_scheduler_eicic::tpc_accumulated = 0;
 
@@ -74,15 +75,15 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      LOG4CXX_INFO(flog::app, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
       enb_sched_info = get_scheduling_info(agent_id);
     }
     
-    //std::cout << "Checking id " << agent_id << std::endl;
-    //std::cout << "Current subframe " << current_subframe << std::endl;
+    LOG4CXX_DEBUG(flog::app, "Checking id " << agent_id);
+    LOG4CXX_DEBUG(flog::app, "Current subframe " << current_subframe);
 
     // Check if we have already run the scheduler for this particular time slot and if yes go to next eNB
     if (!needs_scheduling(enb_sched_info, current_frame, current_subframe)) {
@@ -123,7 +124,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	  // Get the MAC stats for this UE
 	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	
-	  //std::cout << "Got the MAC stats of the UE with rnti: " << ue_config.rnti() << std::endl;
+	  LOG4CXX_DEBUG(flog::app, "Got the MAC stats of the UE with rnti: " << ue_config.rnti());
 
 	  if (!ue_mac_info) {
 	    continue;
@@ -134,7 +135,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	  for (int j = 0; j < mac_report.rlc_report_size(); j++) {
 	    // If there is something to transmit in one of the pico cells, set the macro cell scheduling flag to false
 	    if (mac_report.rlc_report(j).tx_queue_size() > 0) {
-	      //std::cout << "We need to schedule the pico cell" << target_subframe << std::endl;
+	      LOG4CXX_DEBUG(flog::app, "We need to schedule the pico cell" << target_subframe);
 	      schedule_macro = false;
 	    }
 	  }
@@ -175,7 +176,7 @@ void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
       if (enb_sched_info) {
 	// Nothing to do if this exists
       } else { // eNB sched info was not found for this agent
-	::std::cout << "Config was not found. Creating" << ::std::endl;
+        LOG4CXX_INFO(flog::app, "Config was not found. Creating");
 	scheduling_info_.insert(::std::pair<int,
 				::std::shared_ptr<enb_scheduling_info>>(agent_id,
 									::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));

@@ -45,7 +45,11 @@
 #include "rrc_triggering.h"
 #include "delegation_manager.h"
 #include "requests_manager.h"
+
+#ifdef NEO4J_SUPPORT
 #include "neo4j_client.h"
+#endif
+
 // Fort RESTful northbound API
 #ifdef REST_NORTHBOUND
 
@@ -82,8 +86,7 @@ int main(int argc, char* argv[]) {
   } else {
     path = "../";
   }
-  
-  
+
   try {
     po::options_description desc("Help");
     desc.add_options()
@@ -99,7 +102,7 @@ int main(int argc, char* argv[]) {
 
     if ( opts.count("help")  ) { 
       std::cout << "FlexRAN real-time controller" << std::endl 
-		<< desc << std::endl; 
+                << desc << std::endl;
       return 0; 
     } 
 
@@ -133,7 +136,7 @@ int main(int argc, char* argv[]) {
     
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
 
-  LOG4CXX_INFO(flexran::core::core_logger, "Listening on port " << cport << " for incoming agent connections");
+  LOG4CXX_INFO(flog::core, "Listening on port " << cport << " for incoming agent connections");
   flexran::network::async_xface net_xface(cport);
   
   // Create the rib
@@ -157,9 +160,11 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm));
   tm.register_app(flex_sched);
 
+#ifdef REST_NORTHBOUND
   // SCHED policy app 
   std::shared_ptr<flexran::app::component> sched_policy(new flexran::app::scheduler::enb_scheduler_policy(rib, rm));
   tm.register_app(sched_policy);
+#endif
 
   // RRC measurements
    std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
@@ -185,8 +190,10 @@ int main(int argc, char* argv[]) {
   //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
 
- // std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
- // tm.register_app(n4j_client);
+#ifdef NEO4J_SUPPORT
+  std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+  tm.register_app(n4j_client);
+#endif
 
 
   // Start the network thread
@@ -220,19 +227,21 @@ int main(int argc, char* argv[]) {
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);
 
-  // Start the call manager
+  // Start the call manager threaded. Once task_manager_thread and
+  // networkThread return, north_api will be shut down too
   north_api.init(1);
   north_api.start();
-  
-  north_api.shutdown();
+#endif
 
-#else
   if (task_manager_thread.joinable())
     task_manager_thread.join();
   
   if (networkThread.joinable())
     networkThread.join();
 
-#endif  
+#ifdef REST_NORTHBOUND
+  north_api.shutdown();
+#endif
+
   return 0;
 }

@@ -13,7 +13,7 @@ endmacro(use_cxx11)
 use_cxx11()
 
 
-set (CMAKE_CXX_FLAGS "-lneo4j-client -Wall -Wextra ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wstrict-prototypes -fno-strict-aliasing ")
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3")
@@ -39,6 +39,13 @@ option(REST_NORTHBOUND "Enable RESTful northbound API for the management of the 
 
 if(REST_NORTHBOUND)
 add_definitions(-DREST_NORTHBOUND)
+endif()
+
+# Enable Neo4j app
+option(NEO4J_SUPPORT "Enable graphing application" OFF)
+
+if(NEO4J_SUPPORT)
+add_definitions(-DNEO4J_SUPPORT)
 endif()
 
 # Base directories
@@ -141,8 +148,21 @@ if(REST_NORTHBOUND)
   endif()
 
 endif()
-# Network component
 
+# Neo4j support
+if(NEO4J_SUPPORT)
+  # there is no find_package yet, but only /usr/include/neo4j_client.h
+  set(NEO4J_INCLUDE "/usr/include/neo4j-client.h")
+  if(EXISTS ${NEO4J_INCLUDE})
+    message("--${NEO4J_INCLUDE} FOUND")
+  else()
+    message(FATAL_ERROR " --${NEO4J_INCLUDE} NOT FOUND. There is no find_package(),
+    and it is not in /usr/include. If you are sure it is installed, consider
+    changing the cmake file (search for 'NEO4J_SUPPORT')")
+  endif()
+endif()
+
+# Network component
 set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
 
 include_directories(${RT_CONTROLLER_NETWORK_DIR})
@@ -195,12 +215,16 @@ set(APP_SRC
 #  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
-  ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc	
   ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
-
-
 )
+
+if(NEO4J_SUPPORT)
+  set(APP_SRC
+    ${APP_SRC}
+    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
+  )
+endif(NEO4J_SUPPORT)
 
 add_library(RT_CONTROLLER_APP_LIB
   ${APP_SRC}
@@ -265,7 +289,10 @@ if(REST_NORTHBOUND)
 target_link_libraries(rt_controller
   RT_CONTROLLER_NORTH_API_LIB
   ${PISTACHE_LIB}
-  neo4j-client
 )
 
+endif()
+
+if(NEO4J_SUPPORT)
+  target_link_libraries(rt_controller neo4j-client)
 endif()

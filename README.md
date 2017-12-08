@@ -3,10 +3,13 @@ A real-time controller for SD-RAN
 
 Requirements:
 * Cmake >= 2.8
-* libprotobuf v2.6.1
+* libprotobuf v3.3.0
 * boost >= 1.54
+* neo4j >= 2.2.0
+* log4cxx >= 0.10.0
 * Compiler with support for C++11
-* Optionally: Pistache library for RESTful northbound API support
+* Optionally: Pistache library (e.g. later than Nov 22, 2017) for RESTful northbound API support
+* Optionally: Python 3 support for the FlexRAN app SDK
 
 These dependencies can be automatically installed by running the bash script "install_dependencies" located in the tools directory. The current version of the script only provides support for Ubuntu 16.04 and Arch Linux. For other Linux distributions, please install these packages manually using your package manager.
 

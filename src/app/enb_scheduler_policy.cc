@@ -33,6 +33,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "flexran_log.h"
 
 int32_t flexran::app::scheduler::enb_scheduler_policy::tpc_accumulated = 0;
 
@@ -153,7 +154,7 @@ void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string pol
   // this might be different 
   for (auto& agent_id : agent_ids) {
     
-    std::cout << "reconfigure the agent: applying the policy file: " << policy_file << std::endl;
+    LOG4CXX_INFO(flog::app, "reconfigure the agent: applying the policy file: " << policy_file);
     
     reconfigure_agent(agent_id, policy_file);
     
@@ -164,13 +165,13 @@ void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string pol
 void flexran::app::scheduler::enb_scheduler_policy::set_policy(int rb_share) {
   
 
+  _unused(rb_share);
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-  
+
   // this might be different 
   for (auto& agent_id : agent_ids) {
-    
-    std::cout << "Set the policy with the following RB share (TBD)" << rb_share << std::endl;
-      
+    _unused(agent_id); 
+    LOG4CXX_INFO(flog::app, "Set the policy with the following RB share (TBD)");
   }
 }
 
@@ -213,7 +214,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      LOG4CXX_INFO(flog::app, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -240,7 +241,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
     if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
-    //std::cout << "Scheduling for frame " << target_frame << " and subframe " << target_subframe << std::endl;
+    LOG4CXX_DEBUG(flog::app, "Scheduling for frame " << target_frame << " and subframe " << target_subframe);
 
     // Create dl_mac_config message header
     protocol::flex_header *header(new protocol::flex_header);
@@ -315,7 +316,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
 	  if (CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
-	    std::cout << "CCE allocation was infeasible" << std::endl;
+	    LOG4CXX_WARN(flog::app, "CCE allocation was infeasible");
 	    continue;
 	  }
 
@@ -545,7 +546,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
 	      
-	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
+	      LOG4CXX_DEBUG(flog::app, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
@@ -660,7 +661,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      //   std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
+      LOG4CXX_DEBUG(flog::app, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round");
     req_manager_.send_message(agent_id, out_message);
     }
   }

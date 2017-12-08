@@ -22,10 +22,12 @@
 */
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <google/protobuf/util/json_util.h>
 
 #include "ue_mac_rib_info.h"
+#include "flexran_log.h"
 
 void flexran::rib::ue_mac_rib_info::update_dl_sf_info(const protocol::flex_dl_info& dl_info) {
   uint8_t CC_id = dl_info.serv_cell_index();
@@ -98,23 +100,24 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
 }
 
 void flexran::rib::ue_mac_rib_info::dump_stats() const {
-  std::cout << "Rnti: " << rnti_ << std::endl;
-  std::cout << mac_stats_report_.DebugString() << std::endl;
-  std::cout << "Harq status" << std::endl;
+  LOG4CXX_INFO(flog::rib, "Rnti: " << rnti_);
+  LOG4CXX_INFO(flog::rib, mac_stats_report_.DebugString());
+  LOG4CXX_INFO(flog::rib, "Harq status");
+  std::ostringstream oss;
   for (int i = 0; i < 8; i++) {
-    std::cout << "  |  " << i;
+    oss << "  |  " << i;
   }
-  std::cout << "   |   " << std::endl;
-  std::cout << " ";
+  LOG4CXX_INFO(flog::rib, oss.str() << "  |");
+  oss.str(" ");
+  oss.clear();
   for (int i = 0; i < 8; i++) {
     if (harq_stats_[0][i][0] == protocol::FLHS_ACK) {
-      std::cout << " | " << "ACK";
+      oss << " | " << "ACK";
     } else {
-      std::cout << " | " << "NACK";
+      oss << " | " << "NACK";
     }
   }
-  std::cout << "  |" << std::endl;
-
+  LOG4CXX_INFO(flog::rib, oss.str() << "  |");
 }
 
 std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {

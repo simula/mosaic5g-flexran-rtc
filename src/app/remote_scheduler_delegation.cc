@@ -27,6 +27,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "flexran_log.h"
 
 #include <iostream>
 #include <fstream>
@@ -114,7 +115,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << std::endl;
+      LOG4CXX_INFO(flog::app, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -192,7 +193,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
 	      if (mac_report.dl_cqi_report().csi_report(j).p10csi().wb_cqi() <= 15) {
 		// Switch to local scheduling
-		std::cout << "SWITCHING TO LOCAL SCHEDULING NOW" << std::endl;
+		LOG4CXX_INFO(flog::app, "SWITCHING TO LOCAL SCHEDULING NOW");
 		delegate_control(agent_id, req_manager_);
 		delegation_enabled_ = true;
 		
@@ -332,7 +333,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total = data_to_request;
-		  //std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
+		  LOG4CXX_DEBUG(flog::app, "Need to request " << data_to_request << " from channel " << j);
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
@@ -422,7 +423,7 @@ void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	      //mcs = 27;
 	      //}
 	      
-	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
+	      LOG4CXX_DEBUG(flog::app, "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs);
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 

@@ -33,7 +33,7 @@ void flexran::north_api::manager::call_manager::init(size_t thr) {
 
 void flexran::north_api::manager::call_manager::start() {
   httpEndpoint->setHandler(router_.handler());
-  httpEndpoint->serve();
+  httpEndpoint->serveThreaded();
 }
 
 void flexran::north_api::manager::call_manager::shutdown() {

@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2017 
+   Copyright (c) 2017 shahab SHARIAT BAGHERI
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,13 @@ void flexran::north_api::rrc_triggering_calls::change_rrc(const Pistache::Rest::
   auto Trigger_type = request.param(":trigger_type").as<std::string>();
   
   if (Trigger_type.compare("one_shot") == 0) { 
-    rrc_trigger->enable_central_scheduling(Trigger_type);
+    rrc_trigger->enable_rrc_triggering(Trigger_type);
     response.send(Pistache::Http::Code::Ok, "Trigger one shot");
   } else if (Trigger_type.compare("periodical") == 0) { //Remote scheduler 
-    rrc_trigger->enable_central_scheduling(Trigger_type);
+    rrc_trigger->enable_rrc_triggering(Trigger_type);
     response.send(Pistache::Http::Code::Ok, "Trigger periodical");
    } else if (Trigger_type.compare("event_driven") == 0) { //Remote scheduler 
-    rrc_trigger->enable_central_scheduling(Trigger_type);
+    rrc_trigger->enable_rrc_triggering(Trigger_type);
     response.send(Pistache::Http::Code::Ok, "Trigger event_driven"); 
   } else { // Scheduler type not supported
     response.send(Pistache::Http::Code::Not_Found, "Trigger type does not exist");

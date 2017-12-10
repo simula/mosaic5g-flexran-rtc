@@ -43,9 +43,7 @@ namespace flexran {
 
 	rrc_triggering(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm) {
-
-	  // central_scheduling.store(false);
-	  
+	    
 	}
 
 	void run_periodic_task();
@@ -54,24 +52,9 @@ namespace flexran {
 
 	void reconfigure_agent(int agent_id, std::string freq_measure);
 
-	void enable_central_scheduling(std::string freq_measure);
+	void enable_rrc_triggering(std::string freq_measure);
 	
-	// static int32_t tpc_accumulated;
 
-      // private:
-
-	// void run_central_scheduler();
-	
-	// ::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
-	
-	// ::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
-	
-	// Set these values internally for now
-
-	// std::atomic<bool> central_scheduling;
-	// const int schedule_ahead = 0;
-	// bool code_pushed_;
-	// int prev_val_, current_val;
 	
       };
       

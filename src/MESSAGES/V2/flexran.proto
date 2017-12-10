@@ -166,12 +166,6 @@ message flex_dl_mac_config {
 	repeated flex_pdcch_ofdm_sym_count ofdm_sym = 6; // OFDM symbol count for each CC
 }
 
-message flex_rrc_triggering {
-
-	optional flex_header header = 1;
-	optional string rrc_trigger = 2;	
-}
-
 //
 // UE state change message
 //

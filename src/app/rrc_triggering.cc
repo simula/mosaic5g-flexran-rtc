@@ -36,39 +36,7 @@ void flexran::app::rrc::rrc_triggering::run_periodic_task() {
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
-  // for (auto& agent_id : agent_ids) {
-
-    // push the code for the first time to the agent to make them available for future use. 
-    // this code will reside in the cache of agent, and will be activated upon the controller command
- //    if (!code_pushed_) {
- //      std::string path = "";
- //      std::string remote_sched = "";
- //      std::string default_sched = "";
-      
- //      if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
-	// path = path + env_p + "/tests/delegation_control/";
- //      } else {
-	// path = "../tests/delegation_control/";
- //      }
-
- //      remote_sched = path + "libremote_sched.so";
- //      default_sched = path + "libdefault_sched.so";
-      
- //      push_code(agent_id, "flexran_schedule_ue_spec_remote", remote_sched);
- //      push_code(agent_id, "flexran_schedule_ue_spec_default", default_sched); 
-      
- //      code_pushed_ = true;
- //    }
-  // } 
-  
-  // this is set in the constructor to flase. 
-  // however, this could be also set to true by the rest api
-  // if (central_scheduling.load() == true) {
-    // applies a modifed version of the legacy eNB scheduler
-    // run_central_scheduler();
-  // } else {
-  //   return;
-  // }
+  /*TODO for Handover*/
 }
 
 
@@ -86,46 +54,13 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::str
 
   agent_rrc_triggering->set_rrc_trigger(freq_measure);
 
-  
- // RRC report config editing through controller
-  // protocol::flex_rrc_trigger *agent_rrc_trigger(new protocol::flex_rrc_trigger);
-
-  // if (freq_measure == 0){
-
-  //     agent_rrc_trigger->set_report_interval(0); // 1 time
-  //     agent_rrc_trigger->set_report_amount(0);
-
-  // }
-
-  // else if (freq_measure == 1){
-
-  //     agent_rrc_trigger->set_report_interval(6); // 4 seconds
-  //     agent_rrc_trigger->set_report_amount(2);  
-
-  // }
-
-  // else if (freq_measure == 2){
-
-  //     agent_rrc_trigger->set_report_interval(1); //240ms
-  //     agent_rrc_trigger->set_report_amount(7);
-
-  // }
-
-  // else {
-
-  // 	std::cout << "Your frequency measurements is not in listed policies." << std::endl;
-  // }
-
-  
-  // agent_reconfiguration_msg->set_allocated_rrc_trig(agent_rrc_trigger);
-
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_rrc_triggering(agent_rrc_triggering);
   req_manager_.send_message(agent_id, config_message);
 }
 
 
-void flexran::app::rrc::rrc_triggering::enable_central_scheduling(std::string freq_measure) {
+void flexran::app::rrc::rrc_triggering::enable_rrc_triggering(std::string freq_measure) {
   
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());

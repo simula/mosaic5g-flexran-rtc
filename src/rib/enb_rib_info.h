@@ -24,10 +24,11 @@
 #ifndef ENB_RIB_INFO_H_
 #define ENB_RIB_INFO_H_
 
-#include <ctime>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <chrono>
+using st_clock = std::chrono::steady_clock;
 
 #include "flexran.pb.h"
 #include "rib_common.h"
@@ -83,6 +84,8 @@ namespace flexran {
       //! Access is only safe when the RIB is not active, i.e. within apps
       protocol::flex_lc_config_reply& get_lc_configs() {return lc_config_;}
 
+      std::chrono::steady_clock::time_point last_active() const { return last_checked; }
+
       std::shared_ptr<ue_mac_rib_info> get_ue_mac_info(rnti_t rnti);
 
       cell_mac_rib_info& get_cell_mac_rib_info(uint16_t cell_id) {
@@ -92,8 +95,10 @@ namespace flexran {
     private:
       int agent_id_;
 
-      clock_t last_checked;
-      const clock_t time_to_query = 500;
+      st_clock::time_point last_checked;
+      /* Was: 500 for clock_t, have CLOCK_PER_SECOND == 1000000.
+       * so: 500/1000000 = 0.5ms */
+      const st_clock::duration time_to_query = std::chrono::microseconds(500);
 
       frame_t current_frame_;
       subframe_t current_subframe_;

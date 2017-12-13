@@ -35,7 +35,7 @@
 
 flexran::rib::enb_rib_info::enb_rib_info(int agent_id)
   : agent_id_(agent_id) {
-  last_checked = clock();
+  last_checked = st_clock::now();
 }
 
 void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update) {
@@ -172,11 +172,12 @@ std::shared_ptr<flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_u
 }
 
 bool flexran::rib::enb_rib_info::need_to_query() {
-  return ((clock() - last_checked) > time_to_query); 
+  st_clock::duration dur = st_clock::now() - last_checked;
+  return (dur > time_to_query);
 }
 
 void flexran::rib::enb_rib_info::update_liveness() {
-  last_checked = clock();
+  last_checked = st_clock::now();
 }
 
 void flexran::rib::enb_rib_info::dump_mac_stats() const {

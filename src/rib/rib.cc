@@ -47,6 +47,16 @@ bool flexran::rib::Rib::has_eNB_config_entry(int agent_id) {
   return it != eNB_configs_.end();
 }
 
+void flexran::rib::Rib::remove_eNB_config_entry(int agent_id) {
+  auto it = eNB_configs_.find(agent_id);
+
+  if (it == eNB_configs_.end()) {
+    return;
+  } else {
+    eNB_configs_.erase(it);
+  }
+}
+
 void flexran::rib::Rib::eNB_config_update(int agent_id,
 					  const protocol::flex_enb_config_reply& enb_config_update) {
   auto it = eNB_configs_.find(agent_id);

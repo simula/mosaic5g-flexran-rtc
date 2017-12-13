@@ -217,6 +217,7 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
   ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
+  ${RT_CONTROLLER_APP_DIR}/rib_management.cc
 )
 
 if(NEO4J_SUPPORT)

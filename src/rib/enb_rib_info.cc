@@ -50,6 +50,7 @@ void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config
   // Check if UE exists and if not create a ue_mac_rib_info entry
   for (int i = 0; i < ue_config_update.ue_config_size(); i++) {
     rnti = ue_config_update.ue_config(i).rnti();
+    LOG4CXX_INFO(flog::rib, "update UE config for RNTI " << rnti);
     auto it = ue_mac_info_.find(rnti);
     if (it == ue_mac_info_.end()) {
       ue_mac_info_.insert(std::pair<int,
@@ -111,6 +112,7 @@ void flexran::rib::enb_rib_info::update_subframe(const protocol::flex_sf_trigger
     if (it == ue_mac_info_.end()) {
       /* TODO: For some reason we have no such entry. This shouldn't happen */
     } else {
+      LOG4CXX_DEBUG(flog::rib, "update DL subframe info for RNTI " << rnti);
       it->second->update_dl_sf_info(sf_trigger.dl_info(i));
     }
   }
@@ -122,6 +124,7 @@ void flexran::rib::enb_rib_info::update_subframe(const protocol::flex_sf_trigger
     if (it == ue_mac_info_.end()) {
       /* TODO: For some reason we have no such entry. This shouldn't happen */
     } else {
+      LOG4CXX_DEBUG(flog::rib, "update UL subframe info for RNTI " << rnti);
       it->second->update_ul_sf_info(sf_trigger.ul_info(i));
     }
   }
@@ -141,6 +144,7 @@ void flexran::rib::enb_rib_info::update_mac_stats(const protocol::flex_stats_rep
       //							    std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
     } else {
       it->second->update_mac_stats_report(mac_stats.ue_report(i));
+      LOG4CXX_DEBUG(flog::rib, "Update MAC stats for RNTI " << rnti);
     }
   }
   // Then work on the Cell updates

@@ -231,6 +231,8 @@ int main(int argc, char* argv[]) {
   // networkThread return, north_api will be shut down too
   north_api.init(1);
   north_api.start();
+  LOG4CXX_INFO(flog::core, "Listening on port " << north_port << " for incoming"
+      << " REST connections");
 #endif
 
   if (task_manager_thread.joinable())

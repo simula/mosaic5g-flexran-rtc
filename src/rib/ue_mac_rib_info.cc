@@ -34,6 +34,9 @@ void flexran::rib::ue_mac_rib_info::update_dl_sf_info(const protocol::flex_dl_in
   uint8_t harq_id = dl_info.harq_process_id();
   
   for (int i = 0; i < dl_info.harq_status_size(); i++) {
+    LOG4CXX_DEBUG(flog::rib, "HARQ ID " << static_cast<uint16_t>(harq_id)
+        << ", HARQ status " << dl_info.harq_status(i) << ", CC "
+        << static_cast<uint16_t>(CC_id));
     harq_stats_[CC_id][harq_id][i] = dl_info.harq_status(i);
     active_harq_[CC_id][harq_id][i] = true;
   }

@@ -23,6 +23,7 @@
 
 #include "agent_session.h"
 #include "tagged_message.h"
+#include "flexran_log.h"
 
 void flexran::network::agent_session::start() {
   do_read_header();
@@ -47,7 +48,7 @@ void flexran::network::agent_session::do_read_header() {
 			      do_read_body();
 			    }
 			    else {
-			      socket_.close();
+                              generate_disconnect_msg();
 			    }
 			  });
 }
@@ -63,7 +64,7 @@ void flexran::network::agent_session::do_read_body() {
 			      xface_.forward_message(th);
 			      do_read_header();
 			    } else {
-			      socket_.close();
+                              generate_disconnect_msg();
 			    }
 			  });
 }
@@ -81,7 +82,34 @@ void flexran::network::agent_session::do_write() {
 	do_write();
       }
     } else {
-      manager_.close_connection(session_id_);
+      generate_disconnect_msg();
     }
 			   });
+}
+
+void flexran::network::agent_session::generate_disconnect_msg()
+{
+  LOG4CXX_WARN(flog::net, "Connection for session " << session_id_ << " lost");
+  protocol::flex_header *header1(new protocol::flex_header);
+  header1->set_type(protocol::FLPT_DISCONNECT);
+  header1->set_version(0);
+  header1->set_xid(0);
+
+  protocol::flex_disconnect *disconnect_msg(new protocol::flex_disconnect);
+  disconnect_msg->set_allocated_header(header1);
+
+  protocol::flexran_message msg;
+  msg.set_allocated_disconnect_msg(disconnect_msg);
+
+  /* We need to manually serialize it so that it can be put into the incoming
+  * queue. */
+  tagged_message *tm = new tagged_message(msg.ByteSize(), session_id_);
+  msg.SerializeToArray(tm->getMessageArray(), msg.ByteSize());
+  xface_.forward_message(tm);
+}
+
+void flexran::network::agent_session::close()
+{
+  if (socket_.is_open())
+    socket_.close();
 }

@@ -55,12 +55,14 @@ namespace flexran {
       void start();
 
       void deliver(std::shared_ptr<tagged_message> msg);
+      void close();
       
     private:
       
       void do_read_header();
       void do_read_body();
       void do_write();
+      void generate_disconnect_msg();
       
       boost::asio::ip::tcp::socket socket_;
       flexran_protocol_queue write_queue_;

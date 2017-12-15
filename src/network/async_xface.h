@@ -54,6 +54,7 @@ namespace flexran {
       void forward_msg_to_agent();
 
       void initialize_connection(int session_id);
+      void release_connection(int session_id);
       
     private:
       

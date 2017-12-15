@@ -73,3 +73,8 @@ void flexran::network::async_xface::initialize_connection(int session_id) {
   tagged_message *th = new tagged_message(0, session_id);
   in_queue_.push(th);
 }
+
+void flexran::network::async_xface::release_connection(int session_id)
+{
+  manager_->close_connection(session_id);
+}

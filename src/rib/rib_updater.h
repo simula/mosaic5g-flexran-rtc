@@ -68,8 +68,9 @@ namespace flexran {
 			  const protocol::flex_stats_reply& mac_stats_reply);
       void handle_message(int agent_id,
 			  const protocol::flex_ue_state_change& ue_state_change_msg);
-      
-      
+      void handle_message(int agent_id,
+                          const protocol::flex_disconnect& disconnect_msg);
+
     private:
       
       flexran::network::async_xface& net_xface_;

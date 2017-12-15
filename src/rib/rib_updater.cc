@@ -81,6 +81,10 @@ void flexran::rib::rib_updater::update_rib() {
         handle_message(tm->getTag(), in_message.lc_config_reply_msg());
       } else if(in_message.has_ue_state_change_msg()) {
 	handle_message(tm->getTag(), in_message.ue_state_change_msg());
+      } else if(in_message.has_disconnect_msg()) {
+        handle_message(tm->getTag(), in_message.disconnect_msg());
+      } else {
+        LOG4CXX_WARN(flog::rib, "UNKNOWN MESSAGE from Agent " << tm->getTag());
       }
     }
     rem_msgs--;
@@ -245,8 +249,18 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
     out_message.set_allocated_lc_config_request_msg(lc_config_request_msg);
     net_xface_.send_msg(out_message, agent_id);
   } else {
-    LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent"
+    LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent "
         << agent_id << " for ue_state_change_msg");
     /* TODO: We did not receive the eNB config message for some reason, need to request it again */
   }
+}
+
+void flexran::rib::rib_updater::handle_message(int agent_id,
+                                               const protocol::flex_disconnect& disconnect_msg) {
+  _unused(disconnect_msg);
+  if(rib_.has_eNB_config_entry(agent_id)) {
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " disconnected");
+    rib_.remove_eNB_config_entry(agent_id);
+    net_xface_.release_connection(agent_id);
+  } /* else: nothing to do, ignore */
 }

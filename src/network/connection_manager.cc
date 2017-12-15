@@ -22,6 +22,7 @@
 */
 
 #include "connection_manager.h"
+#include "flexran_log.h"
 
 flexran::network::connection_manager::connection_manager(boost::asio::io_service& io_service,
 				       const boost::asio::ip::tcp::endpoint& endpoint,
@@ -33,6 +34,11 @@ flexran::network::connection_manager::connection_manager(boost::asio::io_service
 }
 
 void flexran::network::connection_manager::send_msg_to_agent(std::shared_ptr<tagged_message> msg) {
+  auto it = sessions_.find(msg->getTag());
+  if (it == sessions_.end()) {
+    LOG4CXX_WARN(flog::net, "Message for non-existent session " << msg->getTag() << " discarded");
+    return;
+  }
   sessions_[msg->getTag()]->deliver(msg);
 }
 
@@ -52,5 +58,9 @@ void flexran::network::connection_manager::do_accept() {
 }
 
 void flexran::network::connection_manager::close_connection(int session_id) {
-  sessions_.erase(session_id);
+  auto it = sessions_.find(session_id);
+  if (it != sessions_.end()) {
+    it->second->close();
+    sessions_.erase(session_id);
+  }
 }

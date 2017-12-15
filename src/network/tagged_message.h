@@ -59,8 +59,8 @@ namespace flexran {
   
     private:
       
-      int tag_;
       std::size_t size_;
+      int tag_;
       char p_msg_[max_normal_msg_size];
       char *msg_contents_;
       bool dynamic_alloc_;

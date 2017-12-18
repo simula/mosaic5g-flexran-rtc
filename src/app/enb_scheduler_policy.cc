@@ -121,7 +121,7 @@ void flexran::app::scheduler::enb_scheduler_policy::push_code(int agent_id, std:
   ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
   fin.seekg( 0, std::ios::end );  
   size_t len = fin.tellg();
-  char *ret = new char[len];  
+  char ret[len];
   fin.seekg(0, std::ios::beg);   
   fin.read(ret, len);  
   fin.close();

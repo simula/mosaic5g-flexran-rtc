@@ -198,7 +198,7 @@ void flexran::app::scheduler::flexible_scheduler::push_code(int agent_id, std::s
     LOG4CXX_WARN(flog::app, "Library could not be found. Make sure that it is stored in the proper directory");
     return;
   }
-  char *ret = new char[len];  
+  char ret[len];
   fin.seekg(0, std::ios::beg);   
   fin.read(ret, len);  
   fin.close();

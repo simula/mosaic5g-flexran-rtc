@@ -69,6 +69,8 @@
 
 #include "flexran_log.h"
 
+std::atomic_bool g_exit_controller{false};
+
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
@@ -77,6 +79,9 @@ int main(int argc, char* argv[]) {
   int north_port = 9999;
   
   bool debug = false;
+
+  sigset_t sigmask;
+  int rc, sig;
 
   // Find the root directory
   std::string path = "";
@@ -195,12 +200,20 @@ int main(int argc, char* argv[]) {
   tm.register_app(n4j_client);
 #endif
 
-
-  // Start the network thread
-  std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);
+  // the following threads will not handle any signal
+  sigfillset(&sigmask);
+  rc = pthread_sigmask(SIG_BLOCK, &sigmask, NULL);
+  if (rc) {
+    LOG4CXX_FATAL(flog::core, "Can not set pthread_sigmask due to error " << rc
+        << ". Exiting");
+    exit(rc);
+  }
 
   // Start the task manager thread
   std::thread task_manager_thread(&flexran::core::task_manager::execute_task, &tm);
+
+  // Start the network thread
+  std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);
 
 #ifdef REST_NORTHBOUND
   
@@ -235,15 +248,32 @@ int main(int argc, char* argv[]) {
       << " REST connections");
 #endif
 
+  // handle SIGINT and SIGUSR1 as end signals
+  sigaddset(&sigmask, SIGINT);
+  sigaddset(&sigmask, SIGUSR1);
+  pthread_sigmask(SIG_SETMASK, &sigmask, NULL);
+  while (!g_exit_controller) {
+    rc = sigwait(&sigmask, &sig);
+    if (rc) {
+      LOG4CXX_FATAL(flog::core, "sigwait() error code " << rc << ". Exiting");
+      exit(rc);
+    }
+    if (sig == SIGINT)
+      g_exit_controller = true;
+  }
+
   if (task_manager_thread.joinable())
     task_manager_thread.join();
   
+  net_xface.end();
   if (networkThread.joinable())
     networkThread.join();
 
 #ifdef REST_NORTHBOUND
   north_api.shutdown();
 #endif
+
+  LOG4CXX_INFO(flog::core, "Exiting FlexRAN RTController, bye.");
 
   return 0;
 }

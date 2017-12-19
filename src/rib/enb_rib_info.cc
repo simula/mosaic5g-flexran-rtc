@@ -39,12 +39,16 @@ flexran::rib::enb_rib_info::enb_rib_info(int agent_id)
 }
 
 void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update) {
+  eNB_config_mutex_.lock();
   eNB_config_.CopyFrom(enb_config_update);
+  eNB_config_mutex_.unlock();
   update_liveness();
 }
 
 void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config_reply& ue_config_update) {
+  ue_config_mutex_.lock();
   ue_config_.CopyFrom(ue_config_update);
+  ue_config_mutex_.unlock();
   rnti_t rnti;
   
   // Check if UE exists and if not create a ue_mac_rib_info entry
@@ -63,6 +67,8 @@ void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config
 
 void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_change& ue_state_change) {
   rnti_t rnti;  
+  // releases itself when leaving scope
+  std::lock_guard<std::mutex> lg(ue_config_mutex_);
   if (ue_state_change.type() == protocol::FLUESC_ACTIVATED) {
     protocol::flex_ue_config *c = ue_config_.add_ue_config();
     c->CopyFrom(ue_state_change.config());
@@ -81,11 +87,13 @@ void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_
 	// Erase mac info
 	ue_mac_info_.erase(rnti);
 	// Erase lc info as well
+        lc_config_mutex_.lock();
 	for (int j = 0; j < lc_config_.lc_ue_config_size(); j++) {
 	  if (rnti == lc_config_.lc_ue_config(j).rnti()) {
 	    lc_config_.mutable_lc_ue_config()->DeleteSubrange(j, 1);
 	  }
 	}
+        lc_config_mutex_.unlock();
 	return;
       } else if (ue_state_change.type() == protocol::FLUESC_UPDATED) {
 	ue_config_.mutable_ue_config(i)->CopyFrom(ue_state_change.config());
@@ -95,7 +103,9 @@ void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_
 }
 
 void flexran::rib::enb_rib_info::update_LC_config(const protocol::flex_lc_config_reply& lc_config_update) {
+  lc_config_mutex_.lock();
   lc_config_.CopyFrom(lc_config_update);
+  lc_config_mutex_.unlock();
   update_liveness();
 }
 
@@ -209,18 +219,30 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
 }
 
 void flexran::rib::enb_rib_info::dump_configs() const {
+  eNB_config_mutex_.lock();
   LOG4CXX_INFO(flog::rib, eNB_config_.DebugString());
+  eNB_config_mutex_.unlock();
+  ue_config_mutex_.lock();
   LOG4CXX_INFO(flog::rib, ue_config_.DebugString());
+  ue_config_mutex_.unlock();
+  lc_config_mutex_.lock();
   LOG4CXX_INFO(flog::rib, lc_config_.DebugString());
+  lc_config_mutex_.unlock();
 }
 
 std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
   std::string str;
+  eNB_config_mutex_.lock();
   str += eNB_config_.DebugString();
+  eNB_config_mutex_.unlock();
   str += "\n";
+  ue_config_mutex_.lock();
   str += ue_config_.DebugString();
+  ue_config_mutex_.unlock();
   str += "\n";
+  lc_config_mutex_.lock();
   str += lc_config_.DebugString();
+  lc_config_mutex_.unlock();
   str += "\n";
 
   return str;
@@ -230,17 +252,23 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const {
   std::string str;
   std::string json_buffer;
   str += "\"eNB\":";
+  eNB_config_mutex_.lock();
   google::protobuf::util::MessageToJsonString(eNB_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  eNB_config_mutex_.unlock();
   str += json_buffer;
   json_buffer.clear();
   str += ",";
   str += "\"UE\":";
+  ue_config_mutex_.lock();
   google::protobuf::util::MessageToJsonString(ue_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  ue_config_mutex_.unlock();
   str += json_buffer;
   json_buffer.clear();
   str += ",";
   str += "\"LC\":";
+  lc_config_mutex_.lock();
   google::protobuf::util::MessageToJsonString(lc_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  lc_config_mutex_.unlock();
   str += json_buffer;
   json_buffer.clear();
 

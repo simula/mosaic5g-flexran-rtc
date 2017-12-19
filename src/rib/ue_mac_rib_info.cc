@@ -54,7 +54,10 @@ void flexran::rib::ue_mac_rib_info::update_ul_sf_info(const protocol::flex_ul_in
 void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex_ue_stats_report& stats_report) {
   // Check the flags of the incoming report and copy only those elements that have been updated
   uint32_t flags = stats_report.flags();
-  
+
+  // lock the mutex for the duration of this method
+  std::lock_guard<std::mutex> guard(mac_stats_report_mutex_);
+
   if (protocol::FLUST_BSR & flags) {
     mac_stats_report_.clear_bsr();
     for (int i = 0; i < stats_report.bsr_size(); i++) {
@@ -104,7 +107,9 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
 
 void flexran::rib::ue_mac_rib_info::dump_stats() const {
   LOG4CXX_INFO(flog::rib, "Rnti: " << rnti_);
+  mac_stats_report_mutex_.lock();
   LOG4CXX_INFO(flog::rib, mac_stats_report_.DebugString());
+  mac_stats_report_mutex_.unlock();
   LOG4CXX_INFO(flog::rib, "Harq status");
   std::ostringstream oss;
   for (int i = 0; i < 8; i++) {
@@ -130,7 +135,9 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {
   str += "Rnti: ";
   str += std::to_string(rnti_);
   str += "\n";
+  mac_stats_report_mutex_.lock();
   str += mac_stats_report_.DebugString();
+  mac_stats_report_mutex_.unlock();
   str += "\n";
   str += "Harq status";
   str += "\n";
@@ -168,7 +175,9 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_json_string() const {
   str += std::to_string(rnti_);
   str += ",";
   str += "\"mac_stats\":";
+  mac_stats_report_mutex_.lock();
   google::protobuf::util::MessageToJsonString(mac_stats_report_, &json_buffer, google::protobuf::util::JsonPrintOptions());
+  mac_stats_report_mutex_.unlock();
   str += json_buffer;
   json_buffer.clear();
   str += ",";

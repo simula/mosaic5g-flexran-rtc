@@ -25,6 +25,7 @@
 #define UE_MAC_RIB_INFO_H_
 
 #include <cstdint>
+#include <mutex>
 
 #include "rib_common.h"
 #include "flexran.pb.h"
@@ -61,7 +62,8 @@ namespace flexran {
      std::string dump_stats_to_string() const;
 
      std::string dump_stats_to_json_string() const;
-     
+
+     //! Access is only safe when the RIB is not active, i.e. within apps
      protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
      
      uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) {
@@ -96,7 +98,9 @@ namespace flexran {
      rnti_t rnti_;
      
      protocol::flex_ue_stats_report mac_stats_report_;
-     
+     mutable std::mutex mac_stats_report_mutex_;
+
+     // TODO this could/should be protected with mutexes, too
      // SF info
      uint8_t harq_stats_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
      bool active_harq_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];

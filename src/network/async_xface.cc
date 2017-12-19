@@ -30,6 +30,10 @@ void flexran::network::async_xface::run() {
   establish_xface();
 }
 
+void flexran::network::async_xface::end(){
+  io_service.stop();
+}
+
 void flexran::network::async_xface::establish_xface() {
   manager_.reset(new connection_manager(io_service, endpoint_, *this));
   work_ptr_.reset(new boost::asio::io_service::work(io_service));

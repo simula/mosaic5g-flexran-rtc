@@ -41,6 +41,7 @@ namespace flexran {
     async_xface(int port): rt_task(Policy::FIFO), endpoint_(boost::asio::ip::tcp::v4(), port), port_(port)  {}
       
       void run();
+      void end();
       
       void establish_xface();
       

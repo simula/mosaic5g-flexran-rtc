@@ -24,10 +24,16 @@
 #include "rt_task.h"
 #include <iostream>
 #include "flexran_log.h"
+#include "rt_controller_common.h"
 
 flexran::core::rt::rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
 #ifdef LOWLATENCY
   set_scheduling_policy(pol, runtime, deadline, period);
+#else
+  _unused(pol);
+  _unused(runtime);
+  _unused(deadline);
+  _unused(period);
 #endif
 }
 

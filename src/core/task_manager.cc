@@ -28,6 +28,8 @@
 #include "task_manager.h"
 #include "flexran_log.h"
 
+extern std::atomic_bool g_exit_controller;
+
 flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
   : rt_task(Policy::FIFO), r_updater_(r_updater) {
   struct itimerspec its;
@@ -52,7 +54,7 @@ void flexran::core::task_manager::run() {
 void flexran::core::task_manager::manage_rt_tasks() {
   std::thread running_apps[100];
   
-  while (true) {
+  while (!g_exit_controller) {
     // First run the RIB updater for 0.2 ms and wait to finish
     std::thread rib_updater_thread(&flexran::rib::rib_updater::execute_task, &r_updater_);
     if (rib_updater_thread.joinable()) {

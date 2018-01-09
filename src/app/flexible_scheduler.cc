@@ -38,7 +38,7 @@
 
 int32_t flexran::app::scheduler::flexible_scheduler::tpc_accumulated = 0;
 
-void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
+void flexran::app::scheduler::flexible_scheduler::periodic_task() {
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
   

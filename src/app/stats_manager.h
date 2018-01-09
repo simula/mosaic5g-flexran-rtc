@@ -41,7 +41,7 @@ namespace flexran {
       stats_manager(flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
 	: periodic_component(rib, rm) {}
 	
-	void run_periodic_task();
+	void periodic_task();
 
 	std::string all_stats_to_string();
 

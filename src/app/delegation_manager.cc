@@ -28,7 +28,7 @@
 #include "delegation_manager.h"
 
 // Example app for using control delegation
-void flexran::app::management::delegation_manager::run_periodic_task() {
+void flexran::app::management::delegation_manager::periodic_task() {
   
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());

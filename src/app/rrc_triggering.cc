@@ -32,7 +32,7 @@
 #include "rib_common.h"
 
 
-void flexran::app::rrc::rrc_triggering::run_periodic_task() {
+void flexran::app::rrc::rrc_triggering::periodic_task() {
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 

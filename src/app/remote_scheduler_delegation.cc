@@ -65,7 +65,7 @@ void delegate_control(int agent_id, const flexran::core::requests_manager& req_m
   req_manager_.send_message(agent_id, d_message);
 }
 
-void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
+void flexran::app::scheduler::remote_scheduler_delegation::periodic_task() {
 
   rib::frame_t target_frame;
   rib::subframe_t target_subframe;

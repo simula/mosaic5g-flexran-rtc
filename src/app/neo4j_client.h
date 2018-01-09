@@ -58,7 +58,7 @@ namespace flexran {
 
 	void create_neo4j_graph();
     
-  void run_periodic_task();	
+        void periodic_task();
 
     // void neo4j_register();
 

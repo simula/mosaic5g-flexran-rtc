@@ -44,7 +44,7 @@ namespace flexran {
             ms_counter(1),
             last_now(std::chrono::steady_clock::now()) {}
 
-        void run_periodic_task();
+        void periodic_task();
 
       private:
         int ms_counter;

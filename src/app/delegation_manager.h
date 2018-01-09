@@ -40,7 +40,7 @@ namespace flexran {
 	delegation_manager(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm), delegation_steps_{false} {}
 
-	void run_periodic_task();
+	void periodic_task();
 
 	void push_code(int agent_id, std::string function_name, std::string lib_name);
 

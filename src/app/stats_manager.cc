@@ -28,7 +28,7 @@
 
 #include "flexran_log.h"
 
-void flexran::app::stats::stats_manager::run_periodic_task() {
+void flexran::app::stats::stats_manager::periodic_task() {
 
   // Simply request stats for any registered eNB and print them
   std::set<int> current_agents = rib_.get_available_agents();

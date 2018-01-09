@@ -25,7 +25,7 @@
 #include "enb_rib_info.h"
 #include "flexran_log.h"
 
-void flexran::app::management::rib_management::run_periodic_task()
+void flexran::app::management::rib_management::periodic_task()
 {
   // only execute every second
   ms_counter++;

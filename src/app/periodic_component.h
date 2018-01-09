@@ -37,9 +37,9 @@ namespace flexran {
     periodic_component(rib::Rib& rib, const core::requests_manager& rm)
       : component(rib, rm) {}
   
-      virtual void run_periodic_task() = 0;
+      virtual void periodic_task() = 0;
       
-      void run_app() { run_periodic_task(); }
+      void run_app();
       
     };
 

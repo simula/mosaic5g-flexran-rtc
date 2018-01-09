@@ -33,7 +33,7 @@
 
 int32_t flexran::app::scheduler::remote_scheduler_eicic::tpc_accumulated = 0;
 
-void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
+void flexran::app::scheduler::remote_scheduler_eicic::periodic_task() {
 
   rib::frame_t target_frame;
   rib::subframe_t target_subframe;

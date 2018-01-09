@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 
-void flexran::app::management::neo4j_client::run_periodic_task() {
+void flexran::app::management::neo4j_client::periodic_task() {
 
 
 if (y == 0){

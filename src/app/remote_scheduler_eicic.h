@@ -43,7 +43,7 @@ namespace flexran {
       remote_scheduler_eicic(rib::Rib& rib, const core::requests_manager& rm)
 	: periodic_component(rib, rm) {}
 	
-	void run_periodic_task();
+	void periodic_task();
 	
 	static int32_t tpc_accumulated;
 	

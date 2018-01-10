@@ -24,6 +24,8 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
+#include <boost/thread/barrier.hpp>
+
 #include "rt_task.h"
 #include "rib.h"
 #include "requests_manager.h"
@@ -37,15 +39,17 @@ namespace flexran {
   
     component(rib::Rib& rib, const core::requests_manager& rm)
       : rt_task(Policy::DEADLINE, 8 * 100 * 1000, 8 * 100 * 1000, 1000 * 1000), rib_(rib), req_manager_(rm) {}
-				
-		
-		
+
+      //! the barrier is for synchronization purposes. The task manager uses
+      //  this to inform apps when they can run.
+      void set_app_sync_barrier(std::shared_ptr<boost::barrier> barrier) { app_sync_barrier_ = barrier; }
 
       virtual void run_app() = 0;
 
     protected:
       const rib::Rib& rib_;
       const core::requests_manager& req_manager_;
+      std::shared_ptr<boost::barrier> app_sync_barrier_;
   
     private:
       

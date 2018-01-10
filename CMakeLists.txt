@@ -205,6 +205,7 @@ set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
 include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
+  ${RT_CONTROLLER_APP_DIR}/periodic_component.cc
  ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc

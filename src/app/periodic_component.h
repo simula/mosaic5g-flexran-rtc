@@ -24,6 +24,8 @@
 #ifndef PERIODIC_COMPONENT_H_
 #define PERIODIC_COMPONENT_H_
 
+#include <boost/thread/barrier.hpp>
+
 #include "component.h"
 
 namespace flexran {
@@ -36,10 +38,9 @@ namespace flexran {
       
     periodic_component(rib::Rib& rib, const core::requests_manager& rm)
       : component(rib, rm) {}
-  
-      virtual void periodic_task() = 0;
-      
+
       void run_app();
+      virtual void periodic_task() = 0;
       
     };
 

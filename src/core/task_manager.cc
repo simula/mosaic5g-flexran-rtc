@@ -21,9 +21,11 @@
    SOFTWARE.
 */
 
+#include <vector>
 #include <thread>
 #include <unistd.h>
 #include <iostream>
+#include <boost/thread/barrier.hpp>
 
 #include "task_manager.h"
 #include "flexran_log.h"
@@ -52,26 +54,30 @@ void flexran::core::task_manager::run() {
 }
 
 void flexran::core::task_manager::manage_rt_tasks() {
-  std::thread running_apps[100];
+  // create a barrier for all apps plus the task manager
+  std::shared_ptr<boost::barrier> app_sync_barrier = std::make_shared<boost::barrier>(apps_.size() + 1);
+  std::vector<std::thread> running_apps;
+  for (auto& app: apps_) {
+    app->set_app_sync_barrier(app_sync_barrier);
+    running_apps.push_back(std::thread(&flexran::app::component::execute_task, app));
+  }
   
   while (!g_exit_controller) {
     // First run the RIB updater for 0.2 ms and wait to finish
-    std::thread rib_updater_thread(&flexran::rib::rib_updater::execute_task, &r_updater_);
-    if (rib_updater_thread.joinable()) {
-      rib_updater_thread.join();
-    }
+    // TODO change priority/compare with priority of task_manager
+    r_updater_.run();
 
     // Then spawn any registered application and wait for them to finish
-    int i = 0;
-    for(auto app : apps_) {
-      running_apps[i] = std::thread(&flexran::app::component::execute_task, app);
-      i++;
-    }
-    for (int j = 0; j < i; j++) {
-      running_apps[j].join();
-    }
+    app_sync_barrier->wait();
+    app_sync_barrier->wait();
+
     wait_for_cycle();
   }
+
+  // release all apps
+  app_sync_barrier->count_down_and_wait();
+  for (auto& thread: running_apps)
+    thread.join();
 }
 
 // Warning: Not thread safe for the moment

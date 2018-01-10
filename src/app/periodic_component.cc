@@ -25,12 +25,12 @@
 
 extern std::atomic_bool g_exit_controller;
 
-flexran::app::periodic_component::run_app()
+void flexran::app::periodic_component::run_app()
 {
   while (true) {
-    BARRIER;
+    app_sync_barrier_->wait();
     if (g_exit_controller) break;
     periodic_task();
-    BARRIER;
+    app_sync_barrier_->wait();
   }
 }

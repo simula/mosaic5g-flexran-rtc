@@ -48,6 +48,13 @@ if(NEO4J_SUPPORT)
 add_definitions(-DNEO4J_SUPPORT)
 endif()
 
+# Add Profiling support
+option(PROFILE "Enable profiling of task_manager" OFF)
+
+if(PROFILE)
+  add_definitions(-DPROFILE)
+endif()
+
 # Base directories
 set(RT_CONTROLLER_DIR src)
 set(RT_CONTROLLER_BIN_DIR build)

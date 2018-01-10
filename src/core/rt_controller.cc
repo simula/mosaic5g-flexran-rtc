@@ -72,6 +72,10 @@
 
 std::atomic_bool g_exit_controller{false};
 
+#ifdef PROFILE
+std::atomic_bool g_startprof{false};
+#endif
+
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
@@ -139,6 +143,10 @@ int main(int argc, char* argv[]) {
     // Initialize the logger with debugging properties
     flexran_log::PropertyConfigurator::configure(path + "/log_config/debug_log");
   }
+
+#ifdef PROFILE
+  LOG4CXX_WARN(flog::core, "Compiled with profiling support");
+#endif
     
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
 
@@ -256,6 +264,9 @@ int main(int argc, char* argv[]) {
   sigemptyset(&sigmask);
   sigaddset(&sigmask, SIGINT);
   sigaddset(&sigmask, SIGUSR1);
+#ifdef PROFILE
+  sigaddset(&sigmask, SIGUSR2);
+#endif
   sigaddset(&sigmask, SIGTERM);
   pthread_sigmask(SIG_SETMASK, &sigmask, NULL);
   while (!g_exit_controller) {
@@ -267,6 +278,12 @@ int main(int argc, char* argv[]) {
     if (sig == SIGINT || sig == SIGUSR1 || sig == SIGTERM) {
       g_exit_controller = true;
     }
+#ifdef PROFILE
+    if (sig == SIGUSR2) {
+      LOG4CXX_WARN(flog::core, "start profiling");
+      g_startprof = true;
+    }
+#endif
   }
 
   if (task_manager_thread.joinable())

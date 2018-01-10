@@ -32,6 +32,14 @@
 
 extern std::atomic_bool g_exit_controller;
 
+#ifdef PROFILE
+#include <chrono>
+#include <fstream>
+#include <sstream>
+
+extern std::atomic_bool g_startprof;
+#endif
+
 flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
   : rt_task(Policy::FIFO, 80), r_updater_(r_updater) {
   struct itimerspec its;
@@ -61,18 +69,55 @@ void flexran::core::task_manager::manage_rt_tasks() {
     app->set_app_sync_barrier(app_sync_barrier);
     running_apps.push_back(std::thread(&flexran::app::component::execute_task, app));
   }
-  
+
+#ifdef PROFILE
+  std::chrono::steady_clock::time_point loop_start, app_start;
+  std::chrono::duration<float, std::micro> rib_dur, app_dur, loop_dur, inter_dur;
+
+  std::stringstream ss;
+  int rounds = 30000;
+#endif
+
   while (!g_exit_controller) {
-    // First run the RIB updater for 0.2 ms and wait to finish
-    // TODO change priority/compare with priority of task_manager
+#ifdef PROFILE
+    inter_dur = std::chrono::steady_clock::now() - loop_start;
+    loop_start = std::chrono::steady_clock::now();
+#endif
+
+    // First run the RIB updater
     r_updater_.run();
+
+#ifdef PROFILE
+    app_start = std::chrono::steady_clock::now();
+    rib_dur = app_start - loop_start;
+#endif
 
     // Then spawn any registered application and wait for them to finish.
     app_sync_barrier->wait();
     app_sync_barrier->wait();
 
+#ifdef PROFILE
+    app_dur = std::chrono::steady_clock::now() - app_start;
+    loop_dur = std::chrono::steady_clock::now() - loop_start;
+    if (g_startprof && rounds > 0) {
+      ss << inter_dur.count() << "\t" << loop_dur.count() << "\t"
+         << rib_dur.count() << "\t" << app_dur.count() << "\n";
+      rounds--;
+      if (rounds == 0)
+        LOG4CXX_WARN(flog::core, "DONE");
+    }
+#endif
     wait_for_cycle();
   }
+
+#ifdef PROFILE
+  std::ofstream fstat;
+  std::string fn = "new." + std::to_string(apps_.size()) + ".dat";
+  LOG4CXX_WARN(flog::core, "writing to file " << fn);
+  fstat.open(fn);
+  fstat << ss.rdbuf();
+  fstat.close();
+#endif
 
   // release all apps
   for (auto& app: apps_)

@@ -23,13 +23,11 @@
 
 #include "periodic_component.h"
 
-extern std::atomic_bool g_exit_controller;
-
 void flexran::app::periodic_component::run_app()
 {
   while (true) {
     app_sync_barrier_->wait();
-    if (g_exit_controller) break;
+    if (_exit_app) break;
     periodic_task();
     app_sync_barrier_->wait();
   }

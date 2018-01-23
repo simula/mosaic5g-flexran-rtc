@@ -43,6 +43,10 @@ namespace flexran {
       //! the barrier is for synchronization purposes. The task manager uses
       //  this to inform apps when they can run.
       void set_app_sync_barrier(std::shared_ptr<boost::barrier> barrier) { app_sync_barrier_ = barrier; }
+      //! this method is for synchronization purposes. The task manager uses
+      //  this to inform apps that they should finish after the the next call
+      //  to app_sync_barrier_.
+      void inform_exit() { _exit_app = true; }
 
       virtual void run_app() = 0;
 
@@ -50,6 +54,7 @@ namespace flexran {
       const rib::Rib& rib_;
       const core::requests_manager& req_manager_;
       std::shared_ptr<boost::barrier> app_sync_barrier_;
+      bool _exit_app = false;
   
     private:
       

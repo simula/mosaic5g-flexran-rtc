@@ -67,7 +67,7 @@ void flexran::core::task_manager::manage_rt_tasks() {
     // TODO change priority/compare with priority of task_manager
     r_updater_.run();
 
-    // Then spawn any registered application and wait for them to finish
+    // Then spawn any registered application and wait for them to finish.
     app_sync_barrier->wait();
     app_sync_barrier->wait();
 
@@ -75,7 +75,9 @@ void flexran::core::task_manager::manage_rt_tasks() {
   }
 
   // release all apps
-  app_sync_barrier->count_down_and_wait();
+  for (auto& app: apps_)
+    app->inform_exit();
+  app_sync_barrier->wait();
   for (auto& thread: running_apps)
     thread.join();
 }

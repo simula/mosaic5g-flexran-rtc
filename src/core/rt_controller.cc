@@ -253,8 +253,10 @@ int main(int argc, char* argv[]) {
 #endif
 
   // handle SIGINT and SIGUSR1 as end signals
+  sigemptyset(&sigmask);
   sigaddset(&sigmask, SIGINT);
   sigaddset(&sigmask, SIGUSR1);
+  sigaddset(&sigmask, SIGTERM);
   pthread_sigmask(SIG_SETMASK, &sigmask, NULL);
   while (!g_exit_controller) {
     rc = sigwait(&sigmask, &sig);
@@ -262,8 +264,9 @@ int main(int argc, char* argv[]) {
       LOG4CXX_FATAL(flog::core, "sigwait() error code " << rc << ". Exiting");
       exit(rc);
     }
-    if (sig == SIGINT)
+    if (sig == SIGINT || sig == SIGUSR1 || sig == SIGTERM) {
       g_exit_controller = true;
+    }
   }
 
   if (task_manager_thread.joinable())

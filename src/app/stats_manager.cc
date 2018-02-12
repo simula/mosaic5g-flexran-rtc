@@ -56,6 +56,8 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       ue_flags |= protocol::FLUST_UL_CQI;
       ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
       ue_flags |= protocol::FLUST_PDCP_STATS;
+      ue_flags |= protocol::FLUST_MON_APP;
+
       
       complete_stats_request->set_ue_report_flags(ue_flags);
       int cell_flags = 0;

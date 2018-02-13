@@ -103,8 +103,8 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
    mac_stats_report_.mutable_rrc_measurements()->CopyFrom(stats_report.rrc_measurements());
   }
 
-  if (protocol::FLUST_MON_APP & flags) {
-   mac_stats_report_.mutable_mon_app()->CopyFrom(stats_report.mon_app());
+  if (protocol::FLUST_MAC_STATS & flags) {
+   mac_stats_report_.mutable_mac_stats()->CopyFrom(stats_report.mac_stats());
   }
 
 }

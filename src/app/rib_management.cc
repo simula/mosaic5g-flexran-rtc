@@ -35,6 +35,7 @@ void flexran::app::management::rib_management::run_periodic_task()
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
   for (int agent_id: rib_.get_available_agents()) {
     send_enb_config_request(agent_id);
+    send_ue_config_request(agent_id);
     std::chrono::duration<float> inactive = now - rib_.get_agent(agent_id)->last_active();
     /* inactive for longer than 1.5s */
     if (inactive.count() >= 1.5) {
@@ -66,5 +67,22 @@ void flexran::app::management::rib_management::send_enb_config_request(int agent
   protocol::flexran_message out_message1;
   out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
   out_message1.set_allocated_enb_config_request_msg(enb_config_request_msg);
+  req_manager_.send_message(agent_id, out_message1);
+}
+
+void flexran::app::management::rib_management::send_ue_config_request(int agent_id)
+{
+  // request eNB config file
+  protocol::flex_header *header1(new protocol::flex_header);
+  header1->set_type(protocol::FLPT_GET_UE_CONFIG_REQUEST);
+  header1->set_version(0);
+  header1->set_xid(0);
+
+  protocol::flex_ue_config_request *ue_config_request_msg(new protocol::flex_ue_config_request);
+  ue_config_request_msg->set_allocated_header(header1);
+
+  protocol::flexran_message out_message1;
+  out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
+  out_message1.set_allocated_ue_config_request_msg(ue_config_request_msg);
   req_manager_.send_message(agent_id, out_message1);
 }

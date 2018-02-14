@@ -52,6 +52,7 @@ namespace flexran {
         std::set<int> inactive_agents;
 
         void send_enb_config_request(int agent_id);
+        void send_ue_config_request(int agent_id);
       };
     }
   }

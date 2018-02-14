@@ -163,7 +163,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
   _unused(echo_reply_msg);  
 
   if (rib_.has_eNB_config_entry(agent_id)) {
-    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received echo reply msg");
+    LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received echo reply msg");
     rib_.update_liveness(agent_id);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent "
@@ -200,7 +200,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_ue_config_reply& ue_config_reply_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
-    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received a UE config reply msg");
+    LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received a UE config reply msg");
     rib_.ue_config_update(agent_id, ue_config_reply_msg);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent "
@@ -212,7 +212,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_lc_config_reply& lc_config_reply_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
-    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": received an LC config reply msg");
+    LOG4CXX_DEBUG(flog::rib, "Agent " << agent_id << ": received an LC config reply msg");
     rib_.lc_config_update(agent_id, lc_config_reply_msg);
   } else {
     LOG4CXX_WARN(flog::rib, "handle_message(): unknown agent "

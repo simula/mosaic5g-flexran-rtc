@@ -297,6 +297,7 @@ message flex_mac_stats {
     optional uint32 total_tbs_dl = 19;
     optional uint32 total_tbs_ul = 20;
     repeated flex_mac_sdus_dl mac_sdus_dl = 21;
+    optional uint32 harq_round = 22;
 }
 
 message flex_mac_sdus_dl {

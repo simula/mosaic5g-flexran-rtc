@@ -22,6 +22,7 @@
 */
 
 #include "rib.h"
+#include <algorithm>
 
 void flexran::rib::Rib::add_pending_agent(int agent_id) {
   pending_agents_.insert(agent_id);
@@ -167,21 +168,30 @@ std::string flexran::rib::Rib::dump_mac_stats_to_string() const {
   return str;
 }
 
-std::string flexran::rib::Rib::dump_mac_stats_to_json_string() const {
+std::string flexran::rib::Rib::dump_mac_stats_to_json_string() const
+{
+  std::vector<std::string> mac_stats;
+  mac_stats.reserve(eNB_configs_.size());
+  std::transform(eNB_configs_.begin(), eNB_configs_.end(), std::back_inserter(mac_stats),
+      [] (const std::pair<rnti_t, std::shared_ptr<enb_rib_info>>& enb_config)
+      { return enb_config.second->dump_mac_stats_to_json_string(); }
+  );
 
+  return format_mac_stats_to_json(mac_stats);
+}
+
+std::string flexran::rib::Rib::format_mac_stats_to_json(
+    const std::vector<std::string>& mac_stats_json)
+{
   std::string str;
-  bool first = true;
-
   str += "\"mac_stats\":[";
-  for (auto enb_config : eNB_configs_) {
-    if(!first) str += ",";
+  for (auto it = mac_stats_json.begin(); it != mac_stats_json.end(); it++) {
+    if (it != mac_stats_json.begin()) str += ",";
     str += "{";
-    str += enb_config.second->dump_mac_stats_to_json_string();
+    str += *it;
     str += "}";
-    first = false;
   }
   str += "]";
-
   return str;
 }
 
@@ -203,21 +213,29 @@ std::string flexran::rib::Rib::dump_enb_configurations_to_string() const {
   return str;
 }
 
-std::string flexran::rib::Rib::dump_enb_configurations_to_json_string() const {
+std::string flexran::rib::Rib::dump_enb_configurations_to_json_string() const
+{
+  std::vector<std::string> enb_configurations;
+  enb_configurations.reserve(eNB_configs_.size());
+  std::transform(eNB_configs_.begin(), eNB_configs_.end(), std::back_inserter(enb_configurations),
+      [] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
+      { return enb_config.second->dump_configs_to_json_string(); }
+  );
 
-  std::string str;
-  bool first = true;
-
-  str += "\"eNB_config\":[";
-  for (auto eNB_config : eNB_configs_) {
-    if(!first) str += ",";
-    str += "{";
-    str += eNB_config.second->dump_configs_to_json_string();
-    str += "}";
-    first = false;
-  }
-  str += "]";
-
-  return str;
+  return format_enb_configurations_to_json(enb_configurations);
 }
 
+std::string flexran::rib::Rib::format_enb_configurations_to_json(
+    const std::vector<std::string>& enb_configurations_json)
+{
+  std::string str;
+  str += "\"eNB_config\":[";
+  for (auto it = enb_configurations_json.begin(); it != enb_configurations_json.end(); it++) {
+    if (it != enb_configurations_json.begin()) str += ",";
+    str += "{";
+    str += *it;
+    str += "}";
+  }
+  str += "]";
+  return str;
+}

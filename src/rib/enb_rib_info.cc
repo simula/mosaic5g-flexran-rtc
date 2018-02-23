@@ -22,7 +22,7 @@
 */
 
 #include <iostream>
-
+#include <algorithm>
 
 
 #include <google/protobuf/util/json_util.h>
@@ -201,21 +201,31 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_string() const {
   return str;
 }
 
-std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const {
-  std::string str;
-  bool first = true;
+std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const
+{
+  std::vector<std::string> ue_mac_stats;
+  ue_mac_stats.reserve(ue_mac_info_.size());
+  std::transform(ue_mac_info_.begin(), ue_mac_info_.end(), std::back_inserter(ue_mac_stats),
+      [] (const std::pair<rnti_t, std::shared_ptr<ue_mac_rib_info>>& ue_stats)
+      { return ue_stats.second->dump_stats_to_json_string(); }
+  );
 
+  return format_mac_stats_to_json(agent_id_, ue_mac_stats);
+}
+
+std::string flexran::rib::enb_rib_info::format_mac_stats_to_json(int agent_id,
+    const std::vector<std::string>& ue_mac_stats_json)
+{
+  std::string str;
   str += "\"agent_id\":";
-  str += std::to_string(agent_id_);
+  str += std::to_string(agent_id);
   str += ",";
   str += "\"ue_mac_stats\":[";
-  for (auto ue_stats : ue_mac_info_) {
-    if(!first) str += ",";
-    str += ue_stats.second->dump_stats_to_json_string();
-    first = false;
+  for (auto it = ue_mac_stats_json.begin(); it != ue_mac_stats_json.end(); it++) {
+    if (it != ue_mac_stats_json.begin()) str += ",";
+    str += *it;
   }
   str += "]";
-
   return str;
 }
 
@@ -249,29 +259,36 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
   return str;
 }
 
-std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const {
-  std::string str;
-  std::string json_buffer;
-  str += "\"eNB\":";
-  eNB_config_mutex_.lock();
-  google::protobuf::util::MessageToJsonString(eNB_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
-  eNB_config_mutex_.unlock();
-  str += json_buffer;
-  json_buffer.clear();
-  str += ",";
-  str += "\"UE\":";
-  ue_config_mutex_.lock();
-  google::protobuf::util::MessageToJsonString(ue_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
-  ue_config_mutex_.unlock();
-  str += json_buffer;
-  json_buffer.clear();
-  str += ",";
-  str += "\"LC\":";
-  lc_config_mutex_.lock();
-  google::protobuf::util::MessageToJsonString(lc_config_, &json_buffer, google::protobuf::util::JsonPrintOptions());
-  lc_config_mutex_.unlock();
-  str += json_buffer;
-  json_buffer.clear();
+std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const
+{
+  std::string enb_config, ue_config, lc_config;
 
+  eNB_config_mutex_.lock();
+  google::protobuf::util::MessageToJsonString(eNB_config_, &enb_config, google::protobuf::util::JsonPrintOptions());
+  eNB_config_mutex_.unlock();
+
+  ue_config_mutex_.lock();
+  google::protobuf::util::MessageToJsonString(ue_config_, &ue_config, google::protobuf::util::JsonPrintOptions());
+  ue_config_mutex_.unlock();
+
+  lc_config_mutex_.lock();
+  google::protobuf::util::MessageToJsonString(lc_config_, &lc_config, google::protobuf::util::JsonPrintOptions());
+  lc_config_mutex_.unlock();
+
+  return format_configs_to_json(enb_config, ue_config, lc_config);
+}
+
+std::string flexran::rib::enb_rib_info::format_configs_to_json(
+    const std::string& eNB_config_json,
+    const std::string& ue_config_json,
+    const std::string& lc_config_json)
+{
+  std::string str;
+  str = "\"eNB\":";
+  str += eNB_config_json;
+  str += ",\"UE\":";
+  str += ue_config_json;
+  str += ",\"LC\":";
+  str += lc_config_json;
   return str;
 }

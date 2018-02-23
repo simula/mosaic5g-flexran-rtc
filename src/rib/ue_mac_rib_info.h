@@ -63,6 +63,10 @@ namespace flexran {
 
      std::string dump_stats_to_json_string() const;
 
+     static std::string format_stats_to_json(rnti_t rnti,
+                                             const std::string& mac_stats,
+                                             const std::vector<std::string>& harq);
+
      //! Access is only safe when the RIB is not active, i.e. within apps
      protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
      

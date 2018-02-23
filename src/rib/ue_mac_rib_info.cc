@@ -176,10 +176,10 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_json_string() const
   mac_stats_report_mutex_.lock();
   google::protobuf::util::MessageToJsonString(mac_stats_report_, &mac_stats, google::protobuf::util::JsonPrintOptions());
   mac_stats_report_mutex_.unlock();
-  std::vector<std::string> harq(8);
+  std::array<std::string, 8> harq;
 
   for (int i = 0; i < 8; i++) {
-    harq.emplace_back(harq_stats_[0][i][0] == protocol::FLHS_ACK ? "\"ACK\"" : "\"NACK\"");
+    harq[i] = harq_stats_[0][i][0] == protocol::FLHS_ACK ? "\"ACK\"" : "\"NACK\"";
   }
 
   return format_stats_to_json(rnti_, mac_stats, harq);
@@ -188,7 +188,7 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_json_string() const
 std::string flexran::rib::ue_mac_rib_info::format_stats_to_json(
     rnti_t rnti,
     const std::string& mac_stats,
-    const std::vector<std::string>& harq)
+    const std::array<std::string, 8>& harq)
 {
   std::string str;
   str  = "{";

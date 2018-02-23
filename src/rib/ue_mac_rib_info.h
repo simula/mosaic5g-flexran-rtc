@@ -30,6 +30,12 @@
 #include "rib_common.h"
 #include "flexran.pb.h"
 
+template <class T, size_t rows, size_t cols>
+using array2d = std::array<std::array<T, cols>, rows>;
+
+template <class T, size_t rows, size_t cols, size_t d>
+using array3d = std::array<std::array<std::array<T, d>, cols>, rows>;
+
 namespace flexran {
 
   namespace rib {
@@ -65,7 +71,7 @@ namespace flexran {
 
      static std::string format_stats_to_json(rnti_t rnti,
                                              const std::string& mac_stats,
-                                             const std::vector<std::string>& harq);
+                                             const std::array<std::string, 8>& harq);
 
      //! Access is only safe when the RIB is not active, i.e. within apps
      protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
@@ -74,6 +80,11 @@ namespace flexran {
        return harq_stats_[cell_id][harq_pid][0];
      }
      
+     //! Access is only safe when the RIB is not active, i.e. within apps
+     array3d<uint8_t, MAX_NUM_CC, MAX_NUM_HARQ, MAX_NUM_TB>& get_all_harq_stats() {
+       return harq_stats_;
+     }
+
      int get_next_available_harq(uint16_t cell_id) const {
        for (int i = 0; i < MAX_NUM_HARQ; i++) {
 	 if (active_harq_[cell_id][i][0] == true) {
@@ -106,10 +117,10 @@ namespace flexran {
 
      // TODO this could/should be protected with mutexes, too
      // SF info
-     uint8_t harq_stats_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
-     bool active_harq_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
-     uint8_t uplink_reception_stats_[MAX_NUM_CC];
-     uint8_t ul_reception_data_[MAX_NUM_CC][MAX_NUM_LC];
+     array3d<uint8_t, MAX_NUM_CC, MAX_NUM_HARQ, MAX_NUM_TB> harq_stats_;
+     array3d<bool, MAX_NUM_CC, MAX_NUM_HARQ, MAX_NUM_TB> active_harq_;
+     std::array<uint8_t, MAX_NUM_CC> uplink_reception_stats_;
+     array2d<uint8_t, MAX_NUM_CC, MAX_NUM_LC> ul_reception_data_;
      uint8_t tpc_;
     };
 

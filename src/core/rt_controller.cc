@@ -46,6 +46,7 @@
 #include "delegation_manager.h"
 #include "requests_manager.h"
 #include "rib_management.h"
+#include "recorder.h"
 
 #ifdef NEO4J_SUPPORT
 #include "neo4j_client.h"
@@ -59,6 +60,7 @@
 #include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
 #include "enb_sched_policy_calls.h"
+#include "recorder_calls.h"
 
 #endif
 
@@ -187,6 +189,10 @@ int main(int argc, char* argv[]) {
   // Manage Rib info (close abandoned connections...)
   std::shared_ptr<flexran::app::component> rib_management(new flexran::app::management::rib_management(rib, rm));
   tm.register_app(rib_management);
+
+  // Write statistics in JSON or binary form to file
+  std::shared_ptr<flexran::app::component> recorder(new flexran::app::log::recorder(rib, rm));
+  tm.register_app(recorder);
   
   /* More examples of developed applications are available in the commented section.
      WARNING: Some of them might still contain bugs or might be from previous versions of the controller. */
@@ -246,11 +252,14 @@ int main(int argc, char* argv[]) {
   flexran::north_api::flexible_sched_calls scheduler_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
 
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
+
+  flexran::north_api::recorder_calls recorder_calls(std::dynamic_pointer_cast<flexran::app::log::recorder>(recorder));
   
   //north_api.register_calls(rrc_calls);
   north_api.register_calls(policy_calls);
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);
+  north_api.register_calls(recorder_calls);
 
   // Start the call manager threaded. Once task_manager_thread and
   // networkThread return, north_api will be shut down too

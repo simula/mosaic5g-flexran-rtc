@@ -226,6 +226,7 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
   ${RT_CONTROLLER_APP_DIR}/rib_management.cc
+  ${RT_CONTROLLER_APP_DIR}/recorder.cc
 )
 
 if(NEO4J_SUPPORT)
@@ -253,7 +254,7 @@ set(NORTH_API_SRC
   ${RT_CONTROLLER_NORTH_API_DIR}/stats_manager_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/enb_sched_policy_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/rrc_triggering_calls.cc
-
+  ${RT_CONTROLLER_NORTH_API_DIR}/recorder_calls.cc
 )
 
 add_library(RT_CONTROLLER_NORTH_API_LIB

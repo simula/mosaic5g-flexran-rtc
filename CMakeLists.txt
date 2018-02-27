@@ -293,6 +293,17 @@ target_link_libraries(rt_controller
   ${PROTOBUF_LIBRARY}
 )
 
+add_executable(parse-bd tools/parse-bd.cc)
+target_link_libraries(parse-bd
+  RT_CONTROLLER_APP_LIB
+  RT_CONTROLLER_RIB_LIB
+  ${FLPT_MSG_LIB}
+  ${Log4CXX_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${PROTOBUF_LIBRARY}
+)
+
 if(REST_NORTHBOUND)
 
 target_link_libraries(rt_controller

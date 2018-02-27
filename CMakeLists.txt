@@ -13,7 +13,7 @@ endmacro(use_cxx11)
 use_cxx11()
 
 
-set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS} -O2")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wstrict-prototypes -fno-strict-aliasing ")
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3")

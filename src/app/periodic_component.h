@@ -39,6 +39,11 @@ namespace flexran {
     periodic_component(rib::Rib& rib, const core::requests_manager& rm)
       : component(rib, rm) {}
 
+    periodic_component(rib::Rib& rib, const core::requests_manager& rm,
+        Policy pol, sched_priority priority, sched_time runtime,
+        sched_time deadline, sched_time period)
+      : component(rib, rm, pol, priority, runtime, deadline, period) {}
+
       void run_app();
       virtual void periodic_task() = 0;
       

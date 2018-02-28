@@ -33,7 +33,7 @@
 extern std::atomic_bool g_exit_controller;
 
 flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
-  : rt_task(Policy::FIFO), r_updater_(r_updater) {
+  : rt_task(Policy::FIFO, 80), r_updater_(r_updater) {
   struct itimerspec its;
   
   sfd = timerfd_create(CLOCK_MONOTONIC, 0);

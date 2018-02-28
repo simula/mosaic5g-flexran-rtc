@@ -33,16 +33,11 @@ namespace flexran {
 
   namespace rib {
 
-    class rib_updater : public flexran::core::rt::rt_task {
+    class rib_updater {
 
     public:
-    rib_updater(flexran::network::async_xface& xface, Rib& storage)
-      : rt_task(Policy::DEADLINE, 2 * 100 * 1000, 2 * 100 * 1000, 1000 * 1000),
-	net_xface_(xface), rib_(storage), messages_to_check_(350) {} 
-      
-    rib_updater(flexran::network::async_xface& xface, Rib& storage, int n_msg_check)
-      : rt_task(Policy::DEADLINE, 2 * 100 * 1000, 2 * 100 * 1000, 1000 * 1000),
-	net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check) {}
+    rib_updater(flexran::network::async_xface& xface, Rib& storage, int n_msg_check = 350)
+      : net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check) {}
       
       void run();
       

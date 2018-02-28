@@ -27,12 +27,14 @@
 #include <linux/types.h>
 #include "rt_wrapper.h"
 
+typedef __u64 sched_time;
+typedef __u32 sched_priority;
+
 namespace flexran {
 
   namespace core {
 
     namespace rt {
-      typedef __u64 sched_time;
 
       class rt_task {
 	
@@ -48,7 +50,8 @@ namespace flexran {
 	
 #endif
   
-	rt_task(Policy pol, sched_time runtime = 0, sched_time deadline = 0, sched_time period = 0);
+	rt_task(Policy pol, sched_priority priority = 0, sched_time runtime = 0,
+            sched_time deadline = 0, sched_time period = 0);
 	
 	void execute_task();
 	
@@ -58,7 +61,8 @@ namespace flexran {
 	
 #ifdef LOWLATENCY
   
-	void set_scheduling_policy(Policy pol, sched_time runtime, sched_time deadline, sched_time period);
+	void set_scheduling_policy(Policy pol, sched_priority priority,
+            sched_time runtime, sched_time deadline, sched_time period);
   
 	struct sched_attr attr_;
 

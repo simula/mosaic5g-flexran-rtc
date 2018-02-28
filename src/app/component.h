@@ -36,9 +36,12 @@ namespace flexran {
 
     class component : public core::rt::rt_task {
     public:
-  
-    component(rib::Rib& rib, const core::requests_manager& rm)
-      : rt_task(Policy::DEADLINE, 8 * 100 * 1000, 8 * 100 * 1000, 1000 * 1000), rib_(rib), req_manager_(rm) {}
+
+    component(rib::Rib& rib, const core::requests_manager&rm,
+        Policy pol = Policy::RR, sched_priority priority = 20,
+        sched_time runtime = 0, sched_time deadline = 0, sched_time period = 0)
+      : rt_task(pol, priority, runtime, deadline, period),
+        rib_(rib), req_manager_(rm) {}
 
       //! the barrier is for synchronization purposes. The task manager uses
       //  this to inform apps when they can run.

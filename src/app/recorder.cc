@@ -160,17 +160,21 @@ flexran::app::log::agent_dump flexran::app::log::recorder::record_chunk(int agen
 void flexran::app::log::recorder::writer_method(std::unique_ptr<job_info> info,
     std::unique_ptr<std::vector<std::map<int, agent_dump>>> dump)
 {
+  uint64_t n;
   if (info->type == job_type::bin)
-    write_binary(*info, *dump);
+    n = write_binary(*info, *dump);
   else
-    write_json(*info, *dump);
+    n = write_json(*info, *dump);
 
+  std::chrono::duration<float, std::ratio<60l>> min = std::chrono::milliseconds(n);
+  LOG4CXX_INFO(flog::app, "recorder: " << n
+      << " objects persisted, corresponding to " << min.count() << " min");
   finished_jobs_.push_back(*info);
   info.release();
   dump.release();
 }
 
-void flexran::app::log::recorder::write_json(job_info info,
+uint64_t flexran::app::log::recorder::write_json(job_info info,
     const std::vector<std::map<int, agent_dump>>& dump)
 {
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -178,7 +182,7 @@ void flexran::app::log::recorder::write_json(job_info info,
   file.open(info.filename);
   if (!file.is_open()) {
     LOG4CXX_ERROR(flog::app, "recorder: cannot open file " << info.filename);
-    return;
+    return 0;
   }
   file << "[";
   for (auto it = dump.begin(); it != dump.end(); it++) {
@@ -190,6 +194,7 @@ void flexran::app::log::recorder::write_json(job_info info,
   std::chrono::duration<float, std::milli> dur = std::chrono::steady_clock::now() - start;
   LOG4CXX_INFO(flog::app, "recorder: wrote JSON to file " << info.filename
       << " (in " << dur.count() << " ms)");
+  return std::distance(dump.begin(), dump.end());
 }
 
 void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
@@ -268,7 +273,7 @@ void flexran::app::log::recorder::write_json_ue_configs(std::ostream& s,
   }
 }
 
-void flexran::app::log::recorder::write_binary(job_info info,
+uint64_t flexran::app::log::recorder::write_binary(job_info info,
     const std::vector<std::map<int, agent_dump>>& dump)
 {
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -276,7 +281,7 @@ void flexran::app::log::recorder::write_binary(job_info info,
   file.open(info.filename, std::ios::binary);
   if (!file.is_open()) {
     LOG4CXX_ERROR(flog::app, "recorder: cannot open file " << info.filename);
-    return;
+    return 0;
   }
   uint64_t n = std::distance(dump.begin(), dump.end());
   file.write(reinterpret_cast<const char *>(&n), sizeof(uint64_t));
@@ -304,6 +309,8 @@ void flexran::app::log::recorder::write_binary(job_info info,
 
   info.filename += ".orig";
   write_json(info, dump);*/
+
+  return n;
 }
 
 void flexran::app::log::recorder::write_binary_chunk(std::ostream& s,

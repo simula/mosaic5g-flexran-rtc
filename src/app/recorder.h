@@ -95,13 +95,13 @@ namespace flexran {
         /**
          * method for serializing to JSON
          */
-        static void write_json(job_info info,
+        static uint64_t write_json(job_info info,
             const std::vector<std::map<int, agent_dump>>& dump);
 
         /**
          * method for serializing to binary (custom)
          */
-        static void write_binary(job_info info,
+        static uint64_t write_binary(job_info info,
             const std::vector<std::map<int, agent_dump>>& dump);
 
         /**

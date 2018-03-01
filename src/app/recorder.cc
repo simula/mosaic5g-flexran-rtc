@@ -119,7 +119,8 @@ void flexran::app::log::recorder::periodic_task()
   LOG4CXX_TRACE(flog::app, "write_json_chunk() at " << ms_counter_ << ", duration " << dur.count() << "us");
 
   if (ms_counter_ == current_job_->ms_end - 1) {
-    std::thread writer(&flexran::app::log::recorder::writer_method, this, current_job_, dump_);
+    std::thread writer(&flexran::app::log::recorder::writer_method, this,
+        std::move(current_job_), std::move(dump_));
     writer.detach();
     current_job_.reset();
   }
@@ -150,19 +151,21 @@ flexran::app::log::agent_dump flexran::app::log::recorder::record_chunk(int agen
   };
 }
 
-void flexran::app::log::recorder::writer_method(std::shared_ptr<job_info> info,
-    std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump)
+void flexran::app::log::recorder::writer_method(std::unique_ptr<job_info> info,
+    std::unique_ptr<std::vector<std::map<int, agent_dump>>> dump)
 {
   if (info->type == job_type::bin)
-    write_binary(*info, dump);
+    write_binary(*info, *dump);
   else
-    write_json(*info, dump);
+    write_json(*info, *dump);
 
   finished_jobs_.push_back(*info);
+  info.release();
+  dump.release();
 }
 
 void flexran::app::log::recorder::write_json(job_info info,
-    std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump)
+    const std::vector<std::map<int, agent_dump>>& dump)
 {
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   std::ofstream file;
@@ -172,8 +175,8 @@ void flexran::app::log::recorder::write_json(job_info info,
     return;
   }
   file << "[";
-  for (auto it = dump->begin(); it != dump->end(); it++) {
-    if (it != dump->begin()) file << ",";
+  for (auto it = dump.begin(); it != dump.end(); it++) {
+    if (it != dump.begin()) file << ",";
     write_json_chunk(file, info.type, *it);
   }
   file << "]";
@@ -260,7 +263,7 @@ void flexran::app::log::recorder::write_json_ue_configs(std::ostream& s,
 }
 
 void flexran::app::log::recorder::write_binary(job_info info,
-    std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump)
+    const std::vector<std::map<int, agent_dump>>& dump)
 {
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   std::ofstream file;
@@ -269,9 +272,9 @@ void flexran::app::log::recorder::write_binary(job_info info,
     LOG4CXX_ERROR(flog::app, "recorder: cannot open file " << info.filename);
     return;
   }
-  uint16_t n = dump->end() - dump->begin();
+  uint16_t n = dump.end() - dump.begin();
   file.write(reinterpret_cast<const char *>(&n), sizeof(uint16_t));
-  for (auto it = dump->begin(); it != dump->end(); it++) {
+  for (auto it = dump.begin(); it != dump.end(); it++) {
     write_binary_chunk(file, *it);
   }
   file.close();
@@ -342,25 +345,23 @@ void flexran::app::log::recorder::write_binary_ue_configs(std::ostream& s,
   }
 }
 
-std::shared_ptr<std::vector<std::map<int, flexran::app::log::agent_dump>>>
+std::vector<std::map<int, flexran::app::log::agent_dump>>
 flexran::app::log::recorder::read_binary(std::string filename)
 {
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+  std::vector<std::map<int, flexran::app::log::agent_dump>> dump;
   std::ifstream file;
   file.open(filename, std::ios::binary);
   if (!file.is_open()) {
     LOG4CXX_ERROR(flog::app, "recorder: cannot open file " << filename);
-    return nullptr;
+    return dump;
   }
 
   uint16_t n;
   file.read(reinterpret_cast<char *>(&n), sizeof(uint16_t));
 
-  std::shared_ptr<std::vector<std::map<int, flexran::app::log::agent_dump>>>
-    dump(new std::vector<std::map<int, flexran::app::log::agent_dump>>);
-
   for (uint16_t i = 0; i < n; i++) {
-    dump->push_back(read_binary_chunk(file));
+    dump.push_back(read_binary_chunk(file));
   }
   file.close();
   std::chrono::duration<float, std::milli> dur = std::chrono::steady_clock::now() - start;

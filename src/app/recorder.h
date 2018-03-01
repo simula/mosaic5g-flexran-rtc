@@ -96,17 +96,18 @@ namespace flexran {
          * method for serializing to JSON
          */
         static void write_json(job_info info,
-            std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump);
+            const std::vector<std::map<int, agent_dump>>& dump);
 
         /**
          * method for serializing to binary (custom)
          */
-        static void write_binary(job_info info, std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump);
+        static void write_binary(job_info info,
+            const std::vector<std::map<int, agent_dump>>& dump);
 
         /**
          * methods for deserializing from binary (custom)
          */
-        static std::shared_ptr<std::vector<std::map<int, agent_dump>>> read_binary(std::string filename);
+        static std::vector<std::map<int, agent_dump>> read_binary(std::string filename);
 
       private:
         uint64_t ms_counter_;
@@ -114,8 +115,8 @@ namespace flexran {
         /* list of finished jobs that can be accessed via the NB REST API */
         std::vector<job_info> finished_jobs_;
 
-        std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump_;
-        std::shared_ptr<job_info> current_job_;
+        std::unique_ptr<std::vector<std::map<int, agent_dump>>> dump_;
+        std::unique_ptr<job_info> current_job_;
 
         agent_dump record_chunk(int agent_id);
 
@@ -123,8 +124,8 @@ namespace flexran {
          * method for writer thread, passes to right (JSON/binary)
          * serialization method and moves job to writing_jobs_ after work.
          */
-        void writer_method(std::shared_ptr<job_info> info,
-            std::shared_ptr<std::vector<std::map<int, agent_dump>>> dump);
+        void writer_method(std::unique_ptr<job_info> info,
+            std::unique_ptr<std::vector<std::map<int, agent_dump>>> dump);
 
         static void write_json_chunk(std::ostream& s, job_type type,
             const std::map<int, agent_dump>& dump_chunk);

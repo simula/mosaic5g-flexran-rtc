@@ -77,9 +77,11 @@ void flexran::core::task_manager::manage_rt_tasks() {
     running_apps.push_back(std::thread(&flexran::app::component::execute_task, app));
   }
 
+  std::chrono::steady_clock::time_point loop_start;
+  std::chrono::duration<float, std::micro> loop_dur;
 #ifdef PROFILE
-  std::chrono::steady_clock::time_point loop_start, app_start;
-  std::chrono::duration<float, std::micro> rib_dur, app_dur, loop_dur, inter_dur;
+  std::chrono::steady_clock::time_point app_start;
+  std::chrono::duration<float, std::micro> rib_dur, app_dur, inter_dur;
 
   std::unique_ptr<std::stringstream> ss(nullptr);
   int rounds = 30000;
@@ -88,8 +90,8 @@ void flexran::core::task_manager::manage_rt_tasks() {
   while (!g_exit_controller) {
 #ifdef PROFILE
     inter_dur = std::chrono::steady_clock::now() - loop_start;
-    loop_start = std::chrono::steady_clock::now();
 #endif
+    loop_start = std::chrono::steady_clock::now();
 
     // First run the RIB updater
     r_updater_.run();
@@ -103,6 +105,10 @@ void flexran::core::task_manager::manage_rt_tasks() {
     app_sync_barrier->wait();
     app_sync_barrier->wait();
 
+    loop_dur = std::chrono::steady_clock::now() - loop_start;
+    if (loop_dur.count() > 990)
+      LOG4CXX_WARN(flog::app, "task_manager: loop duration was "
+          << loop_dur.count() << " us");
 #ifdef PROFILE
     app_dur = std::chrono::steady_clock::now() - app_start;
     loop_dur = std::chrono::steady_clock::now() - loop_start;

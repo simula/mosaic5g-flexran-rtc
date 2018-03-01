@@ -55,9 +55,13 @@ void flexran::north_api::recorder_calls::start_meas(const Pistache::Rest::Reques
   std::string type = request.hasParam(":type") ? request.param(":type").as<std::string>() : "all";
   uint32_t duration = request.hasParam(":duration") ? request.param(":duration").as<uint32_t>() : 1000;
 
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
   std::string id;
   bool success = json_app->start_meas(duration, type, id);
   if (success) {
+    response.setMime(MIME(Text, Plain));
+    response.headers().add<Pistache::Http::Header::ContentLength>(id.length());
     response.send(Pistache::Http::Code::Ok, id);
   } else {
     /* 409 Bad Conflict -> Server state conflict -> can not handle now */
@@ -69,6 +73,9 @@ void flexran::north_api::recorder_calls::obtain_json_stats(const Pistache::Rest:
     Pistache::Http::ResponseWriter response)
 {
   std::string id = request.param(":id").as<std::string>();
+
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
   // dummy initialization
   flexran::app::log::job_info info{0, 0, id, flexran::app::log::job_type::all};
   if (!json_app->get_job_info(id, info)) {
@@ -92,5 +99,10 @@ void flexran::north_api::recorder_calls::obtain_json_stats(const Pistache::Rest:
   std::stringstream ss;
   ss << file.rdbuf();
   file.close();
+
+  auto mime = Pistache::Http::Mime::MediaType::fromString("application/octet-string");
+  response.setMime(mime);
+  response.headers().add<Pistache::Http::Header::ContentLength>(ss.str().length());
+
   response.send(Pistache::Http::Code::Ok, ss.str());
 }

@@ -278,8 +278,8 @@ void flexran::app::log::recorder::write_binary(job_info info,
     LOG4CXX_ERROR(flog::app, "recorder: cannot open file " << info.filename);
     return;
   }
-  uint16_t n = dump.end() - dump.begin();
-  file.write(reinterpret_cast<const char *>(&n), sizeof(uint16_t));
+  uint64_t n = std::distance(dump.begin(), dump.end());
+  file.write(reinterpret_cast<const char *>(&n), sizeof(uint64_t));
   for (auto it = dump.begin(); it != dump.end(); it++) {
     write_binary_chunk(file, *it);
   }
@@ -363,10 +363,10 @@ flexran::app::log::recorder::read_binary(std::string filename)
     return dump;
   }
 
-  uint16_t n;
-  file.read(reinterpret_cast<char *>(&n), sizeof(uint16_t));
+  uint64_t n;
+  file.read(reinterpret_cast<char *>(&n), sizeof(uint64_t));
 
-  for (uint16_t i = 0; i < n; i++) {
+  for (uint64_t i = 0; i < n; i++) {
     dump.push_back(read_binary_chunk(file));
   }
   file.close();

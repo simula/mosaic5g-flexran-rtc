@@ -23,6 +23,7 @@
 
 #include <fstream>
 #include <thread>
+#include <iomanip>
 
 #include <google/protobuf/util/json_util.h>
 
@@ -83,8 +84,13 @@ bool flexran::app::log::recorder::start_meas(uint64_t duration,
   dump_.reset(new std::vector<std::map<int, agent_dump>>);
   dump_->reserve(duration);
   current_job_.reset(new job_info{start, start + duration, filename, jt});
-  LOG4CXX_INFO(flog::app, "recorder: created job (from " << start << " to "
-      << start+duration-1 << " ms, file " << filename << ", type " << type << ")");
+
+  std::chrono::duration<float, std::ratio<60l>> min = std::chrono::milliseconds(duration);
+  auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+  LOG4CXX_INFO(flog::app, "recorder: created job " << start << " (for "
+      << min.count() << "min@" << std::put_time(std::localtime(&now), "%T")
+      << ", file " << filename << ", type " << type << ")");
 
   return true;
 }
@@ -384,13 +390,19 @@ flexran::app::log::recorder::read_binary_chunk(std::istream &s)
     protocol::flex_ue_config_reply ue_config;
     protocol::flex_lc_config_reply lc_config;
     if (!read_flexran_message(s, enb_config)) {
-      LOG4CXX_ERROR(flog::app, "error while reading binary flex_enb_config_reply, trying to continue");
+      LOG4CXX_ERROR(flog::app,
+          "error while reading binary flex_enb_config_reply in pass "
+          << i << ", trying to continue");
     }
     if (!read_flexran_message(s, ue_config)) {
-      LOG4CXX_ERROR(flog::app, "error while reading binary flex_ue_config_reply, trying to continue");
+      LOG4CXX_ERROR(flog::app,
+          "error while reading binary flex_ue_config_reply in pass "
+          << i << ", trying to continue");
     }
     if (!read_flexran_message(s, lc_config)) {
-      LOG4CXX_ERROR(flog::app, "error while reading binary flex_lc_config_reply, trying to continue");
+      LOG4CXX_ERROR(flog::app,
+          "error while reading binary flex_lc_config_reply in pass "
+          << i << ", trying to continue");
     }
 
     dump_chunk.insert(std::make_pair(agent_id,

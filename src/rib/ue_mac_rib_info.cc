@@ -58,6 +58,7 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
   // lock the mutex for the duration of this method
   std::lock_guard<std::mutex> guard(mac_stats_report_mutex_);
 
+  mac_stats_report_.set_rnti(stats_report.rnti());
   if (protocol::FLUST_BSR & flags) {
     mac_stats_report_.clear_bsr();
     for (int i = 0; i < stats_report.bsr_size(); i++) {

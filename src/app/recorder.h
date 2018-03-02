@@ -49,7 +49,7 @@ namespace flexran {
         agent_dump(const protocol::flex_enb_config_reply& a,
                   const protocol::flex_ue_config_reply& b,
                   const protocol::flex_lc_config_reply& c,
-                  const std::map<flexran::rib::rnti_t, mac_harq_info_t>& d)
+                  const std::vector<mac_harq_info_t>& d)
           : enb_config(a),
             ue_config(b),
             lc_config(c),
@@ -58,7 +58,7 @@ namespace flexran {
         protocol::flex_enb_config_reply                 enb_config;
         protocol::flex_ue_config_reply                  ue_config;
         protocol::flex_lc_config_reply                  lc_config;
-        std::map<flexran::rib::rnti_t, mac_harq_info_t> ue_mac_harq_infos;
+        std::vector<mac_harq_info_t> ue_mac_harq_infos;
       };
 
       enum job_type { all, enb, stats, bin };
@@ -130,14 +130,14 @@ namespace flexran {
         static void write_json_chunk(std::ostream& s, job_type type,
             const std::map<int, agent_dump>& dump_chunk);
         static void write_json_ue_configs(std::ostream& s,
-            const std::map<flexran::rib::rnti_t, mac_harq_info_t>& ue_mac_harq_infos);
+            const std::vector<mac_harq_info_t>& ue_mac_harq_infos);
 
         static void write_binary_chunk(std::ostream& s, const std::map<int, agent_dump>& dump_chunk);
         static void write_binary_ue_configs(std::ostream& s,
-            const std::map<flexran::rib::rnti_t, mac_harq_info_t>& ue_mac_harq_infos);
+            const std::vector<mac_harq_info_t>& ue_mac_harq_infos);
 
         static std::map<int, agent_dump> read_binary_chunk(std::istream &s);
-        static std::map<flexran::rib::rnti_t, mac_harq_info_t> read_binary_ue_configs(std::istream &s);
+        static std::vector<mac_harq_info_t> read_binary_ue_configs(std::istream &s);
 
         /**
          * helper methods to write back protobuf messages

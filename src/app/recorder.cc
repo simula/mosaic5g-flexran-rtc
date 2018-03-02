@@ -134,7 +134,7 @@ void flexran::app::log::recorder::periodic_task()
 
 flexran::app::log::agent_dump flexran::app::log::recorder::record_chunk(int agent_id)
 {
-  std::map<flexran::rib::rnti_t, mac_harq_info_t> ue_mac_harq_infos;
+  std::vector<mac_harq_info_t> ue_mac_harq_infos;
   const protocol::flex_ue_config_reply& ue_configs = rib_.get_agent(agent_id)->get_ue_configs();
   for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
     flexran::rib::rnti_t rnti = ue_configs.ue_config(UE_id).rnti();
@@ -144,9 +144,7 @@ flexran::app::log::agent_dump flexran::app::log::recorder::record_chunk(int agen
     for (int i = 0; i < 8; i++) {
       harq_infos[i] = harq_array[0][i][0] == protocol::FLHS_ACK;
     }
-    ue_mac_harq_infos.insert(
-        std::make_pair(rnti, std::make_pair(ue_mac_info->get_mac_stats_report(), harq_infos))
-    );
+    ue_mac_harq_infos.push_back(std::make_pair(ue_mac_info->get_mac_stats_report(), harq_infos));
   }
 
   return flexran::app::log::agent_dump {
@@ -237,8 +235,7 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
         s << ",";
 
       int agent_id = it->first;
-      const std::map<flexran::rib::rnti_t, mac_harq_info_t>& ue_mac_harq_infos = it->second.ue_mac_harq_infos;
-      //const protocol::flex_ue_config_reply& ue_configs it->second
+      const std::vector<mac_harq_info_t>& ue_mac_harq_infos = it->second.ue_mac_harq_infos;
       s << "{\"agent_id\":" << agent_id << ",\"ue_mac_stats\":[";
 
       write_json_ue_configs(s, ue_mac_harq_infos);
@@ -251,24 +248,23 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
 }
 
 void flexran::app::log::recorder::write_json_ue_configs(std::ostream& s,
-    const std::map<flexran::rib::rnti_t, mac_harq_info_t>& ue_mac_harq_infos)
+    const std::vector<mac_harq_info_t>& ue_mac_harq_infos)
 {
   for (auto it = ue_mac_harq_infos.begin(); it != ue_mac_harq_infos.end(); it++) {
     /* put comma in between elements, but not before the start */
     if (it != ue_mac_harq_infos.begin())
       s << ",";
 
-    flexran::rib::rnti_t rnti = it->first;
-    const protocol::flex_ue_stats_report& ue_config = it->second.first;
+    const protocol::flex_ue_stats_report& ue_config = it->first;
     std::string mac_stats;
     google::protobuf::util::MessageToJsonString(ue_config, &mac_stats, google::protobuf::util::JsonPrintOptions());
 
     std::array<std::string, 8> harq;
     for (int i = 0; i < 8; i++) {
-      harq[i] = it->second.second[i] ? "\"ACK\"" : "\"NACK\"";
+      harq[i] = it->second[i] ? "\"ACK\"" : "\"NACK\"";
     }
 
-    s << flexran::rib::ue_mac_rib_info::format_stats_to_json(rnti,
+    s << flexran::rib::ue_mac_rib_info::format_stats_to_json(ue_config.rnti(),
         mac_stats, harq);
   }
 }
@@ -338,20 +334,18 @@ void flexran::app::log::recorder::write_binary_chunk(std::ostream& s,
 }
 
 void flexran::app::log::recorder::write_binary_ue_configs(std::ostream& s,
-    const std::map<flexran::rib::rnti_t, mac_harq_info_t>& ue_mac_harq_infos)
+    const std::vector<mac_harq_info_t>& ue_mac_harq_infos)
 {
   uint16_t n = std::distance(ue_mac_harq_infos.begin(), ue_mac_harq_infos.end());
   s.write(reinterpret_cast<const char *>(&n), sizeof(uint16_t));
   for (auto it = ue_mac_harq_infos.begin(); it != ue_mac_harq_infos.end(); it++) {
-    flexran::rib::rnti_t rnti = it->first;
-    s.write(reinterpret_cast<const char *>(&rnti), sizeof(flexran::rib::rnti_t));
-    const protocol::flex_ue_stats_report& ue_config = it->second.first;
+    const protocol::flex_ue_stats_report& ue_config = it->first;
     if (!write_flexran_message(s, ue_config)) {
       LOG4CXX_ERROR(flog::app, "error while writing binary flex_ue_stats_report");
       return;
     }
     uint8_t harq = 0;
-    const std::array<bool, 8>& harq_arr = it->second.second;
+    const std::array<bool, 8>& harq_arr = it->second;
     for (int i = 0; i < 8; i++)
       harq |= (harq_arr[i] << i);
     s.write(reinterpret_cast<const char *>(&harq), sizeof(uint8_t));
@@ -425,15 +419,13 @@ flexran::app::log::recorder::read_binary_chunk(std::istream &s)
   return dump_chunk;
 }
 
-std::map<flexran::rib::rnti_t, mac_harq_info_t>
+std::vector<mac_harq_info_t>
 flexran::app::log::recorder::read_binary_ue_configs(std::istream &s)
 {
-  std::map<flexran::rib::rnti_t, mac_harq_info_t> ue_mac_harq_infos;
+  std::vector<mac_harq_info_t> ue_mac_harq_infos;
   uint16_t n;
   s.read(reinterpret_cast<char *>(&n), sizeof(uint16_t));
   for (uint16_t i = 0; i < n; i++) {
-    flexran::rib::rnti_t rnti;
-    s.read(reinterpret_cast<char *>(&rnti), sizeof(flexran::rib::rnti_t));
     protocol::flex_ue_stats_report ue_config;
     if (!read_flexran_message(s, ue_config)) {
       LOG4CXX_ERROR(flog::app, "error while reading binary flex_ue_stats_report, trying to continue");
@@ -443,7 +435,7 @@ flexran::app::log::recorder::read_binary_ue_configs(std::istream &s)
     std::array<bool, 8> harq;
     for (int j = 0; j < 8; j++)
       harq[j] = (harq_byte & (1 << j)) >> j;
-    ue_mac_harq_infos.insert(std::make_pair(rnti, std::make_pair(ue_config, harq)));
+    ue_mac_harq_infos.push_back(std::make_pair(ue_config, harq));
   }
   return ue_mac_harq_infos;
 }

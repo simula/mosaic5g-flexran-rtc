@@ -73,7 +73,7 @@
 std::atomic_bool g_exit_controller{false};
 
 #ifdef PROFILE
-std::atomic_bool g_startprof{false};
+std::atomic_bool g_doprof{false};
 #endif
 
 namespace po = boost::program_options;
@@ -279,9 +279,10 @@ int main(int argc, char* argv[]) {
       g_exit_controller = true;
     }
 #ifdef PROFILE
-    if (sig == SIGUSR2) {
-      LOG4CXX_WARN(flog::core, "start profiling");
-      g_startprof = true;
+    if (sig == SIGUSR2 && !g_doprof) {
+      g_doprof = true;
+    } else {
+      LOG4CXX_ERROR(flog::core, "profiler already running");
     }
 #endif
   }

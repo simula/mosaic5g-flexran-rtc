@@ -45,7 +45,7 @@ namespace flexran {
       task_manager(flexran::rib::rib_updater& r_updater);
 
       void manage_rt_tasks();
-      
+
       void register_app(const std::shared_ptr<flexran::app::component>& app);
       
     private:
@@ -53,6 +53,10 @@ namespace flexran {
       void run();
   
       void wait_for_cycle();
+
+#ifdef PROFILE
+      static void profiler_wb_thread(std::unique_ptr<std::stringstream> ss, size_t num_app);
+#endif
       
       flexran::rib::rib_updater& r_updater_;
       

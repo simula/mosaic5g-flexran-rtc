@@ -34,7 +34,71 @@ void flexran::north_api::enb_sched_policy_calls::register_calls(Pistache::Rest::
   // for policyname: curl -x  POST http://localhost:9999/rrm/policy.yaml 
   Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::apply_policy, this));
   // Pistache::Rest::Routes::Post(router, "/rrm/:rb_share", Pistache::Rest::Routes::bind(&flexran::north_api::enb_sched_policy_calls::set_policy, this));
-  
+
+   /**
+     * @api {post} /rrm/:policyname Post the RAN policy command by function.
+     * @apiName ApplyPolicy
+     * @apiGroup user/slice/BS policies
+     * @apiDescription This API endpoint post a policy to the underlying BS. It can be used to create, update, and delete a slice on the top of BS.
+     * @apiVersion v0.1.0
+     * @apiPermission None
+     * @apiParam {string} policy.yaml RAN policy file
+     * @apiExample Example usage:
+     *     curl -X POST http://127.0.0.1:9999/rrm/policy.yaml
+     *
+     * A complete example of a policy.yaml file:
+     *
+     * BS1:
+     *  node_function: "eNodeB_3GPPP"
+     *  eutra_band: val1
+     *  downlink_frequency: val
+     *  uplink_frequency_offset: val
+     *  N_RB_DL: val
+     *
+     * mac:
+     *  - dl_scheduler:
+     *     behaviour: <callback>
+     *     parameters:
+     *       n_active_slices: val
+     *       slice_maxmcs: [val1, val2, val3, val4]
+     *       slice_percentage: [val1, val2, val3, val4]
+     *       slice_rb_map: [val1, val2, val3, val4]
+     * - ul_scheduler:
+     *    behaviour: <callback>
+     *    parameters:
+     *       n_active_slices_uplink: val
+     *       slice_maxmcs_uplink: [val1, val2, val3, val4]
+     *       slice_percentage_uplink: [val1, val2, val3, val4]
+     *       slice_rb_map_uplink: [val1, val2, val3, val4]
+     *
+     * @apiSuccessExample Success-Response:
+     *     HTTP/1.1 200 OK
+     *
+     * @apiError PolicyFileNotFound The policy file not found.
+     *
+     * @apiErrorExample Error-Response:
+     *     HTTP/1.1 404 Not Found
+     *     {
+     *       "error": "policy file not found"
+     *     }
+     */
+
+
+  /*
+ * rrc:
+     * - trigger_measurment : val
+     * - x2_ho:
+     *   parameters:
+     *     ttt_ms 		: val
+     *     hys 	  	: val
+     *     ofn 	  	: val
+     *     ocn 	  	: val
+     *     ofs 	  	: val
+     *     ocs 	  	: val
+     *     off 	  	: val
+     *     filter_coeff_rsrp 	: val
+     *     filter_coeff_rsrq 	: val
+     */
 }
 
 void flexran::north_api::enb_sched_policy_calls::apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {

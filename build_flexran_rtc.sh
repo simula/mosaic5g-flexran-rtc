@@ -8,16 +8,39 @@ ARGS=""
 unset $NO_REST
 unset $NO_REALTIME
 unset $YES_NEO4J
+unset $NO_APIDOCS
 
-rm "$FLEXRAN_RTC_HOME/CMakeCache.txt"
+rm -f "$FLEXRAN_RTC_HOME/CMakeCache.txt"
 
-while getopts rnj option
+function print_help() {
+  echo '
+This program builds FlexRAN RTC based on the following options.
+Options
+-h
+   print this help
+-r
+  disable realtime tasks
+-n
+  diable the northbound REST interface
+-j
+  enable interface to neo4j (deprecated)
+-d
+ disable auogeneration of API docs
+Usage:
+- build_flexran_rtc
+'
+  exit 0
+}
+
+while getopts rnjdh option
 do
     case "${option}"
     in
         r) NO_REALTIME=1;;
         n) NO_REST=1;;
         j) YES_NEO4J=1;;
+	d) NO_APIDOCS=1;;
+	h) print_help;;
     esac
 done
 
@@ -33,6 +56,13 @@ if [ -z $NO_REST ]; then
 else
     echo "Compiling without REST API"
     ARGS="$ARGS -DREST_NORTHBOUND=OFF"
+fi
+
+if [ -z $APIDOCS ]; then
+    echo "Do not generate API documentation"
+else
+    echo "Generating API documentation"
+    apidoc -i src/ -o ./docs -f ".*\\.cc$" -f ".*\\.h$"
 fi
 
 if [ -z $YES_NEO4J ]; then

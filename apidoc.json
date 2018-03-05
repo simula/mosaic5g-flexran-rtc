@@ -1,0 +1,11 @@
+{
+  "name": "FLEXRAN",
+  "version": "0.1.0",
+  "description": "FLEXRAN northbound API documentation",
+  "title": "FLEXRAN northbound API documentation",
+  "url" : "http://FLEXRAN-URL:PORT",
+  "template": {
+    "withCompare": false,
+    "withGenerator": true
+  }
+}

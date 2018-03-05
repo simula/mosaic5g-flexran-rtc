@@ -44,15 +44,7 @@ function install_protobuf {
     cd -
 }
 
-function print_help() {
-  echo ' Install FlexRAN software
-Options
--h | --help 
-   Print this help 
--a | --app-dev)
-	install required packages for python flexran app dev" 
-'
-}
+
 function pre_install_packages(){
     sudo apt-get update -y
     sudo apt-get install gawk -y
@@ -65,53 +57,21 @@ function post_install_packages(){
     echo "Installing required packages"
     sudo apt-get install libboost-all-dev -y
     sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
+    sudo apt-get install autoconf automake libtool curl make g++ unzip -y
     install_protobuf
     install_pistache
     install_neo4j
+    install_flexran_apidoc
 }
 
-function install_flexran_app_dev(){
-    sudo apt-get install -y python3-dev
-    sudo apt-get install -y python3-pip
-    sudo apt-get install -y python3-pexpect
-    sudo apt-get install -y libyaml-dev
-    sudo apt-get install -y python-yaml
 
-
-    # install python packages
-    sudo pip install pyyaml 
-    sudo pip install requests
-    sudo pip install enum
-    #sudo pip install watchdog
-
-    
-    #creat an isolated space on your server for Python projects
-    #sudo apt-get install -y python3-venv
+function install_flexran_apidoc(){
+    sudo apt install nodejs-legacy -y
+    sudo apt install npm -y
+    sudo npm install apidoc -g
 }
 
 function main() {
-
-    clean="0"
-    flexran_sdk="0"
-    
-    until [ -z "$1" ]
-    do
-	case "$1" in
-	    -c | --clean)
-		clean=1
-		shift;;
-	    -a | --app-dev)
-		echo "install required packages for python flexran app dev" 
-		flexran_sdk=1
-		shift ;;
-	    *)
-		print_help
-		if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-help" ]; then 
-		    echo "Unknown option $1"
-		fi 
-		exit 1;;
-	esac
-    done
 
     pre_install_packages
     #Check if running in Ubuntu or Arch Linux
@@ -138,10 +98,7 @@ function main() {
 	    echo "Try Ubuntu 16.04"
 	fi 
 	post_install_packages
-	
-	if [ "$flexran_sdk" == "1" ]; then
-	    install_flexran_app_dev
-	fi 
+
     fi
     
 }

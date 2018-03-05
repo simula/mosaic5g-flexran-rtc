@@ -31,11 +31,13 @@
 
 #include "flexran_log.h"
 
-void flexran::rib::rib_updater::run() {
-  update_rib();
+unsigned int flexran::rib::rib_updater::run() {
+  return update_rib();
 }
 
-void flexran::rib::rib_updater::update_rib() {  
+unsigned int flexran::rib::rib_updater::update_rib()
+{
+  unsigned int processed = 0;
   int rem_msgs = messages_to_check_;
   protocol::flexran_message in_message;
   std::shared_ptr<flexran::network::tagged_message> tm;
@@ -88,7 +90,9 @@ void flexran::rib::rib_updater::update_rib() {
       }
     }
     rem_msgs--;
+    processed++;
   }
+  return processed;
 }
 
 // Handle hello message

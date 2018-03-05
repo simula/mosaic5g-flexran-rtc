@@ -39,9 +39,9 @@ namespace flexran {
     rib_updater(flexran::network::async_xface& xface, Rib& storage, int n_msg_check = 350)
       : net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check) {}
       
-      void run();
+      unsigned int run();
       
-      void update_rib();
+      unsigned int update_rib();
       
       // Incoming message handlers
       void handle_message(int agent_id,

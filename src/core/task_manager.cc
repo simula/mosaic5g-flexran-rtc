@@ -85,6 +85,7 @@ void flexran::core::task_manager::manage_rt_tasks() {
 
   std::unique_ptr<std::stringstream> ss(nullptr);
   int rounds = 30000;
+  unsigned int processed;
 #endif
 
   while (!g_exit_controller) {
@@ -94,6 +95,9 @@ void flexran::core::task_manager::manage_rt_tasks() {
     loop_start = std::chrono::steady_clock::now();
 
     // First run the RIB updater
+#ifdef PROFILE
+    processed =
+#endif
     r_updater_.run();
 
 #ifdef PROFILE
@@ -118,7 +122,7 @@ void flexran::core::task_manager::manage_rt_tasks() {
         ss.reset(new std::stringstream);
       }
       *ss << inter_dur.count() << "\t" << loop_dur.count() << "\t"
-          << rib_dur.count() << "\t" << app_dur.count() << "\n";
+          << rib_dur.count() << "\t" << processed << "\t" << app_dur.count() << "\n";
       rounds--;
       if (rounds == 0) {
         g_doprof = false;
@@ -172,7 +176,7 @@ void flexran::core::task_manager::profiler_wb_thread(
     LOG4CXX_ERROR(flog::core, "can not open file for writing profiling info");
     return;
   }
-  fstat << "inter loop\tinner loop dur\trib dur\tapp dur\n";
+  fstat << "inter loop\tinner loop dur\trib dur\tprocessed\tapp dur\n";
   fstat << ss->rdbuf();
   fstat.close();
 }

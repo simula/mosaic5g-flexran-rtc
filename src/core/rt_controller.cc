@@ -288,10 +288,11 @@ int main(int argc, char* argv[]) {
       g_exit_controller = true;
     }
 #ifdef PROFILE
-    if (sig == SIGUSR2 && !g_doprof) {
-      g_doprof = true;
-    } else {
-      LOG4CXX_ERROR(flog::core, "profiler already running");
+    if (sig == SIGUSR2) {
+      if (!g_doprof)
+        g_doprof = true;
+      else
+        LOG4CXX_ERROR(flog::core, "profiler already running");
     }
 #endif
   }

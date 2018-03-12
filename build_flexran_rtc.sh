@@ -58,11 +58,11 @@ else
     ARGS="$ARGS -DREST_NORTHBOUND=OFF"
 fi
 
-if [ -z $APIDOCS ]; then
-    echo "Do not generate API documentation"
-else
+if [ -z $NO_APIDOCS ]; then
     echo "Generating API documentation"
     apidoc -i src/ -o ./docs -f ".*\\.cc$" -f ".*\\.h$"
+else
+    echo "Do not generate API documentation"
 fi
 
 if [ -z $YES_NEO4J ]; then

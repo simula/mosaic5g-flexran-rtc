@@ -195,7 +195,10 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
     // Must create a new eNB_config entry
     rib_.new_eNB_config_entry(agent_id);
     rib_.remove_pending_agent(agent_id);
-    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " was pending, created contiguration entry");
+    LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " with ID "
+        << enb_config_reply_msg.enb_id() << std::hex << " (0x"
+        << enb_config_reply_msg.enb_id()
+        << ") was pending, created contiguration entry");
   }// If agent was not pending we should ignore this message. Only for initialization
 
   rib_.eNB_config_update(agent_id, enb_config_reply_msg);

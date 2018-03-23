@@ -39,27 +39,24 @@ namespace flexran {
       public:
 	
       stats_manager(flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
+      : periodic_component(rib, rm) {}
 	
-	void periodic_task();
+      void periodic_task();
 
-	std::string all_stats_to_string();
+      std::string all_stats_to_string();
+      std::string all_stats_to_json_string();
 
-  std::string all_stats_to_json_string();
+      std::string all_enb_configs_to_string();
+      std::string all_enb_configs_to_json_string();
 
-	std::string enb_config_to_string();
-
-  std::string enb_config_to_json_string();
-
-	std::string mac_config_to_string();
-
-  std::string mac_config_to_json_string();
+      std::string all_mac_configs_to_string();
+      std::string all_mac_configs_to_json_string();
 	
 	
       private:
-	
-	std::set<int> agent_list_;
-  
+
+        std::set<int> agent_list_;
+
       };
 
     }

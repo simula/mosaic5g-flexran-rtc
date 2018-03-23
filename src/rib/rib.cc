@@ -156,7 +156,7 @@ void flexran::rib::Rib::dump_mac_stats() const {
   }
 }
 
-std::string flexran::rib::Rib::dump_mac_stats_to_string() const {
+std::string flexran::rib::Rib::dump_all_mac_stats_to_string() const {
 
   std::string str;
   
@@ -168,7 +168,7 @@ std::string flexran::rib::Rib::dump_mac_stats_to_string() const {
   return str;
 }
 
-std::string flexran::rib::Rib::dump_mac_stats_to_json_string() const
+std::string flexran::rib::Rib::dump_all_mac_stats_to_json_string() const
 {
   std::vector<std::string> mac_stats;
   mac_stats.reserve(eNB_configs_.size());
@@ -201,7 +201,7 @@ void flexran::rib::Rib::dump_enb_configurations() const {
   }
 }
 
-std::string flexran::rib::Rib::dump_enb_configurations_to_string() const {
+std::string flexran::rib::Rib::dump_all_enb_configurations_to_string() const {
 
   std::string str;
 
@@ -213,7 +213,7 @@ std::string flexran::rib::Rib::dump_enb_configurations_to_string() const {
   return str;
 }
 
-std::string flexran::rib::Rib::dump_enb_configurations_to_json_string() const
+std::string flexran::rib::Rib::dump_all_enb_configurations_to_json_string() const
 {
   std::vector<std::string> enb_configurations;
   enb_configurations.reserve(eNB_configs_.size());

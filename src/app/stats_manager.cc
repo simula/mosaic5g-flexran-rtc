@@ -76,18 +76,18 @@ void flexran::app::stats::stats_manager::periodic_task() {
   }
 }
 
-std::string flexran::app::stats::stats_manager::all_stats_to_string()
+std::string flexran::app::stats::stats_manager::all_stats_to_string() const
 {
   return all_enb_configs_to_string() + "\n\n\n" + all_mac_configs_to_string() + "\n";
 }
 
-std::string flexran::app::stats::stats_manager::all_stats_to_json_string()
+std::string flexran::app::stats::stats_manager::all_stats_to_json_string() const
 {
   return "{" + rib_.dump_all_enb_configurations_to_json_string() + ","
     + rib_.dump_all_mac_stats_to_json_string() + "}";
 }
 
-std::string flexran::app::stats::stats_manager::all_enb_configs_to_string()
+std::string flexran::app::stats::stats_manager::all_enb_configs_to_string() const
 {
   std::string str;
   str += "*************************\n";
@@ -98,12 +98,12 @@ std::string flexran::app::stats::stats_manager::all_enb_configs_to_string()
   return str;
 }
 
-std::string flexran::app::stats::stats_manager::all_enb_configs_to_json_string()
+std::string flexran::app::stats::stats_manager::all_enb_configs_to_json_string() const
 {
   return "{" + rib_.dump_all_enb_configurations_to_json_string() + "}";
 }
 
-std::string flexran::app::stats::stats_manager::all_mac_configs_to_string()
+std::string flexran::app::stats::stats_manager::all_mac_configs_to_string() const
 {
   std::string str;
   str += "***************\n";
@@ -114,7 +114,7 @@ std::string flexran::app::stats::stats_manager::all_mac_configs_to_string()
   return str;
 }
 
-std::string flexran::app::stats::stats_manager::all_mac_configs_to_json_string()
+std::string flexran::app::stats::stats_manager::all_mac_configs_to_json_string() const
 {
   return "{" + rib_.dump_all_mac_stats_to_json_string() + "}";
 }

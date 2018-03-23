@@ -43,14 +43,14 @@ namespace flexran {
 	
       void periodic_task();
 
-      std::string all_stats_to_string();
-      std::string all_stats_to_json_string();
+      std::string all_stats_to_string() const;
+      std::string all_stats_to_json_string() const;
 
-      std::string all_enb_configs_to_string();
-      std::string all_enb_configs_to_json_string();
+      std::string all_enb_configs_to_string() const;
+      std::string all_enb_configs_to_json_string() const;
 
-      std::string all_mac_configs_to_string();
-      std::string all_mac_configs_to_json_string();
+      std::string all_mac_configs_to_string() const;
+      std::string all_mac_configs_to_json_string() const;
 	
 	
       private:

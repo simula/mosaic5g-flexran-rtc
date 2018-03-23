@@ -173,11 +173,32 @@ std::string flexran::rib::Rib::dump_all_mac_stats_to_json_string() const
   std::vector<std::string> mac_stats;
   mac_stats.reserve(eNB_configs_.size());
   std::transform(eNB_configs_.begin(), eNB_configs_.end(), std::back_inserter(mac_stats),
-      [] (const std::pair<rnti_t, std::shared_ptr<enb_rib_info>>& enb_config)
+      [] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
       { return enb_config.second->dump_mac_stats_to_json_string(); }
   );
 
   return format_mac_stats_to_json(mac_stats);
+}
+
+bool flexran::rib::Rib::dump_mac_stats_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
+{
+  auto it = std::find_if(eNB_configs_.begin(), eNB_configs_.end(),
+      [enb_id] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
+      { return enb_id == enb_config.second->get_enb_config().enb_id(); }
+  );
+  if (it == eNB_configs_.end()) return false;
+
+  out = format_mac_stats_to_json(std::vector<std::string>{it->second->dump_mac_stats_to_json_string()});
+  return true;
+}
+
+bool flexran::rib::Rib::dump_mac_stats_by_agent_id_to_json_string(int agent_id, std::string& out) const
+{
+  auto it = eNB_configs_.find(agent_id);
+  if (it == eNB_configs_.end()) return false;
+
+  out = format_mac_stats_to_json(std::vector<std::string>{it->second->dump_mac_stats_to_json_string()});
+  return true;
 }
 
 std::string flexran::rib::Rib::format_mac_stats_to_json(
@@ -223,6 +244,27 @@ std::string flexran::rib::Rib::dump_all_enb_configurations_to_json_string() cons
   );
 
   return format_enb_configurations_to_json(enb_configurations);
+}
+
+bool flexran::rib::Rib::dump_enb_configurations_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
+{
+  auto it = std::find_if(eNB_configs_.begin(), eNB_configs_.end(),
+      [enb_id] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
+      { return enb_id == enb_config.second->get_enb_config().enb_id(); }
+  );
+  if (it == eNB_configs_.end()) return false;
+
+  out = format_enb_configurations_to_json(std::vector<std::string>{it->second->dump_configs_to_json_string()});
+  return true;
+}
+
+bool flexran::rib::Rib::dump_enb_configurations_by_agent_id_to_json_string(int agent_id, std::string& out) const
+{
+  auto it = eNB_configs_.find(agent_id);
+  if (it == eNB_configs_.end()) return false;
+
+  out = format_enb_configurations_to_json(std::vector<std::string>{it->second->dump_configs_to_json_string()});
+  return true;
 }
 
 std::string flexran::rib::Rib::format_enb_configurations_to_json(

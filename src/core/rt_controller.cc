@@ -59,7 +59,6 @@
 #include "flexible_sched_calls.h"
 #include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
-#include "enb_sched_policy_calls.h"
 #include "recorder_calls.h"
 
 #endif
@@ -176,12 +175,6 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm));
   tm.register_app(flex_sched);
 
-#ifdef REST_NORTHBOUND
-  // SCHED policy app 
-  std::shared_ptr<flexran::app::component> sched_policy(new flexran::app::scheduler::enb_scheduler_policy(rib, rm));
-  tm.register_app(sched_policy);
-#endif
-
   // RRC measurements
   //std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
   //tm.register_app(rrc_trigger);
@@ -242,9 +235,6 @@ int main(int argc, char* argv[]) {
   Pistache::Address addr(Pistache::Ipv4::any(), port);
   flexran::north_api::manager::call_manager north_api(addr);
 
-  // Register API calls for the developed applications
-  flexran::north_api::enb_sched_policy_calls policy_calls(std::dynamic_pointer_cast<flexran::app::scheduler::enb_scheduler_policy>(sched_policy));
-
   // REgister Rrc Triggering Application
   //flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
 
@@ -256,7 +246,6 @@ int main(int argc, char* argv[]) {
   flexran::north_api::recorder_calls recorder_calls(std::dynamic_pointer_cast<flexran::app::log::recorder>(recorder));
   
   //north_api.register_calls(rrc_calls);
-  north_api.register_calls(policy_calls);
   north_api.register_calls(scheduler_calls);
   north_api.register_calls(stats_calls);
   north_api.register_calls(recorder_calls);

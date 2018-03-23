@@ -25,12 +25,142 @@
 
 #include "flexible_sched_calls.h"
 
-void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Router& router) {
-
+void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Router& router)
+{
+  /**
+   * @api {post} /dl_sched/:sched_type Set scheduler type
+   * @apiName DlSchedType
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDeprecated This method is for internal tests and should not be used.
+   * It might be dysfunctional and be removed in the future.
+   *
+   * @apiDescription Used to set the DL scheduler policy.
+   *
+   * @apiParam {number} sched_type The DL scheduler policy. 0 for local, 1 for
+   * remote scheduler.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   */
   Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
 
+  /**
+   * @api {post} /rrm/:policyname Post a pre-defined RAN policy command
+   * @apiName ApplyPolicy
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDescription This API endpoint post a policy to the underlying BS. It
+   * can be used to create, update, and delete a slice on the top of BS.
+   *
+   * @apiDeprecated This method is for internal tests and should not be used.
+   * It might be dysfunctional and be removed in the future.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiParam {string} policyname RAN policy filename (YAML file)
+   * @apiExample Example usage:
+   *     curl -X POST http://127.0.0.1:9999/rrm/policy.yaml
+   *
+   * A complete example of a policy.yaml file:
+   *
+   * BS1:
+   *  node_function: "eNodeB_3GPPP"
+   *  eutra_band: val1
+   *  downlink_frequency: val
+   *  uplink_frequency_offset: val
+   *  N_RB_DL: val
+   *
+   * mac:
+   *  - dl_scheduler:
+   *     behaviour: <callback>
+   *     parameters:
+   *       n_active_slices: val
+   *       slice_maxmcs: [val1, val2, val3, val4]
+   *       slice_percentage: [val1, val2, val3, val4]
+   *       slice_rb_map: [val1, val2, val3, val4]
+   * - ul_scheduler:
+   *    behaviour: <callback>
+   *    parameters:
+   *       n_active_slices_uplink: val
+   *       slice_maxmcs_uplink: [val1, val2, val3, val4]
+   *       slice_percentage_uplink: [val1, val2, val3, val4]
+   *       slice_rb_map_uplink: [val1, val2, val3, val4]
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    Set the policy to the agent
+   *
+   * @apiError MethodNotAllowed The agent-side scheduling is currently not
+   * available.
+   *
+   * @apiErrorExample 405 Example
+   *    HTTP/1.1 405 Method Not Allowed
+   *    Agent-side scheduling is currently inactive
+   *
+   * @apiError NotFound Internal Failure or Payload not found
+   *
+   * @apiErrorExample 404 Example
+   *     HTTP/1.1 404 Not Found
+   *     No policy defined in request
+   */
   Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
 
+  /**
+   * @api {post} /rrm_config/ Post a user-defined RAN policy command
+   * @apiName ApplyPolicyString
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDescription This API endpoint posts a policy to the underlying BS.
+   * It can be used to create, update, and delete a slice on top of a BS.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *     curl -X POST http://FlexRAN_PUBLIC_IPADDR:9999/rrm_config/ -d @filepath/filename.yaml --header "Content-Type: application/octet-stream"
+   *
+   * A complete example of a policy.yaml file:
+   *
+   * BS1:
+   *  node_function: "eNodeB_3GPPP"
+   *  eutra_band: val1
+   *  downlink_frequency: val
+   *  uplink_frequency_offset: val
+   *  N_RB_DL: val
+   *
+   * mac:
+   *  - dl_scheduler:
+   *     behaviour: <callback>
+   *     parameters:
+   *       n_active_slices: val
+   *       slice_maxmcs: [val1, val2, val3, val4]
+   *       slice_percentage: [val1, val2, val3, val4]
+   *       slice_rb_map: [val1, val2, val3, val4]
+   * - ul_scheduler:
+   *    behaviour: <callback>
+   *    parameters:
+   *       n_active_slices_uplink: val
+   *       slice_maxmcs_uplink: [val1, val2, val3, val4]
+   *       slice_percentage_uplink: [val1, val2, val3, val4]
+   *       slice_rb_map_uplink: [val1, val2, val3, val4]
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    Set the policy to the agent
+   *
+   * @apiError MethodNotAllowed The agent-side scheduling is currently not
+   * available.
+   *
+   * @apiErrorExample 405 Example
+   *    HTTP/1.1 405 Method Not Allowed
+   *    Agent-side scheduling is currently inactive. Cannot set policy
+   *
+   * @apiError NotFound Internal Failure or Payload not found
+   *
+   * @apiErrorExample 404 Example
+   *     HTTP/1.1 404 Not Found
+   *     No policy defined in request
+   */
   Pistache::Rest::Routes::Post(router, "/rrm_config/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
 }
 

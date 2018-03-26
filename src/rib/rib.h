@@ -85,8 +85,16 @@ namespace flexran {
       bool dump_enb_configurations_by_agent_id_to_json_string(int agent_id, std::string& out) const;
 
       static std::string format_enb_configurations_to_json(const std::vector<std::string>& enb_configurations_json);
+
+      bool dump_ue_by_rnti_to_json_string(rnti_t rnti, std::string& out) const;
+      bool dump_ue_by_rnti_by_enb_id_to_json_string(rnti_t rnti, std::string& out, uint64_t enb_id) const;
+      bool dump_ue_by_rnti_by_agent_id_to_json_string(rnti_t rnti, std::string& out, int agent_id) const;
+      bool dump_ue_by_imsi_to_json_string(uint64_t imsi, std::string& out) const;
+      bool dump_ue_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const;
+      bool dump_ue_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const;
       
     private:
+      std::map<int, std::shared_ptr<enb_rib_info>>::const_iterator find_agent(uint64_t enb_id) const;
       
       std::map<int, std::shared_ptr<enb_rib_info>> eNB_configs_;
       std::set<int> pending_agents_;

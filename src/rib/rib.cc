@@ -182,10 +182,7 @@ std::string flexran::rib::Rib::dump_all_mac_stats_to_json_string() const
 
 bool flexran::rib::Rib::dump_mac_stats_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
 {
-  auto it = std::find_if(eNB_configs_.begin(), eNB_configs_.end(),
-      [enb_id] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
-      { return enb_id == enb_config.second->get_enb_config().enb_id(); }
-  );
+  auto it = find_agent(enb_id);
   if (it == eNB_configs_.end()) return false;
 
   out = format_mac_stats_to_json(std::vector<std::string>{it->second->dump_mac_stats_to_json_string()});
@@ -248,10 +245,7 @@ std::string flexran::rib::Rib::dump_all_enb_configurations_to_json_string() cons
 
 bool flexran::rib::Rib::dump_enb_configurations_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
 {
-  auto it = std::find_if(eNB_configs_.begin(), eNB_configs_.end(),
-      [enb_id] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
-      { return enb_id == enb_config.second->get_enb_config().enb_id(); }
-  );
+  auto it = find_agent(enb_id);
   if (it == eNB_configs_.end()) return false;
 
   out = format_enb_configurations_to_json(std::vector<std::string>{it->second->dump_configs_to_json_string()});
@@ -280,4 +274,61 @@ std::string flexran::rib::Rib::format_enb_configurations_to_json(
   }
   str += "]";
   return str;
+}
+
+bool flexran::rib::Rib::dump_ue_by_rnti_to_json_string(rnti_t rnti, std::string& out) const
+{
+  /* no specific agent given, look into all and take first */
+  for (const auto& c: eNB_configs_) {
+    bool found = c.second->dump_ue_spec_stats_by_rnti_to_json_string(rnti, out);
+    if (found) return true;
+  }
+  return false;
+}
+
+bool flexran::rib::Rib::dump_ue_by_rnti_by_enb_id_to_json_string(rnti_t rnti, std::string& out, uint64_t enb_id) const
+{
+  auto it = find_agent(enb_id);
+  if (it == eNB_configs_.end()) return false;
+  return it->second->dump_ue_spec_stats_by_rnti_to_json_string(rnti, out);
+}
+
+bool flexran::rib::Rib::dump_ue_by_rnti_by_agent_id_to_json_string(rnti_t rnti, std::string& out, int agent_id) const
+{
+  auto it = eNB_configs_.find(agent_id);
+  if (it == eNB_configs_.end()) return false;
+  return it->second->dump_ue_spec_stats_by_rnti_to_json_string(rnti, out);
+}
+
+bool flexran::rib::Rib::dump_ue_by_imsi_to_json_string(uint64_t imsi, std::string& out) const
+{
+  /* no specific agent given, look into all and take first */
+  for (const auto& c: eNB_configs_) {
+    bool found = c.second->dump_ue_spec_stats_by_imsi_to_json_string(imsi, out);
+    if (found) return true;
+  }
+  return false;
+}
+
+bool flexran::rib::Rib::dump_ue_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const
+{
+  auto it = find_agent(enb_id);
+  if (it == eNB_configs_.end()) return false;
+  return it->second->dump_ue_spec_stats_by_imsi_to_json_string(imsi, out);
+}
+
+bool flexran::rib::Rib::dump_ue_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const
+{
+  auto it = eNB_configs_.find(agent_id);
+  if (it == eNB_configs_.end()) return false;
+  return it->second->dump_ue_spec_stats_by_imsi_to_json_string(imsi, out);
+}
+
+std::map<int, std::shared_ptr<flexran::rib::enb_rib_info>>::const_iterator
+flexran::rib::Rib::find_agent(uint64_t enb_id) const
+{
+  return std::find_if(eNB_configs_.begin(), eNB_configs_.end(),
+      [enb_id] (const std::pair<int, std::shared_ptr<enb_rib_info>>& enb_config)
+      { return enb_id == enb_config.second->get_enb_config().enb_id(); }
+  );
 }

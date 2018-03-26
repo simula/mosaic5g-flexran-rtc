@@ -292,3 +292,22 @@ std::string flexran::rib::enb_rib_info::format_configs_to_json(
   str += lc_config_json;
   return str;
 }
+
+bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_rnti_to_json_string(rnti_t rnti, std::string& out) const
+{
+  auto it = ue_mac_info_.find(rnti);
+  if (it == ue_mac_info_.end()) return false;
+
+  out = it->second->dump_stats_to_json_string();
+  return true;
+}
+
+bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_imsi_to_json_string(uint64_t imsi, std::string& out) const
+{
+  for (int i = 0; i < ue_config_.ue_config_size(); i++) {
+    if (imsi == ue_config_.ue_config(i).imsi()) {
+      return dump_ue_spec_stats_by_rnti_to_json_string(ue_config_.ue_config(i).rnti(), out);
+    }
+  }
+  return false;
+}

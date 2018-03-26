@@ -87,6 +87,30 @@ std::string flexran::app::stats::stats_manager::all_stats_to_json_string() const
     + rib_.dump_all_mac_stats_to_json_string() + "}";
 }
 
+bool flexran::app::stats::stats_manager::stats_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
+{
+  std::string json1, json2;
+  out = "{}";
+  bool found = rib_.dump_enb_configurations_by_enb_id_to_json_string(enb_id, json1);
+  if (!found) return false;
+  found = rib_.dump_mac_stats_by_enb_id_to_json_string(enb_id, json2);
+  if (!found) return false;
+  out = "{" + json1 + "," + json2 + "}";
+  return true;
+}
+
+bool flexran::app::stats::stats_manager::stats_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const
+{
+  std::string json1, json2;
+  out = "{}";
+  bool found = rib_.dump_enb_configurations_by_agent_id_to_json_string(agent_id, json1);
+  if (!found) return false;
+  found = rib_.dump_mac_stats_by_agent_id_to_json_string(agent_id, json2);
+  if (!found) return false;
+  out = "{" + json1 + "," + json2 + "}";
+  return true;
+}
+
 std::string flexran::app::stats::stats_manager::all_enb_configs_to_string() const
 {
   std::string str;
@@ -103,6 +127,22 @@ std::string flexran::app::stats::stats_manager::all_enb_configs_to_json_string()
   return "{" + rib_.dump_all_enb_configurations_to_json_string() + "}";
 }
 
+bool flexran::app::stats::stats_manager::enb_configs_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
+{
+  std::string json;
+  bool found = rib_.dump_enb_configurations_by_enb_id_to_json_string(enb_id, json);
+  out = "{" + json + "}";
+  return found;
+}
+
+bool flexran::app::stats::stats_manager::enb_configs_by_agent_id_to_json_string(int agent_id, std::string& out) const
+{
+  std::string json;
+  bool found = rib_.dump_enb_configurations_by_agent_id_to_json_string(agent_id, json);
+  out = "{" + json + "}";
+  return found;
+}
+
 std::string flexran::app::stats::stats_manager::all_mac_configs_to_string() const
 {
   std::string str;
@@ -117,4 +157,20 @@ std::string flexran::app::stats::stats_manager::all_mac_configs_to_string() cons
 std::string flexran::app::stats::stats_manager::all_mac_configs_to_json_string() const
 {
   return "{" + rib_.dump_all_mac_stats_to_json_string() + "}";
+}
+
+bool flexran::app::stats::stats_manager::mac_configs_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const
+{
+  std::string json;
+  bool found = rib_.dump_mac_stats_by_enb_id_to_json_string(enb_id, json);
+  out = "{" + json + "}";
+  return found;
+}
+
+bool flexran::app::stats::stats_manager::mac_configs_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const
+{
+  std::string json;
+  bool found = rib_.dump_mac_stats_by_agent_id_to_json_string(agent_id, json);
+  out = "{" + json + "}";
+  return found;
 }

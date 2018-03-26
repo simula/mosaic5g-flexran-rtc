@@ -45,12 +45,18 @@ namespace flexran {
 
       std::string all_stats_to_string() const;
       std::string all_stats_to_json_string() const;
+      bool stats_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
+      bool stats_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const;
 
       std::string all_enb_configs_to_string() const;
       std::string all_enb_configs_to_json_string() const;
+      bool enb_configs_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
+      bool enb_configs_by_agent_id_to_json_string(int agent_id, std::string& out) const;
 
       std::string all_mac_configs_to_string() const;
       std::string all_mac_configs_to_json_string() const;
+      bool mac_configs_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
+      bool mac_configs_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const;
 	
 	
       private:

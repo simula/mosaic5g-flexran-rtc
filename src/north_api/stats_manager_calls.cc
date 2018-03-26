@@ -451,9 +451,9 @@ bool flexran::north_api::stats_manager_calls::parse_enb_agent_id(const std::stri
   bool is_agent_id = false;
   if (enb_id_s.length() >= AGENT_ID_LENGTH_LIMIT && enb_id_s.substr(0, 2) == "0x") {
     /* it is a hex -> we assume it is not an RNTI */
-    enb_id = std::stoi(enb_id_s, 0, 16);
+    enb_id = std::stoll(enb_id_s, 0, 16);
   } else {
-    enb_id = std::stoi(enb_id_s);
+    enb_id = std::stoll(enb_id_s);
     /* if the number is shorter than some characters, we assume it is an
      * agent_id (internal identification of the agents in the controller) */
     is_agent_id = enb_id_s.length () < AGENT_ID_LENGTH_LIMIT;
@@ -463,6 +463,6 @@ bool flexran::north_api::stats_manager_calls::parse_enb_agent_id(const std::stri
 
 bool flexran::north_api::stats_manager_calls::parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id)
 {
-  ue_id = std::stoi(ue_id_s);
+  ue_id = std::stoll(ue_id_s);
   return ue_id_s.length() < RNTI_ID_LENGTH_LIMIT;
 }

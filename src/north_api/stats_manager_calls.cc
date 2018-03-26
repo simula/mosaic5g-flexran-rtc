@@ -23,15 +23,14 @@
 
 #include <pistache/http.h>
 #include <pistache/http_header.h>
-#include <string>
 
 #include "stats_manager_calls.h"
 
-void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Router& router) {
+void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Router& router)
+{
+  Pistache::Rest::Routes::Get(router, "/stats_manager/:type?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
 
-  Pistache::Rest::Routes::Get(router, "/stats_manager/:stats_type", Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
-
-  Pistache::Rest::Routes::Get(router, "/stats_manager/json/:stats_type", Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
  /**
      * @api {get} /stats_manager/json/:stats_type Get RAN statistics by type.
      * @apiName GetStats
@@ -291,52 +290,109 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
      *       "error": "Statistics type not found"
      *     }
      */
+  Pistache::Rest::Routes::Get(router, "/stats/:type?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
 
-  
+  Pistache::Rest::Routes::Get(router, "/stats/enb/:id/:type?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_enb, this));
 }
 
-void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+  const std::string type = request.hasParam(":type") ?
+      request.param(":type").as<std::string>() : REQ_TYPE::ALL_STATS;
 
-  auto stats_type = request.param(":stats_type").as<std::string>();
-  
   std::string resp;
-
-  if (stats_type.compare("all") == 0) {
+  if (type == REQ_TYPE::ALL_STATS) {
     resp = stats_app->all_stats_to_string();
-    response.send(Pistache::Http::Code::Ok, resp);
-  } else if (stats_type.compare("enb_config") == 0) {
-    resp = stats_app->enb_config_to_string();
-    response.send(Pistache::Http::Code::Ok, resp);
-  } else if (stats_type.compare("mac_stats") == 0) {
-    resp = stats_app->mac_config_to_string();
-    response.send(Pistache::Http::Code::Ok, resp);
+  } else if (type == REQ_TYPE::ENB_CONFIG) {
+    resp = stats_app->all_enb_configs_to_string();
+  } else if (type == REQ_TYPE::MAC_STATS) {
+    resp = stats_app->all_mac_configs_to_string();
   } else {
-    response.send(Pistache::Http::Code::Not_Found, "Statistics type not found");
-
-
+    response.send(Pistache::Http::Code::Bad_Request, "invalid statistics type\n");
+    return;
   }
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+  response.send(Pistache::Http::Code::Ok, resp);
 }
 
-void flexran::north_api::stats_manager_calls::obtain_json_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-
-  auto stats_type = request.param(":stats_type").as<std::string>();
-
+void flexran::north_api::stats_manager_calls::obtain_json_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+  const std::string type = request.hasParam(":type") ?
+      request.param(":type").as<std::string>() : REQ_TYPE::ALL_STATS;
   std::string resp;
-  auto json = MIME(Application, Json);
+  if (type == REQ_TYPE::ALL_STATS) {
+    resp = stats_app->all_stats_to_json_string();
+  } else if (type == REQ_TYPE::ENB_CONFIG) {
+    resp = stats_app->all_enb_configs_to_json_string();
+  } else if (type == REQ_TYPE::MAC_STATS) {
+    resp = stats_app->all_mac_configs_to_json_string();
+  } else {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"invalid statistics type\"}", MIME(Application, Json));
+    return;
+  }
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+  response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
+}
+
+void flexran::north_api::stats_manager_calls::obtain_json_stats_enb(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+  const std::string enb_id_s = request.param(":id").as<std::string>();
+  uint64_t enb_id;
+  bool is_agent_id = false;
+  try {
+    is_agent_id = parse_enb_agent_id(enb_id_s, enb_id);
+  } catch (std::invalid_argument e) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"invalid ID\"}", MIME(Application, Json));
+    return;
+  }
+
+  const std::string type = request.hasParam(":type") ?
+      request.param(":type").as<std::string>() : REQ_TYPE::ALL_STATS;
+  std::string resp;
+  bool found = false;
+  if (type == REQ_TYPE::ALL_STATS) {
+    found = is_agent_id ?
+        stats_app->stats_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
+      : stats_app->stats_by_enb_id_to_json_string(enb_id, resp);
+  } else if (type == REQ_TYPE::ENB_CONFIG) {
+    found = is_agent_id ?
+        stats_app->enb_configs_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
+      : stats_app->enb_configs_by_enb_id_to_json_string(enb_id, resp);
+  } else if (type == REQ_TYPE::MAC_STATS) {
+    found = is_agent_id ?
+        stats_app->mac_configs_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
+      : stats_app->mac_configs_by_enb_id_to_json_string(enb_id, resp);
+  } else {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"invalid statistics type\"}", MIME(Application, Json));
+    return;
+  }
+
+  if (!found) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"invalid ID\" }", MIME(Application, Json));
+    return;
+  }
 
   response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+  response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
+}
 
-  if (stats_type.compare("all") == 0) {
-    resp = stats_app->all_stats_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp, json);
-  } else if (stats_type.compare("enb_config") == 0) {
-    resp = stats_app->enb_config_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp, json);
-  } else if (stats_type.compare("mac_stats") == 0) {
-    resp = stats_app->mac_config_to_json_string();
-    response.send(Pistache::Http::Code::Ok, resp, json);
+bool flexran::north_api::stats_manager_calls::parse_enb_agent_id(const std::string& enb_id_s, uint64_t& enb_id)
+{
+  bool is_agent_id = false;
+  if (enb_id_s.length() >= AGENT_ID_LENGTH_LIMIT && enb_id_s.substr(0, 2) == "0x") {
+    /* it is a hex -> we assume it is not an RNTI */
+    enb_id = std::stoi(enb_id_s, 0, 16);
   } else {
-    response.send(Pistache::Http::Code::Not_Found, "Statistics type does not exist");
-
+    enb_id = std::stoi(enb_id_s);
+    /* if the number is shorter than some characters, we assume it is an
+     * agent_id (internal identification of the agents in the controller) */
+    is_agent_id = enb_id_s.length () < AGENT_ID_LENGTH_LIMIT;
   }
+  return is_agent_id;
 }

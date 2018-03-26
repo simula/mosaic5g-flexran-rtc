@@ -24,10 +24,17 @@
 #ifndef STATS_MANAGER_CALLS_H_
 #define STATS_MANAGER_CALLS_H_
 
+#include <string>
 #include <pistache/http.h>
 
 #include "app_calls.h"
 #include "stats_manager.h"
+
+namespace REQ_TYPE {
+  constexpr const char *ALL_STATS = "all";
+  constexpr const char *ENB_CONFIG = "enb_config";
+  constexpr const char *MAC_STATS = "mac_stats";
+}
 
 namespace flexran {
 
@@ -38,21 +45,22 @@ namespace flexran {
     public:
 
       stats_manager_calls(std::shared_ptr<flexran::app::stats::stats_manager> stats)
-	: stats_app(stats)
+      : stats_app(stats)
       { }
-      
+
       void register_calls(Pistache::Rest::Router& router);
 
       void obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
-
-
       void obtain_json_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-
+      void obtain_json_stats_enb(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:
+      static bool parse_enb_agent_id(const std::string& enb_id_s, uint64_t& enb_id);
 
       std::shared_ptr<flexran::app::stats::stats_manager> stats_app;
+      static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 3;
+
 
     };
   }

@@ -54,13 +54,15 @@ namespace flexran {
 
       void obtain_json_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void obtain_json_stats_enb(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void obtain_json_stats_ue(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:
       static bool parse_enb_agent_id(const std::string& enb_id_s, uint64_t& enb_id);
+      static bool parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id);
 
       std::shared_ptr<flexran::app::stats::stats_manager> stats_app;
       static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 3;
-
+      static constexpr const size_t RNTI_ID_LENGTH_LIMIT  = 6;
 
     };
   }

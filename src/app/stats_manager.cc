@@ -174,3 +174,33 @@ bool flexran::app::stats::stats_manager::mac_configs_by_agent_id_to_json_string(
   out = "{" + json + "}";
   return found;
 }
+
+bool flexran::app::stats::stats_manager::ue_stats_by_rnti_to_json_string(flexran::rib::rnti_t rnti, std::string& out) const
+{
+  return rib_.dump_ue_by_rnti_to_json_string(rnti, out);
+}
+
+bool flexran::app::stats::stats_manager::ue_stats_by_rnti_by_enb_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, uint64_t enb_id) const
+{
+  return rib_.dump_ue_by_rnti_by_enb_id_to_json_string(rnti, out, enb_id);
+}
+
+bool flexran::app::stats::stats_manager::ue_stats_by_rnti_by_agent_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, int agent_id) const
+{
+  return rib_.dump_ue_by_rnti_by_agent_id_to_json_string(rnti, out, agent_id);
+}
+
+bool flexran::app::stats::stats_manager::ue_stats_by_imsi_to_json_string(uint64_t imsi, std::string& out) const
+{
+  return rib_.dump_ue_by_imsi_to_json_string(imsi, out);
+}
+
+bool flexran::app::stats::stats_manager::ue_stats_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const
+{
+  return rib_.dump_ue_by_imsi_by_enb_id_to_json_string(imsi, out, enb_id);
+}
+
+bool flexran::app::stats::stats_manager::ue_stats_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const
+{
+  return rib_.dump_ue_by_imsi_by_agent_id_to_json_string(imsi, out, agent_id);
+}

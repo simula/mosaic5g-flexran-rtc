@@ -27,6 +27,7 @@
 #include <set>
 
 #include "periodic_component.h"
+#include "rib_common.h"
 
 namespace flexran {
 
@@ -57,8 +58,14 @@ namespace flexran {
       std::string all_mac_configs_to_json_string() const;
       bool mac_configs_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
       bool mac_configs_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const;
-	
-	
+
+      bool ue_stats_by_rnti_to_json_string(flexran::rib::rnti_t rnti, std::string& out) const;
+      bool ue_stats_by_rnti_by_enb_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, uint64_t enb_id) const;
+      bool ue_stats_by_rnti_by_agent_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, int agent_id) const;
+      bool ue_stats_by_imsi_to_json_string(uint64_t imsi, std::string& out) const;
+      bool ue_stats_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const;
+      bool ue_stats_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const;
+
       private:
 
         std::set<int> agent_list_;

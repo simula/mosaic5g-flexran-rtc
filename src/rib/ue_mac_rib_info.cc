@@ -192,19 +192,15 @@ std::string flexran::rib::ue_mac_rib_info::format_stats_to_json(
     const std::array<std::string, 8>& harq)
 {
   std::string str;
-  str  = "{";
-  str += "\"rnti\": ";
+  str += "{\"rnti\": ";
   str += std::to_string(rnti);
-  str += ",";
-  str += "\"mac_stats\":";
+  str += ",\"mac_stats\":";
   str += mac_stats;
-  str += ",";
-  str += "\"harq\":[";
+  str += ",\"harq\":[";
   for (auto it = harq.begin(); it != harq.end(); it++) {
     if (it != harq.begin()) str += ",";
     str += *it;
   }
-  str += "]";
-  str += "}";
+  str += "]}";
   return str;
 }

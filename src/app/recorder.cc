@@ -227,46 +227,45 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
   }
 
   if (type != job_type::enb) {
-    /* get the MAC stats for each connected UE */
-    s << "\"mac_stats\":[";
-    for (auto it = dump_chunk.begin(); it != dump_chunk.end(); it++ ) {
-      /* put comma in between elements, but not before the start */
-      if (it != dump_chunk.begin())
-        s << ",";
-
-      int agent_id = it->first;
-      const std::vector<mac_harq_info_t>& ue_mac_harq_infos = it->second.ue_mac_harq_infos;
-      s << "{\"agent_id\":" << agent_id << ",\"ue_mac_stats\":[";
-
-      write_json_ue_configs(s, ue_mac_harq_infos);
-
-      s << "]}";
-    }
-    s << "]";
+    std::vector<std::string> ue_stats;
+    ue_stats.reserve(ue_stats.size());
+    std::transform(dump_chunk.begin(), dump_chunk.end(), std::back_inserter(ue_stats),
+        [] (const std::pair<flexran::rib::rnti_t, agent_dump>& p)
+        {
+          int agent_id = p.first;
+          uint64_t enb_id = p.second.enb_config.enb_id();
+          std::vector<std::string> ue_stats = get_ue_stats(p.second.ue_mac_harq_infos);
+          return flexran::rib::enb_rib_info::format_mac_stats_to_json(agent_id,
+              enb_id, ue_stats);
+          }
+    );
+    s << flexran::rib::Rib::format_mac_stats_to_json(ue_stats);
   }
   s << "}";
 }
 
-void flexran::app::log::recorder::write_json_ue_configs(std::ostream& s,
+std::vector<std::string> flexran::app::log::recorder::get_ue_stats(
     const std::vector<mac_harq_info_t>& ue_mac_harq_infos)
 {
-  for (auto it = ue_mac_harq_infos.begin(); it != ue_mac_harq_infos.end(); it++) {
-    /* put comma in between elements, but not before the start */
-    if (it != ue_mac_harq_infos.begin())
-      s << ",";
+  std::vector<std::string> ue_mac_stats;
+  ue_mac_stats.reserve(ue_mac_harq_infos.size());
+  std::transform(ue_mac_harq_infos.begin(), ue_mac_harq_infos.end(), std::back_inserter(ue_mac_stats),
+      [] (const mac_harq_info_t& ue_mac_harq_info)
+      {
+        const protocol::flex_ue_stats_report& ue_config = ue_mac_harq_info.first;
+        std::string mac_stats;
+        google::protobuf::util::MessageToJsonString(ue_config, &mac_stats, google::protobuf::util::JsonPrintOptions());
 
-    const protocol::flex_ue_stats_report& ue_config = it->first;
-    std::string mac_stats;
-    google::protobuf::util::MessageToJsonString(ue_config, &mac_stats, google::protobuf::util::JsonPrintOptions());
+        std::array<std::string, 8> harq;
+        for (int i = 0; i < 8; i++) {
+          harq[i] = ue_mac_harq_info.second[i] ? "\"ACK\"" : "\"NACK\"";
+        }
 
-    std::array<std::string, 8> harq;
-    for (int i = 0; i < 8; i++) {
-      harq[i] = it->second[i] ? "\"ACK\"" : "\"NACK\"";
-    }
-
-    s << flexran::rib::ue_mac_rib_info::format_stats_to_json(ue_config.rnti(),
-        mac_stats, harq);
-  }
+        return flexran::rib::ue_mac_rib_info::format_stats_to_json(ue_config.rnti(),
+                mac_stats, harq);
+      }
+  );
+  return ue_mac_stats;
 }
 
 uint64_t flexran::app::log::recorder::write_binary(job_info info,

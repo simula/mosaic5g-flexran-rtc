@@ -129,7 +129,7 @@ namespace flexran {
 
         static void write_json_chunk(std::ostream& s, job_type type,
             const std::map<int, agent_dump>& dump_chunk);
-        static void write_json_ue_configs(std::ostream& s,
+        static std::vector<std::string> get_ue_stats(
             const std::vector<mac_harq_info_t>& ue_mac_harq_infos);
 
         static void write_binary_chunk(std::ostream& s, const std::map<int, agent_dump>& dump_chunk);

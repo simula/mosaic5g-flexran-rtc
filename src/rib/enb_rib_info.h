@@ -65,7 +65,7 @@ namespace flexran {
 
       std::string dump_mac_stats_to_json_string() const;
 
-      static std::string format_mac_stats_to_json(int agent_id,
+      static std::string format_mac_stats_to_json(int agent_id, uint64_t enb_id,
           const std::vector<std::string>& ue_mac_stats_json);
 
       void dump_configs() const;

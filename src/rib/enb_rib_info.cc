@@ -210,17 +210,19 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const
       { return ue_stats.second->dump_stats_to_json_string(); }
   );
 
-  return format_mac_stats_to_json(agent_id_, ue_mac_stats);
+  return format_mac_stats_to_json(agent_id_, eNB_config_.enb_id(), ue_mac_stats);
 }
 
 std::string flexran::rib::enb_rib_info::format_mac_stats_to_json(int agent_id,
+    uint64_t enb_id,
     const std::vector<std::string>& ue_mac_stats_json)
 {
   std::string str;
   str += "\"agent_id\":";
   str += std::to_string(agent_id);
-  str += ",";
-  str += "\"ue_mac_stats\":[";
+  str += ",\"eNBId\":";
+  str += std::to_string(enb_id);
+  str += ",\"ue_mac_stats\":[";
   for (auto it = ue_mac_stats_json.begin(); it != ue_mac_stats_json.end(); it++) {
     if (it != ue_mac_stats_json.begin()) str += ",";
     str += *it;

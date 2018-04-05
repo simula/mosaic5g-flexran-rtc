@@ -46,122 +46,44 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
   Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
 
   /**
-   * @api {post} /rrm/:policyname Post a pre-defined RAN policy command
-   * @apiName ApplyPolicy
-   * @apiGroup user/slice/BS policies
-   *
-   * @apiDescription This API endpoint post a policy to the underlying BS. It
-   * can be used to create, update, and delete a slice on the top of BS.
-   *
-   * @apiDeprecated This method is for internal tests and should not be used.
-   * It might be dysfunctional and be removed in the future.
-   *
-   * @apiVersion v0.1.0
-   * @apiPermission None
-   * @apiParam {string} policyname RAN policy filename (YAML file)
-   * @apiExample Example usage:
-   *     curl -X POST http://127.0.0.1:9999/rrm/policy.yaml
-   *
-   * A complete example of a policy.yaml file:
-   *
-   * BS1:
-   *  node_function: "eNodeB_3GPPP"
-   *  eutra_band: val1
-   *  downlink_frequency: val
-   *  uplink_frequency_offset: val
-   *  N_RB_DL: val
-   *
-   * mac:
-   *  - dl_scheduler:
-   *     behaviour: <callback>
-   *     parameters:
-   *       n_active_slices: val
-   *       slice_maxmcs: [val1, val2, val3, val4]
-   *       slice_percentage: [val1, val2, val3, val4]
-   *       slice_rb_map: [val1, val2, val3, val4]
-   * - ul_scheduler:
-   *    behaviour: <callback>
-   *    parameters:
-   *       n_active_slices_uplink: val
-   *       slice_maxmcs_uplink: [val1, val2, val3, val4]
-   *       slice_percentage_uplink: [val1, val2, val3, val4]
-   *       slice_rb_map_uplink: [val1, val2, val3, val4]
-   *
-   * @apiSuccessExample Success-Response:
-   *    HTTP/1.1 200 OK
-   *    Set the policy to the agent
-   *
-   * @apiError MethodNotAllowed The agent-side scheduling is currently not
-   * available.
-   *
-   * @apiErrorExample 405 Example
-   *    HTTP/1.1 405 Method Not Allowed
-   *    Agent-side scheduling is currently inactive
-   *
-   * @apiError NotFound Internal Failure or Payload not found
-   *
-   * @apiErrorExample 404 Example
-   *     HTTP/1.1 404 Not Found
-   *     No policy defined in request
-   */
-  Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
-
-  /**
    * @api {post} /rrm_config/ Post a user-defined RAN policy command
    * @apiName ApplyPolicyString
    * @apiGroup user/slice/BS policies
    *
    * @apiDescription This API endpoint posts a policy to the underlying BS.
    * It can be used to create, update, and delete a slice on top of a BS.
-   *
-   * @apiVersion v0.1.0
-   * @apiPermission None
-   * @apiExample Example usage:
-   *     curl -X POST http://FlexRAN_PUBLIC_IPADDR:9999/rrm_config/ -d @filepath/filename.yaml --header "Content-Type: application/octet-stream"
-   *
-   * A complete example of a policy.yaml file:
-   *
-   * BS1:
-   *  node_function: "eNodeB_3GPPP"
-   *  eutra_band: val1
-   *  downlink_frequency: val
-   *  uplink_frequency_offset: val
-   *  N_RB_DL: val
-   *
-   * mac:
-   *  - dl_scheduler:
-   *     behaviour: <callback>
-   *     parameters:
-   *       n_active_slices: val
-   *       slice_maxmcs: [val1, val2, val3, val4]
-   *       slice_percentage: [val1, val2, val3, val4]
-   *       slice_rb_map: [val1, val2, val3, val4]
-   * - ul_scheduler:
-   *    behaviour: <callback>
-   *    parameters:
-   *       n_active_slices_uplink: val
-   *       slice_maxmcs_uplink: [val1, val2, val3, val4]
-   *       slice_percentage_uplink: [val1, val2, val3, val4]
-   *       slice_rb_map_uplink: [val1, val2, val3, val4]
-   *
-   * @apiSuccessExample Success-Response:
-   *    HTTP/1.1 200 OK
-   *    Set the policy to the agent
-   *
-   * @apiError MethodNotAllowed The agent-side scheduling is currently not
-   * available.
-   *
-   * @apiErrorExample 405 Example
-   *    HTTP/1.1 405 Method Not Allowed
-   *    Agent-side scheduling is currently inactive. Cannot set policy
-   *
-   * @apiError NotFound Internal Failure or Payload not found
-   *
-   * @apiErrorExample 404 Example
-   *     HTTP/1.1 404 Not Found
-   *     No policy defined in request
    */
-  Pistache::Rest::Routes::Post(router, "/rrm_config/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
+  Pistache::Rest::Routes::Post(router, "/slice/enb/:id?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_slice_config, this));
+
+  /**
+   * @api {post} /rrm_config/ Post a user-defined RAN policy command, no body
+   * @apiName ApplyPolicyString
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDescription This API endpoint posts a policy to the underlying BS.
+   * It can be used to create, update, and delete a slice on top of a BS.
+   */
+  Pistache::Rest::Routes::Post(router, "/slice/enb/:id/slice/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_slice_config_short, this));
+
+  Pistache::Rest::Routes::Delete(router, "/slice/enb/:id?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::remove_slice_config, this));
+
+  Pistache::Rest::Routes::Delete(router, "/slice/enb/:id/slice/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::remove_slice_config_short, this));
+
+  /**
+   * @api {post} /ue_slice_assoc/ Post a user-defined UE-to-slice association
+   * @apiName ApplyPolicyString
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDescription This API endpoint posts a policy to the underlying BS.
+   * It can be used to change the association of a UE to a slice. Currently,
+   * only the RNTI is supported.
+   */
+  Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:id?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_ue_slice_assoc, this));
 }
 
 void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
@@ -180,33 +102,146 @@ void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::
   
 }
 
-void flexran::north_api::flexible_sched_calls::apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-
-  auto policy_name = request.param(":policyname").as<std::string>();
-  std::string resp;
-  if (policy_name != "") { // Local scheduler
-    if (sched_app->apply_agent_rrm_policy(policy_name)) {
-      response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
-    } else {
-      response.send(Pistache::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive\n");
-    }
-  } else { // Scheduler policy not set
-    response.send(Pistache::Http::Code::Not_Found, "Policy not set\n");
+void flexran::north_api::flexible_sched_calls::apply_slice_config(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = request.hasParam(":id") ?
+      sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
+      sched_app->get_last_agent();
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
   }
-  
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!sched_app->apply_slice_config_policy(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::apply_policy_string(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-
-  auto policy = request.body();
-
-  if (policy.length() != 0) {
-    if (sched_app->apply_agent_rrm_policy_string(policy)) {
-      response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
-    } else {
-      response.send(Pistache::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive. Cannot set policy\n");
-    }
-  } else {
-    response.send(Pistache::Http::Code::Not_Found, "No policy defined in request\n");
+void flexran::north_api::flexible_sched_calls::apply_slice_config_short(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
   }
+
+  int slice_id = request.param(":slice_id").as<int>();
+  std::string policy;
+  policy  = "{\"dl\":[{id:" + std::to_string(slice_id);
+  policy += "}],\"ul\":[{id:" + std::to_string(slice_id);
+  policy += "}]}";
+
+  std::string error_reason;
+  if (!sched_app->apply_slice_config_policy(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::flexible_sched_calls::remove_slice_config(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = request.hasParam(":id") ?
+      sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
+      sched_app->get_last_agent();
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!sched_app->remove_slice(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::flexible_sched_calls::remove_slice_config_short(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  int slice_id = request.param(":slice_id").as<int>();
+  std::string policy;
+  policy  = "{\"dl\":[{id:" + std::to_string(slice_id);
+  policy += ",percentage:0}],\"ul\":[{id:" + std::to_string(slice_id);
+  policy += ",percentage:0}]}";
+
+  std::string error_reason;
+  if (!sched_app->remove_slice(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::flexible_sched_calls::change_ue_slice_assoc(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = request.hasParam(":id") ?
+      sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
+      sched_app->get_last_agent();
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!sched_app->change_ue_slice_association(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
 }

@@ -45,12 +45,13 @@ namespace flexran {
 
       void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
-      void apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void apply_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void apply_slice_config_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+      void remove_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void remove_slice_config_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
-
-      void apply_policy_string(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-
+      void change_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       
     private:
 

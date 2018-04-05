@@ -251,7 +251,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
   uint8_t harq_pid, round;
 
   uint32_t dci_tbs;
-  int mcs, tpc = 1, mcs_tmp;
+  int mcs = 0, tpc = 1, mcs_tmp;
   uint32_t ndi;
   uint32_t ce_flags = 0;
   uint32_t data_to_request;

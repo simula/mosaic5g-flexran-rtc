@@ -26,6 +26,7 @@
 #include <streambuf>
 #include <fstream>
 
+#include <google/protobuf/util/json_util.h>
 
 #include "flexible_scheduler.h"
 #include "remote_scheduler_helper.h"
@@ -72,61 +73,169 @@ void flexran::app::scheduler::flexible_scheduler::periodic_task() {
   }
 }
 
-// this fucntion will be called by the rest API as this is already registered as a valid URI
-bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::string policy_name) {
-
-  // The central scheduler is currently running
-  // Cannot push agent side policy
-  if (central_scheduling.load() == true) {
+bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(
+    int agent_id, const std::string& policy, std::string& error_reason)
+{
+  if (!rib_.get_agent(agent_id)) {
+    error_reason = "Agent does not exist";
+    LOG4CXX_ERROR(flog::app, "Agent " << agent_id << " does not exist");
     return false;
   }
-  
-  std::string policy_file="";
-  if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
-    policy_file = policy_file + env_p + "/tests/delegation_control/";
-  } else {
-    policy_file = "../tests/delegation_control/";
+
+  protocol::flex_slice_config slice_config;
+  google::protobuf::util::Status ret;
+  ret = google::protobuf::util::JsonStringToMessage(policy, &slice_config,
+      google::protobuf::util::JsonParseOptions());
+  if (ret != google::protobuf::util::Status::OK) {
+    error_reason = "ProtoBuf parser error";
+    LOG4CXX_ERROR(flog::app,
+        "error while parsing ProtoBuf slice_config message:" << ret.ToString());
+    return false;
   }
-  policy_file += policy_name;
-  // check if the policy file exist.
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
-  // this might be different
-  for (auto& agent_id : agent_ids) {
-
-    LOG4CXX_INFO(flog::app, "Reconfigure agent " << agent_id << ": Applying the requested RRM policy from file " << policy_file);
-
-    reconfigure_agent_file(agent_id, policy_file);
-
+  // enforce every DL/UL slice has an ID and well formed parameters
+  for (int i = 0; i < slice_config.dl_size(); i++) {
+    if (!verify_dl_slice_config(slice_config.dl(i), error_reason)) {
+      error_reason += " in DL slice configuration at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
   }
+  for (int i = 0; i < slice_config.ul_size(); i++) {
+    if (!verify_ul_slice_config(slice_config.ul(i), error_reason)) {
+      error_reason += " in UL slice configuration at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+  }
+
+  push_slice_config_reconfiguration(agent_id, slice_config);
+  LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
+      << ":\n" << policy << "\n");
 
   return true;
-  
 }
 
-// this fucntion will be called by the rest API as this is already registered as a valid URI
-bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy_string(std::string policy) {
-
-  // The central scheduler is currently running
-  // Cannot push agent side policy
-  if (central_scheduling.load() == true) {
+bool flexran::app::scheduler::flexible_scheduler::remove_slice(int agent_id,
+    const std::string& policy, std::string& error_reason)
+{
+  if (!rib_.get_agent(agent_id)) {
+    error_reason = "Agent does not exist";
+    LOG4CXX_ERROR(flog::app, "Agent " << agent_id << " does not exist");
     return false;
   }
 
-  // check if the policy file exist.
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-
-  // this might be different
-  for (auto& agent_id : agent_ids) {
-
-    LOG4CXX_INFO(flog::app, "Reconfigure agent " << agent_id << ": Applying the requested RRM policy string:\n" << policy);
-
-    reconfigure_agent_string(agent_id, policy);
-
+  protocol::flex_slice_config slice_config;
+  google::protobuf::util::Status ret;
+  ret = google::protobuf::util::JsonStringToMessage(policy, &slice_config,
+      google::protobuf::util::JsonParseOptions());
+  if (ret != google::protobuf::util::Status::OK) {
+    error_reason = "ProtoBuf parser error";
+    LOG4CXX_ERROR(flog::app,
+        "error while parsing ProtoBuf slice_config message:" << ret.ToString());
+    return false;
   }
 
+  // enforce every DL/UL slice has an ID and well formed parameters
+  for (int i = 0; i < slice_config.dl_size(); i++) {
+    if (!verify_dl_slice_removal(slice_config.dl(i), error_reason)) {
+      error_reason += " in DL slice configuration at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+    if (!rib_.get_agent(agent_id)->has_dl_slice(slice_config.dl(i).id())) {
+      error_reason = "DL slice " + std::to_string(slice_config.dl(i).id())
+          + " does not exist";
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+  }
+  for (int i = 0; i < slice_config.ul_size(); i++) {
+    if (!verify_ul_slice_removal(slice_config.ul(i), error_reason)) {
+      error_reason += " in UL slice configuration at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+    if (!rib_.get_agent(agent_id)->has_ul_slice(slice_config.ul(i).id())) {
+      error_reason = "UL slice " + std::to_string(slice_config.ul(i).id())
+          + " does not exist";
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+  }
+
+  push_slice_config_reconfiguration(agent_id, slice_config);
+  LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
+      << ":\n" << policy << "\n");
+
   return true;
-  
+}
+
+bool flexran::app::scheduler::flexible_scheduler::change_ue_slice_association(
+    int agent_id, const std::string& policy, std::string& error_reason)
+{
+  if (!rib_.get_agent(agent_id)) {
+    error_reason = "Agent does not exist";
+    LOG4CXX_ERROR(flog::app, "Agent " << agent_id << " does not exist");
+    return false;
+  }
+
+  protocol::flex_ue_config_reply ue_config_reply;
+  google::protobuf::util::Status ret;
+  ret = google::protobuf::util::JsonStringToMessage(policy, &ue_config_reply,
+      google::protobuf::util::JsonParseOptions());
+  if (ret != google::protobuf::util::Status::OK) {
+    error_reason = "ProtoBuf parser error";
+    LOG4CXX_ERROR(flog::app,
+        "error while parsing ProtoBuf ue_config_reply message:" << ret.ToString());
+    return false;
+  }
+
+  // enforce UE configaration
+  if (ue_config_reply.ue_config_size() == 0) {
+    error_reason = "Missing UE configuration";
+    LOG4CXX_ERROR(flog::app,
+        "the ue_config_reply message must contain a UE configuration");
+    return false;
+  }
+  // enforce UE configuration has both RNTI and UL or DL slice ID
+  for (int i = 0; i < ue_config_reply.ue_config_size(); i++) {
+    if (!verify_ue_slice_assoc_msg(ue_config_reply.ue_config(i), error_reason)) {
+      error_reason += " in UE-slice association at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+    if (ue_config_reply.ue_config(i).has_dl_slice_id()
+        && !rib_.get_agent(agent_id)->has_dl_slice(ue_config_reply.ue_config(i).dl_slice_id())) {
+      error_reason = "DL slice "
+          + std::to_string(ue_config_reply.ue_config(i).dl_slice_id())
+          + " does not exist";
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+    if (ue_config_reply.ue_config(i).has_ul_slice_id()
+        && !rib_.get_agent(agent_id)->has_ul_slice(ue_config_reply.ue_config(i).ul_slice_id())) {
+      error_reason = "UL slice "
+          + std::to_string(ue_config_reply.ue_config(i).ul_slice_id())
+          + " does not exist";
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+  }
+
+  for (int i = 0; i < ue_config_reply.ue_config_size(); i++) {
+    if (!verify_rnti_imsi(agent_id, ue_config_reply.mutable_ue_config(i), error_reason)) {
+      error_reason += " in UE-slice association at index " + std::to_string(i);
+      LOG4CXX_ERROR(flog::app, error_reason);
+      return false;
+    }
+  }
+
+  push_ue_config_reconfiguration(agent_id, ue_config_reply);
+  LOG4CXX_INFO(flog::app, "sent new UE configuration to agent "
+      << agent_id << ":\n" << policy << "\n");
+
+  return true;
 }
 
 void flexran::app::scheduler::flexible_scheduler::reconfigure_agent_file(int agent_id, std::string policy_name) {
@@ -737,4 +846,243 @@ flexran::app::scheduler::flexible_scheduler::get_scheduling_info(int agent_id) {
     return it->second;
   }
   return ::std::shared_ptr<enb_scheduling_info>(nullptr);
+}
+
+void flexran::app::scheduler::flexible_scheduler::push_slice_config_reconfiguration(
+    int agent_id, const protocol::flex_slice_config& slice_config, uint16_t cell_id)
+{
+  protocol::flex_header *config_header(new protocol::flex_header);
+  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
+  config_header->set_version(0);
+  config_header->set_xid(0);
+
+  protocol::flex_enb_config_reply *enb_config_msg(new protocol::flex_enb_config_reply);
+  enb_config_msg->add_cell_config();
+  enb_config_msg->mutable_cell_config(cell_id)->mutable_slice_config()->CopyFrom(slice_config);
+  enb_config_msg->set_allocated_header(config_header);
+
+  protocol::flexran_message config_message;
+  config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+  config_message.set_allocated_enb_config_reply_msg(enb_config_msg);
+  req_manager_.send_message(agent_id, config_message);
+}
+
+void flexran::app::scheduler::flexible_scheduler::push_ue_config_reconfiguration(
+    int agent_id, const protocol::flex_ue_config_reply& ue_config)
+{
+  protocol::flex_header *config_header(new protocol::flex_header);
+  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
+  config_header->set_version(0);
+  config_header->set_xid(0);
+
+  protocol::flex_ue_config_reply *ue_config_msg(new protocol::flex_ue_config_reply);
+  ue_config_msg->CopyFrom(ue_config);
+  ue_config_msg->set_allocated_header(config_header);
+
+  protocol::flexran_message config_message;
+  config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+  config_message.set_allocated_ue_config_reply_msg(ue_config_msg);
+  req_manager_.send_message(agent_id, config_message);
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_dl_slice_config(
+    const protocol::flex_dl_slice& s, std::string& error_message)
+{
+  if (!s.has_id()) {
+    error_message = "Missing slice ID";
+    return false;
+  }
+  if (s.id() > 255) {
+    error_message = "Slice ID must be within [0,255]";
+    return false;
+  }
+  /* label is enum */
+  if (s.has_percentage() && (s.percentage() < 1 || s.percentage() > 100)) {
+    error_message = "DL percentage must be within [1,100]";
+    return false;
+  }
+  /* isolation can only be true or false */
+  if (s.has_priority() && s.priority() > 20) {
+    error_message = "priority must be within [0,20]";
+    return false;
+  }
+  if (s.has_position_low() && s.position_low() > 25) {
+    error_message = "position_low must be within [0,25] (RBG)";
+    return false;
+  }
+  if (s.has_position_high() && s.position_high() > 25) {
+    error_message = "position_high must be within [0,25] (RBG)";
+    return false;
+  }
+  if (s.has_position_low() && s.has_position_high()
+      && s.position_low() >= s.position_high()) {
+    error_message = "position_low must be smaller than position_high";
+    return false;
+  }
+  if (s.has_maxmcs() && s.maxmcs() > 28) {
+    error_message = "maxmcs must be within [0,28]";
+    return false;
+  }
+  /* sorting is enum */
+  /* accounting is enum */
+  if (s.has_scheduler_name()) {
+    error_message = "setting another scheduler is not supported";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_dl_slice_removal(
+    const protocol::flex_dl_slice& s, std::string& error_message)
+{
+  if (!s.has_id()) {
+    error_message = "Missing slice ID";
+    return false;
+  }
+  if (s.id() > 255) {
+    error_message = "Slice ID must be within [1,255]";
+    return false;
+  }
+  if (s.id() == 0) {
+    error_message = "DL Slice 0 can not be deleted";
+    return false;
+  }
+  if (!s.has_percentage() || s.percentage() != 0) {
+    error_message = "Slice removal requires percentage to be set to 0";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_ul_slice_config(
+    const protocol::flex_ul_slice& s, std::string& error_message)
+{
+  if (!s.has_id()) {
+    error_message = "Missing slice ID";
+    return false;
+  }
+  if (s.id() > 255) {
+    error_message = "Slice ID must be within [0,255]";
+    return false;
+  }
+  /* label is enum */
+  if (s.has_percentage() && (s.percentage() < 1 || s.percentage() > 100)) {
+    error_message = "percentage must be within [1,100]";
+    return false;
+  }
+  /* isolation can only be true or false */
+  if (s.has_priority()) {
+    error_message = "slice priority is not supported";
+    return false;
+  }
+  if (s.has_first_rb() && s.first_rb() > 99) {
+    error_message = "first_rb must be within [0,99] (RB)";
+    return false;
+  }
+  /*if (s.has_length_rb()
+      && (s.length_rb() < 1 || s.length_rb() > 100)) {
+    error_message = "length_rb must be within [1,100] (RB)";
+    return false;
+  }
+  if (s.has_length_rb() && s.has_first_rb() && s.length_rb() + s.first_rb() > 100) {
+    error_message = "length_rb must be within [1,100-first_rb] (RB)";
+    return false;
+  }*/
+  if (s.has_maxmcs() && s.maxmcs() > 28) {
+    error_message = "maxmcs must be within [0,28]";
+    return false;
+  }
+  /* sorting is enum */
+  /* accounting is enum */
+  if (s.has_scheduler_name()) {
+    error_message = "setting another scheduler is not supported";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_ul_slice_removal(
+    const protocol::flex_ul_slice& s, std::string& error_message)
+{
+  if (!s.has_id()) {
+    error_message = "Missing slice ID";
+    return false;
+  }
+  if (s.id() > 255) {
+    error_message = "Slice ID must be within [1,255]";
+    return false;
+  }
+  if (s.id() == 0) {
+    error_message = "UL Slice 0 can not be deleted";
+    return false;
+  }
+  if (!s.has_percentage() || s.percentage() != 0) {
+    error_message = "Slice removal requires percentage to be set to 0";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_ue_slice_assoc_msg(
+    const protocol::flex_ue_config& c, std::string& error_message)
+{
+
+  if (!c.has_rnti() && !c.has_imsi()) {
+    error_message = "Missing RNTI or IMSI";
+    return false;
+  }
+  if (!c.has_dl_slice_id() && !c.has_ul_slice_id()) {
+    error_message = "No DL or UL slice ID";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_rnti_imsi(
+    int agent_id, protocol::flex_ue_config *c, std::string& error_message)
+{
+  // if RNTI present but there is no corresponding UE, abort
+  if (c->has_rnti() && !rib_.get_agent(agent_id)->get_ue_mac_info(c->rnti())) {
+    error_message = "a UE with RNTI" + std::to_string(c->rnti()) + " does not exist";
+    return false;
+  }
+
+  // there is an RNTI, the corresponding UE exists and no IMSI that could
+  // contradict -> can leave
+  if (!c->has_imsi())
+    return true;
+
+  uint64_t imsi = c->imsi();
+  flexran::rib::rnti_t rnti;
+  if (!rib_.get_agent(agent_id)->get_rnti(imsi, rnti)) {
+    error_message = "IMSI " + std::to_string(imsi) + " is not present";
+    return false;
+  }
+
+  if (rnti == 0) {
+      error_message = "found invalid RNTI 0 for IMSI " + std::to_string(imsi);
+      return false;
+  }
+
+  if (c->has_rnti() && c->rnti() != rnti) {
+    error_message = "RNTI-IMSI mismatch";
+    return false;
+  }
+
+  c->set_rnti(rnti);
+  return true;
+}
+
+int flexran::app::scheduler::flexible_scheduler::parse_enb_agent_id(
+    const std::string& enb_agent_id_s) const
+{
+  return rib_.parse_enb_agent_id(enb_agent_id_s);
+}
+
+int flexran::app::scheduler::flexible_scheduler::get_last_agent() const
+{
+  if (rib_.get_available_agents().empty())
+    return -1;
+
+  return *std::prev(rib_.get_available_agents().end());
 }

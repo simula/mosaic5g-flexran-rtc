@@ -324,6 +324,13 @@ bool flexran::rib::Rib::dump_ue_by_imsi_by_agent_id_to_json_string(uint64_t imsi
   return it->second->dump_ue_spec_stats_by_imsi_to_json_string(imsi, out);
 }
 
+int flexran::rib::Rib::get_agent_id(uint64_t enb_id) const
+{
+  auto it = find_agent(enb_id);
+  if (it == eNB_configs_.end()) return -1;
+  return it->first;
+}
+
 std::map<int, std::shared_ptr<flexran::rib::enb_rib_info>>::const_iterator
 flexran::rib::Rib::find_agent(uint64_t enb_id) const
 {

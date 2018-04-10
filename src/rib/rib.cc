@@ -43,7 +43,8 @@ void flexran::rib::Rib::new_eNB_config_entry(int agent_id) {
 						     std::shared_ptr<enb_rib_info>(new enb_rib_info(agent_id))));
 }
 
-bool flexran::rib::Rib::has_eNB_config_entry(int agent_id) {
+bool flexran::rib::Rib::has_eNB_config_entry(int agent_id) const
+{
   auto it = eNB_configs_.find(agent_id);
   return it != eNB_configs_.end();
 }

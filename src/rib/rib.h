@@ -45,7 +45,7 @@ namespace flexran {
       
       // eNB config management
       void new_eNB_config_entry(int agent_id);
-      bool has_eNB_config_entry(int agent_id);
+      bool has_eNB_config_entry(int agent_id) const;
       void remove_eNB_config_entry(int agent_id);
       void eNB_config_update(int agent_id,
 			     const protocol::flex_enb_config_reply& enb_config_update);

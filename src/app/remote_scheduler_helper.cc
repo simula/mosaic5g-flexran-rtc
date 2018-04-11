@@ -27,9 +27,10 @@
 #include "remote_scheduler.h"
 #include "remote_scheduler_primitives.h"
 
-void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_preprocessor(protocol::flex_cell_config& cell_config,
-											protocol::flex_ue_config_reply& ue_configs,
-											protocol::flex_lc_config_reply& lc_configs,
+void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_preprocessor(
+                      const protocol::flex_cell_config& cell_config,
+											const protocol::flex_ue_config_reply& ue_configs,
+											const protocol::flex_lc_config_reply& lc_configs,
 											std::shared_ptr<flexran::rib::enb_rib_info> agent_config,
 											std::shared_ptr<enb_scheduling_info> sched_info,
 											flexran::rib::frame_t frame,
@@ -261,7 +262,8 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
  // }
 }
 
-void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_allocation(protocol::flex_cell_config& cell_config,
+void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_allocation(
+                      const protocol::flex_cell_config& cell_config,
 											std::shared_ptr<enb_scheduling_info> sched_info,
 											std::shared_ptr<ue_scheduling_info> ue_sched_info,
 											int transmission_mode) {
@@ -307,7 +309,7 @@ void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_all
 
 void flexran::app::scheduler::remote_scheduler_helper::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 									   ::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info,
-									   protocol::flex_cell_config& cell_config,
+									   const protocol::flex_cell_config& cell_config,
 									   const protocol::flex_lc_ue_config& lc_ue_config) {
   uint16_t TBS = 0;
   

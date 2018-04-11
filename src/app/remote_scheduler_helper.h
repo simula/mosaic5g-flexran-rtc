@@ -58,9 +58,9 @@ namespace flexran {
 	
       public:
       
-	static void run_dlsch_scheduler_preprocessor(protocol::flex_cell_config& cell_config,
-						     protocol::flex_ue_config_reply& ue_configs,
-						     protocol::flex_lc_config_reply& lc_configs,
+	static void run_dlsch_scheduler_preprocessor(const protocol::flex_cell_config& cell_config,
+						     const protocol::flex_ue_config_reply& ue_configs,
+						     const protocol::flex_lc_config_reply& lc_configs,
 						     ::std::shared_ptr<rib::enb_rib_info> agent_config,
 						     ::std::shared_ptr<enb_scheduling_info> sched_info,
 						     rib::frame_t frame,
@@ -68,10 +68,10 @@ namespace flexran {
       
 	static void assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 					::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info,
-					protocol::flex_cell_config& cell_config,
+					const protocol::flex_cell_config& cell_config,
 					const protocol::flex_lc_ue_config& lc_ue_config);
 	
-	static void perform_pre_processor_allocation(protocol::flex_cell_config& cell_config,
+	static void perform_pre_processor_allocation(const protocol::flex_cell_config& cell_config,
 						     std::shared_ptr<enb_scheduling_info> sched_info,
 						     std::shared_ptr<ue_scheduling_info> ue_sched_info,
 						     int transmission_mode);

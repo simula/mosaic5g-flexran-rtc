@@ -267,9 +267,9 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     protocol::flexran_message out_message;
     
     ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
-    protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
     rib::frame_t current_frame = agent_config->get_current_frame();
     rib::subframe_t current_subframe = agent_config->get_current_subframe();

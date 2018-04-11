@@ -86,13 +86,13 @@ namespace flexran {
       subframe_t get_current_subframe() const { return current_subframe_; }
 
       //! Access is only safe when the RIB is not active, i.e. within apps
-      protocol::flex_enb_config_reply& get_enb_config() {return eNB_config_;}
+      const protocol::flex_enb_config_reply& get_enb_config() const {return eNB_config_;}
 
       //! Access is only safe when the RIB is not active, i.e. within apps
-      protocol::flex_ue_config_reply& get_ue_configs() {return ue_config_;}
+      const protocol::flex_ue_config_reply& get_ue_configs() const {return ue_config_;}
 
       //! Access is only safe when the RIB is not active, i.e. within apps
-      protocol::flex_lc_config_reply& get_lc_configs() {return lc_config_;}
+      const protocol::flex_lc_config_reply& get_lc_configs() const {return lc_config_;}
 
       std::chrono::steady_clock::time_point last_active() const { return last_checked; }
 

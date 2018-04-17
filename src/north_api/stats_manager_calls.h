@@ -30,12 +30,6 @@
 #include "app_calls.h"
 #include "stats_manager.h"
 
-namespace REQ_TYPE {
-  constexpr const char *ALL_STATS = "all";
-  constexpr const char *ENB_CONFIG = "enb_config";
-  constexpr const char *MAC_STATS = "mac_stats";
-}
-
 namespace flexran {
 
   namespace north_api {
@@ -61,8 +55,6 @@ namespace flexran {
       static bool parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id);
 
       std::shared_ptr<flexran::app::stats::stats_manager> stats_app;
-      static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 3;
-      static constexpr const size_t RNTI_ID_LENGTH_LIMIT  = 6;
 
     };
   }

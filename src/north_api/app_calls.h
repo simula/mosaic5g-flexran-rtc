@@ -26,6 +26,12 @@
 
 #include <pistache/router.h>
 
+namespace REQ_TYPE {
+  constexpr const char *ALL_STATS  = "all";
+  constexpr const char *ENB_CONFIG = "enb_config";
+  constexpr const char *MAC_STATS  = "mac_stats";
+}
+
 namespace flexran {
 
   namespace north_api {
@@ -35,6 +41,8 @@ namespace flexran {
     public:
 
       virtual void register_calls(Pistache::Rest::Router& router) = 0;
+      static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 3;
+      static constexpr const size_t RNTI_ID_LENGTH_LIMIT  = 6;
 
     };
   }

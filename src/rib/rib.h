@@ -94,12 +94,14 @@ namespace flexran {
       bool dump_ue_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const;
 
       int get_agent_id(uint64_t enb_id) const;
+      int parse_enb_agent_id(const std::string& enb_agent_id_s) const;
       
     private:
       std::map<int, std::shared_ptr<enb_rib_info>>::const_iterator find_agent(uint64_t enb_id) const;
       
       std::map<int, std::shared_ptr<enb_rib_info>> eNB_configs_;
       std::set<int> pending_agents_;
+      static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 4;
       
     };
 

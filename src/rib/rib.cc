@@ -332,6 +332,34 @@ int flexran::rib::Rib::get_agent_id(uint64_t enb_id) const
   return it->first;
 }
 
+int flexran::rib::Rib::parse_enb_agent_id(const std::string& enb_agent_id_s) const
+{
+  if (enb_agent_id_s == "-1") {
+    return eNB_configs_.empty() ? -1 : std::prev(eNB_configs_.end())->first;
+  }
+  uint64_t enb_id;
+  if (enb_agent_id_s.length() >= AGENT_ID_LENGTH_LIMIT && enb_agent_id_s.substr(0, 2) == "0x") {
+    /* it is in long form and hex -> it must be an eNodeB ID */
+    try {
+      enb_id = std::stoll(enb_agent_id_s, 0, 16);
+    } catch (std::invalid_argument e) {
+      return -1;
+    }
+    return get_agent_id(enb_id);
+  }
+
+  try {
+    enb_id = std::stoll(enb_agent_id_s);
+  } catch (std::invalid_argument e) {
+    return -1;
+  }
+  if (enb_agent_id_s.length() >= AGENT_ID_LENGTH_LIMIT)
+    return get_agent_id(enb_id);
+  /* it is short -> it is sure it fits in an int */
+  if (!get_agent(enb_id)) return -1;
+  return enb_id;
+}
+
 std::map<int, std::shared_ptr<flexran::rib::enb_rib_info>>::const_iterator
 flexran::rib::Rib::find_agent(uint64_t enb_id) const
 {

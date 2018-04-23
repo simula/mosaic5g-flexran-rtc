@@ -96,11 +96,13 @@ namespace flexran {
 
       std::chrono::steady_clock::time_point last_active() const { return last_checked; }
 
-      std::shared_ptr<ue_mac_rib_info> get_ue_mac_info(rnti_t rnti);
+      std::shared_ptr<ue_mac_rib_info> get_ue_mac_info(rnti_t rnti) const;
 
       cell_mac_rib_info& get_cell_mac_rib_info(uint16_t cell_id) {
 	return cell_mac_info_[cell_id];
       }
+
+      bool get_rnti(uint64_t imsi, rnti_t& rnti) const;
       
     private:
       int agent_id_;

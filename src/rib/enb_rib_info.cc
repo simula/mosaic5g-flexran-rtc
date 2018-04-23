@@ -163,7 +163,8 @@ void flexran::rib::enb_rib_info::update_mac_stats(const protocol::flex_stats_rep
   }
 }
 
-std::shared_ptr<flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) {
+std::shared_ptr<flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) const
+{
   auto it = ue_mac_info_.find(rnti);
   if (it != ue_mac_info_.end()) {
     return it->second;
@@ -309,6 +310,19 @@ bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_imsi_to_json_string(uint6
   for (int i = 0; i < ue_config_.ue_config_size(); i++) {
     if (imsi == ue_config_.ue_config(i).imsi()) {
       return dump_ue_spec_stats_by_rnti_to_json_string(ue_config_.ue_config(i).rnti(), out);
+    }
+  }
+  return false;
+}
+
+bool flexran::rib::enb_rib_info::get_rnti(uint64_t imsi, rnti_t& rnti) const
+{
+  std::lock_guard<std::mutex> lg(ue_config_mutex_);
+  for (int i = 0; i < ue_config_.ue_config_size(); i++) {
+    if (ue_config_.ue_config(i).has_imsi()
+        && imsi == ue_config_.ue_config(i).imsi()) {
+      rnti = ue_config_.ue_config(i).rnti();
+      return true;
     }
   }
   return false;

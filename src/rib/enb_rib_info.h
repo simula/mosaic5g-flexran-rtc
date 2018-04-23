@@ -103,6 +103,10 @@ namespace flexran {
       }
 
       bool get_rnti(uint64_t imsi, rnti_t& rnti) const;
+      bool has_dl_slice(uint32_t slice_id, uint16_t cell_id = 0) const;
+      uint32_t num_dl_slices(uint16_t cell_id = 0) const;
+      bool has_ul_slice(uint32_t slice_id, uint16_t cell_id = 0) const;
+      uint32_t num_ul_slices(uint16_t cell_id = 0) const;
       
     private:
       int agent_id_;

@@ -327,3 +327,39 @@ bool flexran::rib::enb_rib_info::get_rnti(uint64_t imsi, rnti_t& rnti) const
   }
   return false;
 }
+
+bool flexran::rib::enb_rib_info::has_dl_slice(uint32_t slice_id, uint16_t cell_id) const
+{
+  std::lock_guard<std::mutex> lg(eNB_config_mutex_);
+  const protocol::flex_slice_config& s = eNB_config_.cell_config(cell_id).slice_config();
+  for (int i = 0; i < s.dl_size(); i++) {
+    if (s.dl(i).id() == slice_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+uint32_t flexran::rib::enb_rib_info::num_dl_slices(uint16_t cell_id) const
+{
+  std::lock_guard<std::mutex> lg(eNB_config_mutex_);
+  return eNB_config_.cell_config(cell_id).slice_config().dl_size();
+}
+
+bool flexran::rib::enb_rib_info::has_ul_slice(uint32_t slice_id, uint16_t cell_id) const
+{
+  std::lock_guard<std::mutex> lg(eNB_config_mutex_);
+  const protocol::flex_slice_config& s = eNB_config_.cell_config(cell_id).slice_config();
+  for (int i = 0; i < s.ul_size(); i++) {
+    if (s.ul(i).id() == slice_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+uint32_t flexran::rib::enb_rib_info::num_ul_slices(uint16_t cell_id) const
+{
+  std::lock_guard<std::mutex> lg(eNB_config_mutex_);
+  return eNB_config_.cell_config(cell_id).slice_config().ul_size();
+}

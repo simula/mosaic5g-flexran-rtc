@@ -24,6 +24,7 @@
 #include <pistache/http.h>
 
 #include "flexible_sched_calls.h"
+#include "flexran_log.h"
 
 void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Router& router)
 {
@@ -314,6 +315,28 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    */
   Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:id?",
       Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_ue_slice_assoc, this));
+
+  /**
+   * @api {post} /yaml/:id? Send arbitrary YAML to the agent
+   * @apiName YamlCompat
+   * @apiGroup user/slice/BS policies
+   *
+   * @apiDeprecated This method is for internal tests and should not be used.
+   * It might be dysfunctional or make the agent break and be removed in the
+   * future.
+   *
+   * @apiDescription Send arbitrary YAML files to the indicated agent.
+   *
+   * @apiParam {Number} [id=-1] The ID of the agent to which the file should be
+   * sent. This can be one of the following: -1 (last added agent), the eNB ID
+   * (in hex or decimal) or the internal agent ID which can be obtained through
+   * a `stats` call. Numbers smaller than 1000 are parsed as the agent ID.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   */
+  Pistache::Rest::Routes::Post(router, "/yaml/:id?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::yaml_compat, this));
 }
 
 void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
@@ -474,4 +497,26 @@ void flexran::north_api::flexible_sched_calls::change_ue_slice_assoc(
   }
 
   response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::flexible_sched_calls::yaml_compat(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = request.hasParam(":id") ?
+      sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
+      sched_app->get_last_agent();
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Not_Found, "Policy not set (no such agent)\n");
+    return;
+  }
+  if (request.body().length() == 0) {
+    response.send(Pistache::Http::Code::Not_Found, "Policy not set (body is empty)\n");
+    return;
+  }
+
+  LOG4CXX_INFO(flog::app, "sending YAML request to agent " << agent_id
+      << " (compat):\n" << request.body());
+  sched_app->reconfigure_agent_string(agent_id, request.body());
+  response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
 }

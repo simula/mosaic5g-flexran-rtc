@@ -44,6 +44,7 @@ namespace flexran {
       void register_calls(Pistache::Rest::Router& router);
 
       void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void yaml_compat(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void apply_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void apply_slice_config_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

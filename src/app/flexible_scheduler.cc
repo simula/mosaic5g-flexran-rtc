@@ -25,6 +25,7 @@
 #include <string>
 #include <streambuf>
 #include <fstream>
+#include <map>
 
 #include <google/protobuf/util/json_util.h>
 
@@ -1018,6 +1019,57 @@ bool flexran::app::scheduler::flexible_scheduler::verify_ul_slice_removal(
   }
   if (!s.has_percentage() || s.percentage() != 0) {
     error_message = "Slice removal requires percentage to be set to 0";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_global_slice_percentage(
+    int agent_id, const protocol::flex_slice_config& c, std::string& error_message)
+{
+  auto h = rib_.get_agent(agent_id);
+  if (h == nullptr) {
+    error_message = "no such agent";
+    return false;
+  }
+  const protocol::flex_slice_config& ex = h->get_enb_config().cell_config(0).slice_config();
+  return verify_global_dl_slice_percentage(ex, c, error_message)
+      && verify_global_ul_slice_percentage(ex, c, error_message);
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_global_dl_slice_percentage(
+    const protocol::flex_slice_config& existing,
+    const protocol::flex_slice_config& update, std::string& error_message)
+{
+  std::map<int, int> slice_pct;
+  for (int i = 0; i < existing.dl_size(); i++)
+    slice_pct[existing.dl(i).id()] = existing.dl(i).percentage();
+  for (int i = 0; i < update.dl_size(); i++)
+    slice_pct[update.dl(i).id()] = existing.dl(i).percentage();
+  int sum = 0;
+  for (const auto &p: slice_pct)
+    sum += p.second;
+  if (sum > 100) {
+    error_message = "resulting DL slice sum percentage exceeds 100";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_global_ul_slice_percentage(
+    const protocol::flex_slice_config& existing,
+    const protocol::flex_slice_config& update, std::string& error_message)
+{
+  std::map<int, int> slice_pct;
+  for (int i = 0; i < existing.ul_size(); i++)
+    slice_pct[existing.ul(i).id()] = existing.ul(i).percentage();
+  for (int i = 0; i < update.ul_size(); i++)
+    slice_pct[update.ul(i).id()] = existing.ul(i).percentage();
+  int sum = 0;
+  for (const auto &p: slice_pct)
+    sum += p.second;
+  if (sum > 100) {
+    error_message = "resulting UL slice sum percentage exceeds 100";
     return false;
   }
   return true;

@@ -85,6 +85,16 @@ namespace flexran {
             std::string& error_message);
         static bool verify_ul_slice_removal(const protocol::flex_ul_slice& s,
             std::string& error_message);
+        bool verify_global_slice_percentage(int agent_id,
+            const protocol::flex_slice_config& c, std::string& error_message);
+        bool verify_global_dl_slice_percentage(
+            const protocol::flex_slice_config& existing,
+            const protocol::flex_slice_config& update,
+            std::string& error_message);
+        bool verify_global_ul_slice_percentage(
+            const protocol::flex_slice_config& existing,
+            const protocol::flex_slice_config& update,
+            std::string& error_message);
         static bool verify_ue_slice_assoc_msg(const protocol::flex_ue_config& c,
             std::string& error_message);
         bool verify_rnti_imsi(int agent_id, protocol::flex_ue_config *c,

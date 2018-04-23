@@ -23,10 +23,10 @@
 
 #include <pistache/http.h>
 
-#include "flexible_sched_calls.h"
 #include "flexran_log.h"
+#include "rrm_calls.h"
 
-void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Router& router)
+void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& router)
 {
   /**
    * @api {post} /dl_sched/:sched_type Set scheduler type
@@ -44,7 +44,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    * @apiVersion v0.1.0
    * @apiPermission None
    */
-  Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
+  Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_scheduler, this));
 
   /**
    * @api {post} /slice/enb/:id? Post a slice configuration
@@ -120,7 +120,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    *    { "error": "Protobuf parser error" }
    */
   Pistache::Rest::Routes::Post(router, "/slice/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_slice_config, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::apply_slice_config, this));
 
   /**
    * @api {post} /slice/enb/:id? Create a new pair of slices (short version)
@@ -163,7 +163,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    *    { "error": "invalid slice ID" }
    */
   Pistache::Rest::Routes::Post(router, "/slice/enb/:id/slice/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_slice_config_short, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::apply_slice_config_short, this));
 
   /**
    * @api {delete} /slice/enb/:id? Delete slices
@@ -221,7 +221,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    *    { "error": "Protobuf parser error" }
    */
   Pistache::Rest::Routes::Delete(router, "/slice/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::remove_slice_config, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_slice_config, this));
 
   /**
    * @api {delete} /slice/enb/:id/slice/:slice_id Delete slices (short version)
@@ -258,7 +258,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    *    { "error": "can not find DL slice ID" }
    */
   Pistache::Rest::Routes::Delete(router, "/slice/enb/:id/slice/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::remove_slice_config_short, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_slice_config_short, this));
 
   /**
    * @api {post} /ue_slice_assoc/enb/:id? Change the UE-slice association
@@ -314,7 +314,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    *    { "error": "Protobuf parser error" }
    */
   Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_ue_slice_assoc, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc, this));
 
   /**
    * @api {post} /yaml/:id? Send arbitrary YAML to the agent
@@ -336,10 +336,10 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
    * @apiPermission None
    */
   Pistache::Rest::Routes::Post(router, "/yaml/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::yaml_compat, this));
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::yaml_compat, this));
 }
 
-void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+void flexran::north_api::rrm_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
 
   auto sched_type = request.param(":sched_type").as<int>();
   
@@ -355,7 +355,7 @@ void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::
   
 }
 
-void flexran::north_api::flexible_sched_calls::apply_slice_config(
+void flexran::north_api::rrm_calls::apply_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
@@ -385,7 +385,7 @@ void flexran::north_api::flexible_sched_calls::apply_slice_config(
   response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::apply_slice_config_short(
+void flexran::north_api::rrm_calls::apply_slice_config_short(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
@@ -412,7 +412,7 @@ void flexran::north_api::flexible_sched_calls::apply_slice_config_short(
   response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::remove_slice_config(
+void flexran::north_api::rrm_calls::remove_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
@@ -442,7 +442,7 @@ void flexran::north_api::flexible_sched_calls::remove_slice_config(
   response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::remove_slice_config_short(
+void flexran::north_api::rrm_calls::remove_slice_config_short(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
@@ -469,7 +469,7 @@ void flexran::north_api::flexible_sched_calls::remove_slice_config_short(
   response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::change_ue_slice_assoc(
+void flexran::north_api::rrm_calls::change_ue_slice_assoc(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
@@ -499,7 +499,7 @@ void flexran::north_api::flexible_sched_calls::change_ue_slice_assoc(
   response.send(Pistache::Http::Code::Ok, "");
 }
 
-void flexran::north_api::flexible_sched_calls::yaml_compat(
+void flexran::north_api::rrm_calls::yaml_compat(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {

@@ -21,8 +21,8 @@
    SOFTWARE.
 */
 
-#ifndef FLEXIBLE_SCHED_CALLS_H_
-#define FLEXIBLE_SCHED_CALLS_H_
+#ifndef RRM_CALLS_H_
+#define RRM_CALLS_H_
 
 #include <pistache/http.h>
 
@@ -33,11 +33,11 @@ namespace flexran {
 
   namespace north_api {
 
-    class flexible_sched_calls : public app_calls {
+    class rrm_calls : public app_calls {
 
     public:
 
-      flexible_sched_calls(std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched)
+      rrm_calls(std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched)
 	: sched_app(flex_sched)
       { }
       
@@ -63,4 +63,4 @@ namespace flexran {
 }
 
 
-#endif /* FLEXIBLE_SCHED_CALLS_H_ */
+#endif /* RRM_CALLS_H_ */

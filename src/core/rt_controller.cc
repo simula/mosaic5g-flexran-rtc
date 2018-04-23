@@ -56,7 +56,7 @@
 #ifdef REST_NORTHBOUND
 
 #include "call_manager.h"
-#include "flexible_sched_calls.h"
+#include "rrm_calls.h"
 #include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
 #include "recorder_calls.h"
@@ -239,14 +239,14 @@ int main(int argc, char* argv[]) {
   //flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
 
   // Register API calls for the developed applications
-  flexran::north_api::flexible_sched_calls scheduler_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
+  flexran::north_api::rrm_calls rrm_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
 
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
 
   flexran::north_api::recorder_calls recorder_calls(std::dynamic_pointer_cast<flexran::app::log::recorder>(recorder));
   
   //north_api.register_calls(rrc_calls);
-  north_api.register_calls(scheduler_calls);
+  north_api.register_calls(rrm_calls);
   north_api.register_calls(stats_calls);
   north_api.register_calls(recorder_calls);
 

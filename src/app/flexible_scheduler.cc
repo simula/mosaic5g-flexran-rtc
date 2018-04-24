@@ -1051,7 +1051,9 @@ bool flexran::app::scheduler::flexible_scheduler::verify_global_dl_slice_percent
   for (int i = 0; i < existing.dl_size(); i++)
     slice_pct[existing.dl(i).id()] = existing.dl(i).percentage();
   for (int i = 0; i < update.dl_size(); i++)
-    slice_pct[update.dl(i).id()] = existing.dl(i).percentage();
+    // the agent will copy the values from slice 0 if not specified, so do we
+    slice_pct[update.dl(i).id()] = update.dl(i).has_percentage() ?
+        update.dl(i).percentage() : slice_pct[0];
   int sum = 0;
   for (const auto &p: slice_pct)
     sum += p.second;
@@ -1070,7 +1072,9 @@ bool flexran::app::scheduler::flexible_scheduler::verify_global_ul_slice_percent
   for (int i = 0; i < existing.ul_size(); i++)
     slice_pct[existing.ul(i).id()] = existing.ul(i).percentage();
   for (int i = 0; i < update.ul_size(); i++)
-    slice_pct[update.ul(i).id()] = existing.ul(i).percentage();
+    // the agent will copy the values from slice 0 if not specified, so do we
+    slice_pct[update.ul(i).id()] = update.ul(i).has_percentage() ?
+        update.ul(i).percentage() : slice_pct[0];
   int sum = 0;
   for (const auto &p: slice_pct)
     sum += p.second;

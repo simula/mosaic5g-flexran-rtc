@@ -110,6 +110,12 @@ bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(
     }
   }
 
+  // enforce that the sum percentage is equal or below 100 percent
+  if (!verify_global_slice_percentage(agent_id, slice_config, error_reason)) {
+    LOG4CXX_ERROR(flog::app, error_reason);
+    return false;
+  }
+
   push_slice_config_reconfiguration(agent_id, slice_config);
   LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
       << ":\n" << policy << "\n");

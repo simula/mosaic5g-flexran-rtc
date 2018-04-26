@@ -927,7 +927,7 @@ bool flexran::app::scheduler::flexible_scheduler::verify_dl_slice_config(
     return false;
   }
   if (s.has_maxmcs() && s.maxmcs() > 28) {
-    error_message = "maxmcs must be within [0,28]";
+    error_message = "DL maxmcs must be within [0,28]";
     return false;
   }
   /* sorting is enum */
@@ -995,8 +995,8 @@ bool flexran::app::scheduler::flexible_scheduler::verify_ul_slice_config(
     error_message = "length_rb must be within [1,100-first_rb] (RB)";
     return false;
   }*/
-  if (s.has_maxmcs() && s.maxmcs() > 28) {
-    error_message = "maxmcs must be within [0,28]";
+  if (s.has_maxmcs() && s.maxmcs() > 20) {
+    error_message = "UL maxmcs must be within [0,20]";
     return false;
   }
   /* sorting is enum */

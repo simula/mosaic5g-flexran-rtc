@@ -62,6 +62,8 @@ namespace flexran {
             std::string& error_reason);
         bool change_ue_slice_association(int agent_id, const std::string& policy,
             std::string& error_reason);
+        bool apply_cell_config_policy(int agent_id, const std::string& policy,
+            std::string& error_reason);
 
 	static int32_t tpc_accumulated;
 
@@ -75,8 +77,8 @@ namespace flexran {
 	void run_central_scheduler();
 	void push_code(int agent_id, std::string function_name, std::string lib_name);
 
-        void push_slice_config_reconfiguration(int agent_id,
-            const protocol::flex_slice_config& slice_config, uint16_t cc_id = 0);
+        void push_cell_config_reconfiguration(int agent_id,
+            const protocol::flex_cell_config& cell_config);
         void push_ue_config_reconfiguration(int agent_id,
             const protocol::flex_ue_config_reply& ue_config);
         static bool verify_dl_slice_config(const protocol::flex_dl_slice& s,
@@ -102,6 +104,8 @@ namespace flexran {
         bool verify_rnti_imsi(int agent_id, protocol::flex_ue_config *c,
             std::string& error_message);
         bool try_add_first_rb(int agent_id, protocol::flex_ul_slice& slice);
+        static bool verify_cell_config_for_restart(const protocol::flex_cell_config& c,
+            std::string& error_message);
 	
 	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
 	

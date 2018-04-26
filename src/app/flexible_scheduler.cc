@@ -138,7 +138,9 @@ bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(
         << slice_config.ul(0).first_rb() << " so that it does not clash in "
         << "the agent. You can override this by specifying a firstRb value.");
 
-  push_slice_config_reconfiguration(agent_id, slice_config);
+  protocol::flex_cell_config cell_config;
+  cell_config.mutable_slice_config()->CopyFrom(slice_config);
+  push_cell_config_reconfiguration(agent_id, cell_config);
   std::string pol_corrected;
   google::protobuf::util::JsonPrintOptions opt;
   opt.add_whitespace = true;
@@ -197,8 +199,11 @@ bool flexran::app::scheduler::flexible_scheduler::remove_slice(int agent_id,
     }
   }
 
-  push_slice_config_reconfiguration(agent_id, slice_config);
-  LOG4CXX_INFO(flog::app, "sent remove slice command to agent " << agent_id);
+  protocol::flex_cell_config cell_config;
+  cell_config.mutable_slice_config()->CopyFrom(slice_config);
+  push_cell_config_reconfiguration(agent_id, cell_config);
+  LOG4CXX_INFO(flog::app, "sent remove slice command to agent " << agent_id
+      << ":\n" << policy << "\n");
 
   return true;
 }
@@ -270,6 +275,38 @@ bool flexran::app::scheduler::flexible_scheduler::change_ue_slice_association(
   google::protobuf::util::MessageToJsonString(ue_config_reply, &pol_corrected, opt);
   LOG4CXX_INFO(flog::app, "sent new UE configuration to agent "
       << agent_id << ":\n" << pol_corrected);
+
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::apply_cell_config_policy(
+    int agent_id, const std::string& policy, std::string& error_reason)
+{
+  if (!rib_.get_agent(agent_id)) {
+    error_reason = "Agent does not exist";
+    LOG4CXX_ERROR(flog::app, "Agent " << agent_id << " does not exist");
+    return false;
+  }
+
+  protocol::flex_cell_config cell_config;
+  google::protobuf::util::Status ret;
+  ret = google::protobuf::util::JsonStringToMessage(policy, &cell_config,
+      google::protobuf::util::JsonParseOptions());
+  if (ret != google::protobuf::util::Status::OK) {
+    error_reason = "ProtoBuf parser error";
+    LOG4CXX_ERROR(flog::app,
+        "error while parsing ProtoBuf ue_config_reply message:" << ret.ToString());
+    return false;
+  }
+
+  if (!verify_cell_config_for_restart(cell_config, error_reason)) {
+    LOG4CXX_ERROR(flog::app, error_reason);
+    return false;
+  }
+
+  push_cell_config_reconfiguration(agent_id, cell_config);
+  LOG4CXX_INFO(flog::app, "sent new cell configuration to agent " << agent_id
+      << ":\n" << policy << "\n");
 
   return true;
 }
@@ -884,8 +921,8 @@ flexran::app::scheduler::flexible_scheduler::get_scheduling_info(int agent_id) {
   return ::std::shared_ptr<enb_scheduling_info>(nullptr);
 }
 
-void flexran::app::scheduler::flexible_scheduler::push_slice_config_reconfiguration(
-    int agent_id, const protocol::flex_slice_config& slice_config, uint16_t cell_id)
+void flexran::app::scheduler::flexible_scheduler::push_cell_config_reconfiguration(
+    int agent_id, const protocol::flex_cell_config& cell_config)
 {
   protocol::flex_header *config_header(new protocol::flex_header);
   config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
@@ -894,7 +931,7 @@ void flexran::app::scheduler::flexible_scheduler::push_slice_config_reconfigurat
 
   protocol::flex_enb_config_reply *enb_config_msg(new protocol::flex_enb_config_reply);
   enb_config_msg->add_cell_config();
-  enb_config_msg->mutable_cell_config(cell_id)->mutable_slice_config()->CopyFrom(slice_config);
+  enb_config_msg->mutable_cell_config(0)->CopyFrom(cell_config);
   enb_config_msg->set_allocated_header(config_header);
 
   protocol::flexran_message config_message;
@@ -1161,6 +1198,197 @@ bool flexran::app::scheduler::flexible_scheduler::verify_rnti_imsi(
   }
 
   c->set_rnti(rnti);
+  return true;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::verify_cell_config_for_restart(
+    const protocol::flex_cell_config& c, std::string& error_message)
+{
+  if (c.has_phy_cell_id()) {
+    error_message = "setting phy_cell_id not supported";
+    return false;
+  }
+  if (c.has_cell_id()) {
+    error_message = "setting cell_id not supported";
+    return false;
+  }
+  if (c.has_pusch_hopping_offset()) {
+    error_message = "setting pusch_hopping_offset not supported";
+    return false;
+  }
+  if (c.has_hopping_mode()) {
+    error_message = "setting hopping_mode not supported";
+    return false;
+  }
+  if (c.has_n_sb()) {
+    error_message = "setting n_sb not supported";
+    return false;
+  }
+  if (c.has_phich_resource()) {
+    error_message = "setting phich_resource not supported";
+    return false;
+  }
+  if (c.has_phich_duration()) {
+    error_message = "setting phich_durationnot supported";
+    return false;
+  }
+  if (c.has_init_nr_pdcch_ofdm_sym()) {
+    error_message = "setting init_nr_pdcch_ofdm_sym not supported";
+    return false;
+  }
+  if (c.has_si_config()) {
+    error_message = "setting si_config not supported";
+    return false;
+  }
+  if (c.has_ul_cyclic_prefix_length()) {
+    error_message = "setting ul_cyclic_prefix_length not supported";
+    return false;
+  }
+  if (c.has_dl_cyclic_prefix_length()) {
+    error_message = "setting dl_cyclic_prefix_length not supported";
+    return false;
+  }
+  if (c.has_antenna_ports_count()) {
+    error_message = "setting antenna_ports_count not supported";
+    return false;
+  }
+  if (c.has_duplex_mode()) {
+    error_message = "setting duplex_mode not supported";
+    return false;
+  }
+  if (c.has_subframe_assignment()) {
+    error_message = "setting subframe_assignment not supported";
+    return false;
+  }
+  if (c.has_special_subframe_patterns()) {
+    error_message = "setting special_subframe_patterns not supported";
+    return false;
+  }
+  if (c.mbsfn_subframe_config_rfperiod_size() > 0) {
+    error_message = "setting mbsfn_subframe_config_rfperiod not supported";
+    return false;
+  }
+  if (c.mbsfn_subframe_config_rfoffset_size() > 0) {
+    error_message = "setting mbsfn_subframe_config_rfoffset not supported";
+    return false;
+  }
+  if (c.mbsfn_subframe_config_sfalloc_size() > 0) {
+    error_message = "setting mbsfn_subframe_config_sfalloc not supported";
+    return false;
+  }
+  if (c.has_prach_config_index()) {
+    error_message = "setting prach_config_index not supported";
+    return false;
+  }
+  if (c.has_prach_freq_offset()) {
+    error_message = "setting prach_freq_offset not supported";
+    return false;
+  }
+  if (c.has_ra_response_window_size()) {
+    error_message = "setting ra_response_window_size not supported";
+    return false;
+  }
+  if (c.has_mac_contention_resolution_timer()) {
+    error_message = "setting mac_contention_resolution_timer not supported";
+    return false;
+  }
+  if (c.has_max_harq_msg3tx()) {
+    error_message = "setting max_harq_msg3tx not supported";
+    return false;
+  }
+  if (c.has_n1pucch_an()) {
+    error_message = "setting n1pucch_an not supported";
+    return false;
+  }
+  if (c.has_deltapucch_shift()) {
+    error_message = "setting deltapucch_shift not supported";
+    return false;
+  }
+  if (c.has_nrb_cqi()) {
+    error_message = "setting nrb_cqi not supported";
+    return false;
+  }
+  if (c.has_srs_subframe_config()) {
+    error_message = "setting srs_subframe_config not supported";
+    return false;
+  }
+  if (c.has_srs_bw_config()) {
+    error_message = "setting srs_bw_config not supported";
+    return false;
+  }
+  if (c.has_srs_mac_up_pts()) {
+    error_message = "setting srs_mac_up_pts not supported";
+    return false;
+  }
+  if (c.has_enable_64qam()) {
+    error_message = "setting enable_64qam not supported";
+    return false;
+  }
+  if (c.has_carrier_index()) {
+    error_message = "setting not supported yet, defaults to 0";
+    return false;
+  }
+  if (c.has_slice_config()) {
+    error_message = "setting slice_config not supported, use another end point";
+    return false;
+  }
+  /* if no band is given, we simply assume band 7 */
+  if (!c.has_eutra_band()) {
+    error_message = "eutra_band must be present";
+    return false;
+  }
+  if (!c.has_dl_freq() || !c.has_ul_freq()) {
+    error_message = "both dl_freq and ul_freq must be present";
+    return false;
+  }
+  if (!c.has_dl_bandwidth() || !c.has_ul_bandwidth()) {
+    error_message = "both dl_bandwidth and ul_bandwidth must be present";
+    return false;
+  }
+  if (c.dl_bandwidth() != c.ul_bandwidth()) {
+    error_message = "dl_bandwidth and ul_bandwidth must be the same (6, 15, 25, 50, 100)";
+    return false;
+  }
+  switch (c.dl_bandwidth()) {
+  case 6:
+  case 15:
+  case 25:
+  case 50:
+  case 100:
+    /* good, do nothing */
+    break;
+  default:
+    error_message = "dl_bandwidth must be in (6, 15, 25, 50, 100)";
+    return false;
+  }
+  switch (c.eutra_band()) {
+    /* when comparing the freq offset: dl_freq/ul_freq are unsigned, so the
+     * resulting value needs to be positive */
+  case 7:
+    if (c.dl_freq() < 2620 || c.dl_freq() >= 2690) {
+      error_message = "dl_freq must be within [2620,2690) (MHz) for band 7";
+      return false;
+    }
+    if (c.dl_freq() - c.ul_freq() != 120) {
+      error_message = "freq offset must be 120MHz for band 7";
+      return false;
+    }
+    break;
+  case 13:
+    if (c.dl_freq() < 746 || c.dl_freq() >= 756) {
+      error_message = "dl_freq must we within [746,756) (MHz) for band 13";
+      return false;
+    }
+    if (c.ul_freq() - c.dl_freq() != 31) {
+      error_message = "freq offset must be -31MHz for band 7";
+      return false;
+    }
+    break;
+  default:
+    error_message = "unrecognized band " + std::to_string(c.eutra_band());
+    return false;
+  }
+
   return true;
 }
 

@@ -55,6 +55,8 @@ namespace flexran {
       void change_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void change_ue_slice_assoc_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+      void cell_reconfiguration(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
     private:
 
       std::shared_ptr<flexran::app::scheduler::flexible_scheduler> sched_app;

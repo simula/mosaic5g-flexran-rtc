@@ -485,6 +485,58 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this));
 
   /**
+   * @api {post} /cell_reconf/enb/:id? Change the cell configuration (restart)
+   * @apiName CellReconfiguration
+   * @apiGroup CellConfigurationPolicy
+   * @apiParam {Number} [id=-1] The ID of the agent for which to change the
+   * slice configuration. This can be one of the following: -1 (last added
+   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
+   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
+   * the agent ID.
+   *
+   * @apiDescription This API endpoint changes the cell configuration of the
+   * eNodeB in the underlying agent, effectively resulting in soft-restart of
+   * the base station (only L1/L2/L3 will be restarted). The parameters are
+   * specified as a JSON file with the format of the `cellConfig` as contained
+   * in the agent configuration, but only the parametrs `dlBandwidth`,
+   * `ulBandwidth`, `dlFreq`, `ulFreq` end `eutraBand` are accepted.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/ue_slice_assoc/enb/-1 --data-binary "@file"
+   *
+   * @apiParamExample {json} Request-Example:
+   *    {
+   *      "dlBandwidth": 50,
+   *      "ulBandwidth": 50,
+   *      "dlFreq": 2650,
+   *      "ulFreq": 2530,
+   *      "eutraBand": 7
+   *    }
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find agent" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "freq offset must be 120MHz for band 7" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "unrecognized band 1" }
+   */
+  Pistache::Rest::Routes::Post(router, "/cell_reconf/enb/:id?",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::cell_reconfiguration, this));
+
+  /**
    * @api {post} /yaml/:id? Send arbitrary YAML to the agent
    * @apiName YamlCompat
    * @apiGroup user/slice/BS policies
@@ -726,4 +778,33 @@ void flexran::north_api::rrm_calls::yaml_compat(
       << " (compat):\n" << request.body());
   sched_app->reconfigure_agent_string(agent_id, request.body());
   response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
+}
+
+void flexran::north_api::rrm_calls::cell_reconfiguration(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = request.hasParam(":id") ?
+      sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
+      sched_app->get_last_agent();
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!sched_app->apply_cell_config_policy(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok, "");
 }

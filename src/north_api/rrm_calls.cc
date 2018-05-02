@@ -293,7 +293,6 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *        }
    *      ]
    *    }
-
    *
    * @apiSuccessExample Success-Response:
    *    HTTP/1.1 200 OK
@@ -315,6 +314,60 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    */
   Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:id?",
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc, this));
+
+  /**
+   * @api {post} /ue_slice_assoc/enb/:enb_id/ue/:rnti_imsi/slice/:slice_id Change the UE-slice association (short version)
+   * @apiName ChangeUeSliceAssociationShort
+   * @apiGroup SliceConfiguration
+   * @apiParam {Number} enb_id The ID of the agent for which to change the
+   * slice configuration. This can be one of the following: -1 (last added
+   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
+   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
+   * the agent ID.
+   * @apiParam {Number} rnti_imsi The ID of the UE in the form of either an
+   * RNTI or the IMSI. Everything shorter than 6 digits will be treated as the
+   * RNTI, the rest as the IMSI.
+   * @apiParam {Number} slice_id The ID of the slices in UL and DL to which the
+   * UE should be changed.
+   *
+   * @apiDescription This API endpoint changes the association of a UE to a
+   * *pair* of slices (UL and DL) in an underlying agent. In particular, the
+   * destination slices for UL and DL must have the same ID (there is no short
+   * hand to change only a UL or DL slice association). It can be used to
+   * changed the association of UEs using their current RNTI or IMSI. The
+   * UL and DL slices with the given ID must have been created before. The
+   * `stats` call should always be used after a call and sufficient time to
+   * verify that the actions have been taken.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/ue_slice_assoc/enb/-1/ue/208940100001115/slice/3
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find agent" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find UE for given agent" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "no such slice" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "Protobuf parser error" }
+   */
+  Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:enb_id/ue/:rnti_imsi/slice/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this));
 
   /**
    * @api {post} /yaml/:id? Send arbitrary YAML to the agent
@@ -488,6 +541,45 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc(
         "{ \"error\": \"empty request body\" }", MIME(Application, Json));
     return;
   }
+
+  std::string error_reason;
+  if (!sched_app->change_ue_slice_association(agent_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::rrm_calls::change_ue_slice_assoc_short(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  int agent_id = sched_app->parse_enb_agent_id(request.param(":enb_id").as<std::string>());
+  if (agent_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  /* the RNTI/IMSI will be validated but we can not be sure what of the two it
+   * is, so let the RIB figure it out. We will receive a valid RNTI to proceed,
+   * or an error */
+  flexran::rib::rnti_t rnti;
+  if (!sched_app->parse_rnti_imsi(agent_id, request.param(":rnti_imsi").as<std::string>(), rnti)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"can not find UE for given agent\" }", MIME(Application, Json));
+    return;
+  }
+
+  /* the slice ID will be validated later, but make sure it is a number */
+  int slice_id = request.param(":slice_id").as<int>();
+
+  std::string policy = "{\"ueConfig\":[{\"rnti\":";
+  policy += std::to_string(rnti) + ",\"dlSliceId\":";
+  policy += std::to_string(slice_id) + ",\"ulSliceId\":";
+  policy += std::to_string(slice_id) + "}]}";
 
   std::string error_reason;
   if (!sched_app->change_ue_slice_association(agent_id, policy, error_reason)) {

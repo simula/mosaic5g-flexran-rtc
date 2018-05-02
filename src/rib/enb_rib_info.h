@@ -102,6 +102,7 @@ namespace flexran {
 	return cell_mac_info_[cell_id];
       }
 
+      bool parse_rnti_imsi(const std::string& rnti_imsi_s, rnti_t& rnti) const;
       bool get_rnti(uint64_t imsi, rnti_t& rnti) const;
       bool has_dl_slice(uint32_t slice_id, uint16_t cell_id = 0) const;
       uint32_t num_dl_slices(uint16_t cell_id = 0) const;
@@ -132,7 +133,7 @@ namespace flexran {
       std::map<rnti_t, std::shared_ptr<ue_mac_rib_info>> ue_mac_info_;
 
       cell_mac_rib_info cell_mac_info_[MAX_NUM_CC];
-  
+      static constexpr const size_t RNTI_ID_LENGTH_LIMIT = 6;
     };
 
   }

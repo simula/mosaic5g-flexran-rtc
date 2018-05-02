@@ -315,6 +315,28 @@ bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_imsi_to_json_string(uint6
   return false;
 }
 
+bool flexran::rib::enb_rib_info::parse_rnti_imsi(const std::string& rnti_imsi_s,
+    rnti_t& rnti) const
+{
+  if (rnti_imsi_s.length() >= RNTI_ID_LENGTH_LIMIT) { // assume it is an IMSI
+    uint64_t imsi;
+    try {
+      imsi = std::stoll(rnti_imsi_s);
+    } catch (std::invalid_argument e) {
+      return false;
+    }
+    return get_rnti(imsi, rnti);
+  }
+
+  // assume it is an RNTI
+  try {
+    rnti = std::stoi(rnti_imsi_s);
+  } catch (std::invalid_argument e) {
+    return false;
+  }
+  return ue_mac_info_.find(rnti) != ue_mac_info_.end();
+}
+
 bool flexran::rib::enb_rib_info::get_rnti(uint64_t imsi, rnti_t& rnti) const
 {
   std::lock_guard<std::mutex> lg(ue_config_mutex_);

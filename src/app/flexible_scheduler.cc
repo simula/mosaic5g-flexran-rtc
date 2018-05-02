@@ -1148,3 +1148,10 @@ int flexran::app::scheduler::flexible_scheduler::get_last_agent() const
 
   return *std::prev(rib_.get_available_agents().end());
 }
+
+bool flexran::app::scheduler::flexible_scheduler::parse_rnti_imsi(
+    int agent_id, const std::string& rnti_imsi_s,
+    flexran::rib::rnti_t& rnti) const
+{
+  return rib_.get_agent(agent_id)->parse_rnti_imsi(rnti_imsi_s, rnti);
+}

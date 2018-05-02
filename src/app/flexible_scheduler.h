@@ -67,6 +67,8 @@ namespace flexran {
 
         int parse_enb_agent_id(const std::string& enb_agent_id_s) const;
         int get_last_agent() const;
+        bool parse_rnti_imsi(int agent_id, const std::string& rnti_imsi_s,
+            flexran::rib::rnti_t& rnti) const;
 
       private:
 

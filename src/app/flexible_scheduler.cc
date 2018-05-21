@@ -116,6 +116,28 @@ bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(
     return false;
   }
 
+  // no UL slice is allowed to have the same firstRb as any other (in fact,
+  // together with the percentage value it is computed that they don't
+  // overlap). Therefore, if we have one new slice without a firstRb value, try
+  // to add firstRb by checking a "free" region. This is to keep the short
+  // version of the slice configuration end point working and we therefore
+  // check that this slice carries nothing except an ID */
+  if (slice_config.ul_size() == 1
+      && slice_config.ul(0).id() != 0
+      && !slice_config.ul(0).has_label()
+      && !slice_config.ul(0).has_percentage()
+      && !slice_config.ul(0).has_isolation()
+      && !slice_config.ul(0).has_priority()
+      && !slice_config.ul(0).has_first_rb()
+      && !slice_config.ul(0).has_maxmcs()
+      && slice_config.ul(0).sorting_size() == 0
+      && !slice_config.ul(0).has_accounting()
+      && !slice_config.ul(0).has_scheduler_name()
+      && try_add_first_rb(agent_id, *slice_config.mutable_ul(0)))
+    LOG4CXX_WARN(flog::app, "no firstRb value detected, added "
+        << slice_config.ul(0).first_rb() << " so that it does not clash in "
+        << "the agent. You can override this by specifying a firstRb value.");
+
   push_slice_config_reconfiguration(agent_id, slice_config);
   LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
       << ":\n" << policy << "\n");
@@ -1154,4 +1176,21 @@ bool flexran::app::scheduler::flexible_scheduler::parse_rnti_imsi(
     flexran::rib::rnti_t& rnti) const
 {
   return rib_.get_agent(agent_id)->parse_rnti_imsi(rnti_imsi_s, rnti);
+}
+
+bool flexran::app::scheduler::flexible_scheduler::try_add_first_rb(
+    int agent_id, protocol::flex_ul_slice& slice)
+{
+  // this function is dumb: it simply assumes that all existing slices are
+  // adjacent and only one is added. Therefore, it picks the highest first_Rb,
+  // adds N_RB * percentage and adds this to the existing slice.
+  auto h = rib_.get_agent(agent_id);
+  if (h == nullptr) return false;
+  const protocol::flex_slice_config& ex = h->get_enb_config().cell_config(0).slice_config();
+  if (ex.ul_size() < 1) return false;
+  const int N_RB = h->get_enb_config().cell_config(0).ul_bandwidth();
+  const int pct = ex.ul(0).percentage();
+  const int first_rb = ex.ul(ex.ul_size() - 1).first_rb();
+  slice.set_first_rb(first_rb + pct * N_RB / 100);
+  return true;
 }

@@ -101,6 +101,7 @@ namespace flexran {
             std::string& error_message);
         bool verify_rnti_imsi(int agent_id, protocol::flex_ue_config *c,
             std::string& error_message);
+        bool try_add_first_rb(int agent_id, protocol::flex_ul_slice& slice);
 	
 	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
 	

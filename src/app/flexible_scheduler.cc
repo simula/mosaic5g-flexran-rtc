@@ -139,8 +139,12 @@ bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(
         << "the agent. You can override this by specifying a firstRb value.");
 
   push_slice_config_reconfiguration(agent_id, slice_config);
+  std::string pol_corrected;
+  google::protobuf::util::JsonPrintOptions opt;
+  opt.add_whitespace = true;
+  google::protobuf::util::MessageToJsonString(slice_config, &pol_corrected, opt);
   LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
-      << ":\n" << policy << "\n");
+      << ":\n" << pol_corrected);
 
   return true;
 }
@@ -194,8 +198,7 @@ bool flexran::app::scheduler::flexible_scheduler::remove_slice(int agent_id,
   }
 
   push_slice_config_reconfiguration(agent_id, slice_config);
-  LOG4CXX_INFO(flog::app, "sent new configuration to agent " << agent_id
-      << ":\n" << policy << "\n");
+  LOG4CXX_INFO(flog::app, "sent remove slice command to agent " << agent_id);
 
   return true;
 }
@@ -261,8 +264,12 @@ bool flexran::app::scheduler::flexible_scheduler::change_ue_slice_association(
   }
 
   push_ue_config_reconfiguration(agent_id, ue_config_reply);
+  std::string pol_corrected;
+  google::protobuf::util::JsonPrintOptions opt;
+  opt.add_whitespace = true;
+  google::protobuf::util::MessageToJsonString(ue_config_reply, &pol_corrected, opt);
   LOG4CXX_INFO(flog::app, "sent new UE configuration to agent "
-      << agent_id << ":\n" << policy << "\n");
+      << agent_id << ":\n" << pol_corrected);
 
   return true;
 }

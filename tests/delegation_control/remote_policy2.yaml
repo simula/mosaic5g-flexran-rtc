@@ -1,5 +1,0 @@
-mac:
- - dl_scheduler:
-    parameters:
-      period: !!int 40
-      sched : [!!int 5, !!int 6, !!int 7]

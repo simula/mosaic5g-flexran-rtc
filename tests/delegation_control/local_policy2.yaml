@@ -1,4 +1,0 @@
-mac:
- - dl_scheduler:
-    parameters:
-      selected_subframe : !!int 0

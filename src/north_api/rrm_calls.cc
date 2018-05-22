@@ -50,23 +50,100 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @api {post} /slice/enb/:id? Post a slice configuration
    * @apiName ApplySliceConfiguration
    * @apiGroup SliceConfiguration
-   * @apiParam {Number} [id=-1] The ID of the agent for which to change the
-   * slice configuration. This can be one of the following: -1 (last added
-   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
-   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
-   * the agent ID.
+   *
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
+   * to change the slice configuration. This can be one of the following: -1
+   * (last added agent), the eNB ID (in hex or decimal) or the internal agent
+   * ID which can be obtained through a `stats` call. Numbers smaller than 1000
+   * are parsed as the agent ID.
+   *
+   * @apiParam (JSON DL part parameters) {Number{0-255}} id The unique ID of
+   * the addressed DL slice.
+   * @apiParam (JSON DL part parameters) {String="xMBB","URLLC","mMTC","xMTC","Other"} [label]
+   * A descriptive label for this slice. It has currently no
+   * impact on the slice itself but might be extended to provide appropriate
+   * default values in the future.
+   * @apiParam (JSON DL part parameters) {Number{1-100}} [percentage] The
+   * number of resource blocks that this slice is allowed to use, as a fraction
+   * of the whole bandwidth. Please note that the sum of all slices is not
+   * allowed to exceed 100.
+   * @apiParam (JSON DL part parameters) {Boolean} [isolation] Whether this
+   * slice is isolated with regard to others. Refer to the
+   * `intersliceShareActive` to see the interaction with this parameter. If a
+   * slice is not isolated, unused RBs will be shared with other slices in the
+   * inter-slice multiplexing phase.
+   * @apiParam (JSON DL part parameters) {Number{0-20}} [priority] The priority
+   * of the slice when scheduling in the interslice multiplexing stage
+   * allocating in a greedy manner. Higher priority means preferential
+   * scheduling.
+   * @apiParam (JSON DL part parameters) {Number{0-24}} [positionLow] When
+   * positioning a slice in the frequency plane, this parameter marks the lower
+   * end.  Expressed in *RBG*. Must be lower than `positionHigh`.
+   * @apiParam (JSON DL part parameters) {Number{1-25}} [positionHigh] When
+   * positioning a slice in the frequency plane, this parameter marks the high
+   * end.  Expressedn in *RBG*. Must be higher than `positionLow`.
+   * @apiParam (JSON DL part parameters) {Number{0-28}} [maxmcs] The maximum
+   * MCS that this slice is allowed to use.
+   * @apiParam (JSON DL part parameters) {String[]="CR_ROUND","CR_SRB12","CR_HOL","CR_LC","CR_CQI","CR_LCP"} [sorting]
+   * The policy by which users within a slice will be sorted before scheduling.
+   * * `"CR_ROUND"`: Highest HARQ first.
+   * * `"CR_SRB12"`: Highest SRB1+2 first.
+   * * `"CR_HOL"`:   Highest HOL first.
+   * * `"CR_LC"`:    Highest RLC buffer first.
+   * * `"CR_CQI"`:   Highest CQI first.
+   * * `"CR_LCP"`:   Highest LC priority first.
+   * @apiParam (JSON DL part parameters) {String="POL_FAIR","POL_GREEDY"} [accounting???]
+   * The algorithm used in the accounting phase. `more here`
+   * @apiParam (JSON DL part parameters) {String="schedule_ue_spec"} [schedulerName]
+   * The name of the scheduler to be loaded. Can not be changed currently.
+   *
+   * @apiParam (JSON UL part parameters) {Number{0-255}} id The unique ID of
+   * the addressed UL slice.
+   * @apiParam (JSON UL part parameters) {String="xMBB","URLLC","mMTC","xMTC","Other"} [label]
+   * A descriptive label for this slice. It has currently no impact on the
+   * slice itself but might be extended to provide appropriate default values
+   * in the future.
+   * @apiParam (JSON UL part parameters) {Number{1-100}} [percentage] The
+   * number of resource blocks that this slice is allowed to use, as a fraction
+   * of the whole bandwidth. Please note that the sum of all slices is not
+   * allowed to exceed 100.
+   * @apiParam (JSON UL part parameters) {Boolean} [isolation] Whether this
+   * slice is isolated with regard to others. Refer to the
+   * `intersliceShareActive` to see the interaction with this parameter. If a
+   * slice is not isolated, unused RBs will be shared with other slices in the
+   * inter-slice multiplexing phase.
+   * @apiParam (JSON UL part parameters) {Number{0..20}} [priority] The
+   * priority of the slice when scheduling in the interslice multiplexing stage
+   * allocating in a greedy manner. Higher priority means preferential
+   * scheduling.
+   * @apiParam (JSON UL part parameters) {Number{1-25}} [firstRb] Used to
+   * position a UL slice together with the percentage in the frequency plane.
+   * This parameter is subject to admission control like percentage: it is
+   * checked that no UL slice overlaps with any other, starting at `firstRb`
+   * and expending `percentage` * bandwidth RB. This paramater is in *RB*,
+   * unlike the `positionLow` and `positionHigh` parameters in the UL.
+   * @apiParam (JSON UL part parameters) {Number{0-20}} [maxmcs] The maximum
+   * MCS that this slice is allowed to use.
+   * @apiParam (JSON UL part parameters) {String="POLU_FAIR","POLU_GREEDY"} [accounting???]
+   * The algorithm used in the accounting phase. `more here`
+   * @apiParam (JSON UL part parameters) {String="schedule_ulsch_rnti"} [schedulerName]
+   * The name of the scheduler to be loaded. Can not be changed currently.
+   *
+   * @apiParam (JSON parameters) {Boolean} intrasliceShareActive
+   * @apiParam (JSON parameters) {Boolean} intersliceShareActive
    *
    * @apiDescription This API endpoint posts a new slice configuration to an
    * underlying agent, specified as a JSON file with the format of the
-   * `sliceConfig` as contained in the `cellConfig` of an agent configuration.
-   * It can be used to create arbitrary slices with an arbitrary ID in the
-   * range [1,255] or to change slices in the range [0,255]. In the request, a
-   * slice ID must present. All other values will be copied from slice ID 0
-   * The caller should take care that the sum of slice percentages (i.e. of all
-   * present and added slices) should not exceed 100, as this is not catched at
-   * the controller but enforced at the MAC scheduler. The `stats` call should
-   * always be used after a call and sufficient time to verify the actions have
-   * been taken.
+   * `sliceConfig` as contained in the `cellConfig` of an agent configuration
+   * (for a description of the parameters, see below).  It can be used to
+   * create arbitrary slices with an arbitrary ID  or to change slices by
+   * specifying an ID for an existing slice. In the request, a slice ID must
+   * present. All other values will be copied from slice ID 0 if they are not
+   * present.  The caller should take care that the sum of slice percentages
+   * (i.e. of all present and added slices) should not exceed 100 and no UL
+   * slices overlap (a UL slice starts at `firstRb` and extends over
+   * `percentage` * bandwidth RBs. The `stats` call should always be used after
+   * a call and sufficient time to verify the actions have been taken.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -79,26 +156,29 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *        {
    *          "id": 0,
    *          "percentage": 25,
-   *          "maxmcs": 28
+   *          "maxmcs": 26
    *        },
    *        {
    *          "id": 3,
    *          "percentage": 25,
-   *          "maxmcs": 28
+   *          "maxmcs": 26
    *        }
    *      ],
    *      "ul": [
    *        {
    *          "id": 0,
    *          "percentage": 25,
-   *          "maxmcs": 20
+   *          "maxmcs": 16
    *        },
    *        {
    *          "id": 3,
    *          "percentage": 25,
-   *          "maxmcs": 20
+   *          "maxmcs": 18,
+   *          "firstRb": 25
    *        }
-   *      ]
+   *      ],
+   *      "intrasliceShareActive": true,
+   *      "intersliceShareActive": true
    *    }
    *
    * @apiSuccessExample Success-Response:

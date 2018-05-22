@@ -488,11 +488,31 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @api {post} /cell_reconf/enb/:id? Change the cell configuration (restart)
    * @apiName CellReconfiguration
    * @apiGroup CellConfigurationPolicy
-   * @apiParam {Number} [id=-1] The ID of the agent for which to change the
-   * slice configuration. This can be one of the following: -1 (last added
-   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
-   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
-   * the agent ID.
+   *
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
+   * to change the slice configuration. This can be one of the following: -1
+   * (last added agent), the eNB ID (in hex or decimal) or the internal agent
+   * ID which can be obtained through a `stats` call. Numbers smaller than 1000
+   * are parsed as the agent ID.
+   *
+   * @apiParam (JSON parameters) {Number=6,15,25,50,100} dlBandwidth The DL
+   * bandwidth on which the eNB should operate. This should be the same as the
+   * UL bandwidth.
+   * @apiParam (JSON parameters) {Number=6,15,25,50,100} ulBandwidth The UL
+   * bandwidth on which the eNB should operate. This should be the same as the
+   * UL bandwidth.
+   * @apiParam (JSON parameters) {Number} dlFreq The DL frequency on which the
+   * eNB should operate, subject to the chosen bandwith (see below). Check also
+   * the [LTE frequency bands Wikipedia
+   * article](https://en.wikipedia.org/wiki/LTE_frequency_bands) for allowed
+   * values regarding range and frequency offsets.
+   * @apiParam (JSON parameters) {Number} ulFreq The UL frequency on which the
+   * eNB should operate, subject to the chosen bandwith (see below). Check also
+   * the [LTE frequency bands Wikipedia
+   * article](https://en.wikipedia.org/wiki/LTE_frequency_bands) for allowed
+   * values regarding range and frequency offsets.
+   * @apiParam (JSON parameters) {Number=7,13} eutraBand The LTE band in which
+   * the base station will operate.
    *
    * @apiDescription This API endpoint changes the cell configuration of the
    * eNodeB in the underlying agent, effectively resulting in soft-restart of

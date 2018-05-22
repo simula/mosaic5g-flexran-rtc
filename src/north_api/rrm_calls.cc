@@ -57,6 +57,22 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * ID which can be obtained through a `stats` call. Numbers smaller than 1000
    * are parsed as the agent ID.
    *
+   * @apiParam (JSON parameters) {Boolean} [intrasliceShareActive] The
+   * activation status of the intra-slice sharing phase. If active, RBs that
+   * are available after the first intra-slice allocation will be allocated to
+   * UEs belonging to the same slice that need it.
+   * @apiParam (JSON parameters) {Boolean} [intersliceShareActive] The
+   * activation status of the inter-slice multiplexing phase. If active, RBs
+   * that are available after the allocation of a slice, will be allocated to
+   * UEs belonging to the other slices that need it. Isolated slices are always
+   * ignored in this phase.
+   * @apiParam (JSON parameters) {Object[]} [dl] A list of DL slice
+   * configuration objects. For its parameters, see the parameters in the `JSON
+   * DL part parameters` table below.
+   * @apiParam (JSON parameters) {Object[]} [ul] A list of UL slice
+   * configuration objects. For its parameters, see the parameters in the `JSON
+   * UL part parameters` table below.
+   *
    * @apiParam (JSON DL part parameters) {Number{0-255}} id The unique ID of
    * the addressed DL slice.
    * @apiParam (JSON DL part parameters) {String="xMBB","URLLC","mMTC","xMTC","Other"} [label]
@@ -92,8 +108,10 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * * `"CR_LC"`:    Highest RLC buffer first.
    * * `"CR_CQI"`:   Highest CQI first.
    * * `"CR_LCP"`:   Highest LC priority first.
-   * @apiParam (JSON DL part parameters) {String="POL_FAIR","POL_GREEDY"} [accounting???]
-   * The algorithm used in the accounting phase. `more here`
+   * @apiParam (JSON DL part parameters) {String="POL_FAIR","POL_GREEDY"} [accounting]
+   * The algorithm used in the accounting phase, i.e. when allocating the
+   * resources to the UEs after having sorted them with respect to the
+   * `sorting` parameter.
    * @apiParam (JSON DL part parameters) {String="schedule_ue_spec"} [schedulerName]
    * The name of the scheduler to be loaded. Can not be changed currently.
    *
@@ -120,17 +138,16 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * position a UL slice together with the percentage in the frequency plane.
    * This parameter is subject to admission control like percentage: it is
    * checked that no UL slice overlaps with any other, starting at `firstRb`
-   * and expending `percentage` * bandwidth RB. This paramater is in *RB*,
+   * and expanding `percentage` * bandwidth RB. This paramater is in *RB*,
    * unlike the `positionLow` and `positionHigh` parameters in the UL.
    * @apiParam (JSON UL part parameters) {Number{0-20}} [maxmcs] The maximum
    * MCS that this slice is allowed to use.
-   * @apiParam (JSON UL part parameters) {String="POLU_FAIR","POLU_GREEDY"} [accounting???]
-   * The algorithm used in the accounting phase. `more here`
+   * @apiParam (JSON UL part parameters) {String="POLU_FAIR","POLU_GREEDY"} [accounting]
+   * The algorithm used in the accounting phase, i.e. when allocating the
+   * resources to the UEs after having sorted them with respect to the
+   * `sorting` parameter.
    * @apiParam (JSON UL part parameters) {String="schedule_ulsch_rnti"} [schedulerName]
    * The name of the scheduler to be loaded. Can not be changed currently.
-   *
-   * @apiParam (JSON parameters) {Boolean} intrasliceShareActive
-   * @apiParam (JSON parameters) {Boolean} intersliceShareActive
    *
    * @apiDescription This API endpoint posts a new slice configuration to an
    * underlying agent, specified as a JSON file with the format of the
@@ -211,18 +228,22 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * the eNB ID (in hex or decimal) or the internal agent ID which can be
    g obtained through a `stats` call. Numbers smaller than 1000 are parsed as
    * the agent ID.
-   * @apiParam {Number} slice_id The ID of the slices (UL and DL) to be created
-   * in the range [1,255].
+   * @apiParam {Number{1-255}} slice_id The ID of the slices (UL *and* DL) to
+   * be created.
    *
    * @apiDescription This API endpoint creates a new pair of slices copying the
    * values of the slice 0.  It can be used to create arbitrary slices with an
-   * arbitrary ID in the range [1,255]. Please note that if slice 0 has already
-   * more than 50 percent, this call will fail (since the percentage value is
-   * copied, too). The caller should take care that the sum of slice
-   * percentages (i.e. of all present and added slices) should not exceed 100,
-   * as this is not catched at the controller but enforced at the MAC
-   * scheduler. The `stats` call should always be used after a call and
-   * sufficient time to verify the actions have been taken.
+   * arbitrary ID. Please note that if slice 0 has already more than 50
+   * percent, this call will fail (since the percentage value is copied, too).
+   * The caller should take care that the sum of slice percentages (i.e. of all
+   * present and added slices) should not exceed 100.  Additionally, the
+   * `firstRb` parameter is added so that the added UL slice will pass the
+   * admission control (not overlapping). This value is retrieved by taking the
+   * `percentage` of slice 0 and the highest slice's `firstRb` values and
+   * setting `firstRb` + `percentage` * bandwidth as this slice's `firstRb`.
+   * The `stats` call should always be used after a call and sufficient time to
+   * verify the actions have been taken. If it fails, use the long version of
+   * this calls.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -312,10 +333,10 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
    * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
    * the agent ID.
-   * @apiParam {Number} slice_id The ID of the slices (UL and DL) to be created
-   * in the range [1,255].
+   * @apiParam {Number{1-255}} slice_id The ID of the slices (UL *and* DL) to be
+   * created.
    *
-   * @apiDescription This API endpoint deletes the UL and DL slices with ID
+   * @apiDescription This API endpoint deletes the UL *and* DL slices with ID
    * `slice_id` (only one ID can be provided for both slices) for a given agent.
    *
    * @apiVersion v0.1.0
@@ -344,11 +365,25 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @api {post} /ue_slice_assoc/enb/:id? Change the UE-slice association
    * @apiName ChangeUeSliceAssociation
    * @apiGroup SliceConfiguration
-   * @apiParam {Number} [id=-1] The ID of the agent for which to change the
-   * slice configuration. This can be one of the following: -1 (last added
-   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
-   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed as
-   * the agent ID.
+   *
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
+   * to change the slice configuration. This can be one of the following: -1
+   * (last added agent), the eNB ID (in hex or decimal) or the internal agent
+   * ID which can be obtained through a `stats` call. Numbers smaller than 1000
+   * are parsed as the agent ID.
+   *
+   * @apiParam (JSON parameter) {Object[]} ueConfig A list of UE-slice
+   * association configuration parameters (see table `ueConfig parameters`
+   * below.
+   *
+   * @apiParam (ueConfig parameters) {Number} [rnti] The RNTI for the selected
+   * UE. If both `rnti` and `imsi` are given, they need to match the same UE.
+   * @apiParam (ueConfig parameters) {Number} [imsi] The IMSI for the selected
+   * UE. If both `rnti` and `imsi` are given, they need to match the same UE.
+   * @apiParam (ueConfig parameters) {Number{0-255}} [dlSliceId] The Dl slice
+   * to which this UE should be associated to.
+   * @apiParam (ueConfig parameters) {Number{0-255}} [ulSliceId] The Ul slice
+   * to which this UE should be associated to.
    *
    * @apiDescription This API endpoint changes the association of a UE in an
    * underlying agent, specified as a JSON file with the format of the
@@ -407,11 +442,11 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @apiParam {Number} rnti_imsi The ID of the UE in the form of either an
    * RNTI or the IMSI. Everything shorter than 6 digits will be treated as the
    * RNTI, the rest as the IMSI.
-   * @apiParam {Number} slice_id The ID of the slices in UL and DL to which the
+   * @apiParam {Number} slice_id The ID of the slices in UL *and* DL to which the
    * UE should be changed.
    *
    * @apiDescription This API endpoint changes the association of a UE to a
-   * *pair* of slices (UL and DL) in an underlying agent. In particular, the
+   * *pair* of slices (UL *and* DL) in an underlying agent. In particular, the
    * destination slices for UL and DL must have the same ID (there is no short
    * hand to change only a UL or DL slice association). It can be used to
    * changed the association of UEs using their current RNTI or IMSI. The

@@ -74,7 +74,8 @@ namespace flexran {
 
       std::string dump_configs_to_json_string() const;
 
-      static std::string format_configs_to_json(const std::string& eNB_config_json,
+      static std::string format_configs_to_json(int agent_id, uint64_t enb_id,
+                                                const std::string& eNB_config_json,
                                                 const std::string& ue_config_json,
                                                 const std::string& lc_config_json);
 

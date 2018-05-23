@@ -265,9 +265,11 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
 std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const
 {
   std::string enb_config, ue_config, lc_config;
+  uint64_t enb_id;
 
   eNB_config_mutex_.lock();
   google::protobuf::util::MessageToJsonString(eNB_config_, &enb_config, google::protobuf::util::JsonPrintOptions());
+  enb_id = eNB_config_.enb_id();
   eNB_config_mutex_.unlock();
 
   ue_config_mutex_.lock();
@@ -278,16 +280,21 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const
   google::protobuf::util::MessageToJsonString(lc_config_, &lc_config, google::protobuf::util::JsonPrintOptions());
   lc_config_mutex_.unlock();
 
-  return format_configs_to_json(enb_config, ue_config, lc_config);
+  return format_configs_to_json(agent_id_, enb_id, enb_config, ue_config, lc_config);
 }
 
 std::string flexran::rib::enb_rib_info::format_configs_to_json(
+    int agent_id, uint64_t enb_id,
     const std::string& eNB_config_json,
     const std::string& ue_config_json,
     const std::string& lc_config_json)
 {
   std::string str;
-  str = "\"eNB\":";
+  str += "\"agent_id\":";
+  str += std::to_string(agent_id);
+  str += ",\"eNBId\":";
+  str += std::to_string(enb_id);
+  str += ",\"eNB\":";
   str += eNB_config_json;
   str += ",\"UE\":";
   str += ue_config_json;

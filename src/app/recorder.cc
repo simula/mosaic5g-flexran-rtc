@@ -215,8 +215,8 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
               google::protobuf::util::JsonPrintOptions());
           google::protobuf::util::MessageToJsonString(ad.lc_config, &lc_config,
               google::protobuf::util::JsonPrintOptions());
-          return flexran::rib::enb_rib_info::format_configs_to_json(enb_config,
-              ue_config, lc_config);
+          return flexran::rib::enb_rib_info::format_configs_to_json(
+              p.first, ad.enb_config.enb_id(), enb_config, ue_config, lc_config);
           }
     );
     s << flexran::rib::Rib::format_enb_configurations_to_json(enb_configurations);

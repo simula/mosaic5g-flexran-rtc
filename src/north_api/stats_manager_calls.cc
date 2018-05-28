@@ -344,7 +344,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
       Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
 
   /**
-   * @api {get} /stats/ue/:id/:type? Get RAN statistics in JSON
+   * @api {get} /stats/enb/:id/:type? Get RAN statistics in JSON
    * @apiName GetStatsEnb
    * @apiGroup Stats
    * @apiParam {string} id the ID of the eNB (agent ID or global eNB ID)
@@ -382,7 +382,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
       Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_enb, this));
 
   /**
-   * @api {get} /stats/enb/:id/:type? Get UE statistics in JSON
+   * @api {get} /stats/ue/:id/:type? Get UE statistics in JSON
    * @apiName GetStatsUE
    * @apiGroup Stats
    * @apiParam {number} id the ID of the UE (RNTI or IMSI)

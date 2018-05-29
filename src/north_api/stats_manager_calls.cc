@@ -59,17 +59,18 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
       Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
 
   /**
-   * @api {get} /stats/:type? Get RAN statistics in JSON for one eNB
+   * @api {get} /stats/:type? Get RAN statistics in JSON
    * @apiName GetStats
    * @apiGroup Stats
    * @apiParam {string} [type=all] available types are: enb_config (eNB
    * configuration), mac_stats (current TTI statistics), all
    *
    * @apiDescription This API gets the RAN config and status for the current TTI
-   * for all eNBs in JSON format. For the type enb_config, the API endpoint gets
-   * eNB, UE, and LC configurations, and for mac_stats the status of eNB and UE
-   * at different layers, namely PDCP, RLC, MAC, and PHY layer form the FlexRAN
-   * controller. For human-readable output, see (#Stats:GetStatsHumanReadable).
+   * for all eNBs in JSON format connected to this Controller. For the type enb_config, 
+   * the API endpoint gets eNB, UE, and LC configurations, and for mac_stats the 
+   * status of eNB and UE at different layers, namely PDCP, RLC, MAC, and PHY layer 
+   * form the FlexRAN controller. For human-readable output, 
+   * see (#Stats:GetStatsHumanReadable).
    *
    * @apiVersion v0.1.0
    * @apiPermission None

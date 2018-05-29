@@ -485,7 +485,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this));
 
   /**
-   * @api {post} /cell_reconf/enb/:id? Change the cell configuration (restart)
+   * @api {post} /conf/enb/:id? Change the cell configuration (restart)
    * @apiName CellReconfiguration
    * @apiGroup CellConfigurationPolicy
    *
@@ -524,7 +524,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage:
-   *    curl -X POST http://127.0.0.1:9999/ue_slice_assoc/enb/-1 --data-binary "@file"
+   *    curl -X POST http://127.0.0.1:9999/conf/enb/-1 --data-binary "@file"
    *
    * @apiParamExample {json} Request-Example:
    *    {
@@ -553,7 +553,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "unrecognized band 1" }
    */
-  Pistache::Rest::Routes::Post(router, "/cell_reconf/enb/:id?",
+  Pistache::Rest::Routes::Post(router, "/conf/enb/:id?",
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::cell_reconfiguration, this));
 
   /**

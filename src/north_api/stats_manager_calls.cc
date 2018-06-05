@@ -32,14 +32,16 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    * @api {get} /stats_manager/:type? Get RAN statistics (human-readable)
    * @apiName GetStatsHumanReadable
    * @apiGroup Stats
-   * @apiParam {string} [type=all] available types are: enb_config (eNB
-   * configuration), mac_stats (current TTI statistics), all
+   * @apiParam {string=enb_config,mac_stats,all} [type=all] The type of
+   * statistics to be returned. The following types are allowed:
+   * * `enb_config`: static configuration (for eNB, UE, and LC)
+   * * `mac_stats`:  statistics about various eNB layers (PDCP, RLC, MAC)
+   * * `all`:        both of the above
    *
-   * @apiDescription This API gets the RAN config and status for the current TTI
-   * for all eNBs in human-readable format. For the type enb_config, the API
-   * endpoint gets eNB, UE, and LC configurations, and for mac_stats the status
-   * of eNB and UE at different layers, namely PDCP, RLC, MAC, and PHY layer
-   * form the FlexRAN controller. For JSON output, see (#Stats:GetStats).
+   * @apiDescription This API gets the RAN config and status for the current
+   * TTI for all eNBs connected to this controller. The output is in a
+   * human-readable format. For JSON output, see
+   * (#Stats:GetStats).
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -62,35 +64,37 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    * @api {get} /stats/:type? Get RAN statistics in JSON
    * @apiName GetStats
    * @apiGroup Stats
-   * @apiParam {string} [type=all] available types are: enb_config (eNB
-   * configuration), mac_stats (current TTI statistics), all
+   * @apiParam {string=enb_config,mac_stats,all} [type=all] The type of
+   * statistics to be returned. The following types are allowed:
+   * * `enb_config`: static configuration (for eNB, UE, and LC)
+   * * `mac_stats`:  statistics about various eNB layers (PDCP, RLC, MAC)
+   * * `all`:        both of the above
    *
-   * @apiDescription This API gets the RAN config and status for the current TTI
-   * for all eNBs in JSON format connected to this Controller. For the type enb_config, 
-   * the API endpoint gets eNB, UE, and LC configurations, and for mac_stats the 
-   * status of eNB and UE at different layers, namely PDCP, RLC, MAC, and PHY layer 
-   * form the FlexRAN controller. For human-readable output, 
-   * see (#Stats:GetStatsHumanReadable).
+   * @apiDescription This API gets the RAN config and status for the current
+   * TTI for all eNBs connected to this controller. The output is in JSON
+   * format. For human-readable output, see (#Stats:GetStatsHumanReadable).
    *
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage:
    *     curl -X GET http://127.0.0.1:9999/stats/
-   * @apiSuccessExample Success-Response:
+   * @apiSuccessExample Success-Response for one agent + UE connected, all type:
    *     HTTP/1.1 200 OK
    *     {
    *       "eNB_config": [
    *         {
+   *           "agent_id": 0,
+   *           "eNBId": 234881024,
    *           "eNB": {
    *             "header": {
    *               "version": 0,
    *               "type": 8,
    *               "xid": 0
    *             },
-   *             "eNBId": "234881037",
+   *             "eNBId": "234881024",
    *             "cellConfig": [
    *               {
-   *                 "phyCellId": 1,
+   *                 "phyCellId": 0,
    *                 "cellId": 0,
    *                 "puschHoppingOffset": 0,
    *                 "hoppingMode": 0,
@@ -99,7 +103,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                 "phichDuration": 0,
    *                 "initNrPDCCHOFDMSym": 1,
    *                 "siConfig": {
-   *                   "sfn": 92,
+   *                   "sfn": 548,
    *                   "sib1Length": 15,
    *                   "siWindowLength": 5
    *                 },
@@ -128,7 +132,46 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                 "ulFreq": 2565,
    *                 "eutraBand": 7,
    *                 "dlPdschPower": -27,
-   *                 "ulPuschPower": -96
+   *                 "ulPuschPower": -96,
+   *                 "sliceConfig": {
+   *                   "dl": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 10,
+   *                       "positionLow": 0,
+   *                       "positionHigh": 25,
+   *                       "maxmcs": 28,
+   *                       "sorting": [
+   *                         "CR_ROUND",
+   *                         "CR_SRB12",
+   *                         "CR_HOL",
+   *                         "CR_LC",
+   *                         "CR_CQI",
+   *                         "CR_LCP"
+   *                       ],
+   *                       "accounting": "POL_FAIR",
+   *                       "schedulerName": "schedule_ue_spec"
+   *                     }
+   *                   ],
+   *                   "ul": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 0,
+   *                       "firstRb": 0,
+   *                       "maxmcs": 20,
+   *                       "accounting": "POLU_FAIR",
+   *                       "schedulerName": "schedule_ulsch_rnti"
+   *                     }
+   *                   ],
+   *                   "intrasliceShareActive": true,
+   *                   "intersliceShareActive": true
+   *                 }
    *               }
    *             ]
    *           },
@@ -140,7 +183,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *             },
    *             "ueConfig": [
    *               {
-   *                 "rnti": 22658,
+   *                 "rnti": 10337,
    *                 "timeAlignmentTimer": 7,
    *                 "transmissionMode": 0,
    *                 "ueAggregatedMaxBitrateUL": "0",
@@ -163,7 +206,9 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                 "aperiodicCqiRepMode": 3,
    *                 "ackNackRepetitionFactor": 0,
    *                 "pcellCarrierIndex": 0,
-   *                 "imsi": "208940100001131"
+   *                 "imsi": "208940100001131",
+   *                 "dlSliceId": 0,
+   *                 "ulSliceId": 0
    *               }
    *             ]
    *           },
@@ -175,7 +220,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *             },
    *             "lcUeConfig": [
    *               {
-   *                 "rnti": 22658,
+   *                 "rnti": 10337,
    *                 "lcConfig": [
    *                   {
    *                     "lcid": 1,
@@ -207,18 +252,19 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *       "mac_stats": [
    *         {
    *           "agent_id": 0,
+   *           "eNBId": 234881024,
    *           "ue_mac_stats": [
    *             {
-   *               "rnti": 22658,
+   *               "rnti": 10337,
    *               "mac_stats": {
-   *                 "rnti": 22658,
+   *                 "rnti": 10337,
    *                 "bsr": [
    *                   0,
    *                   0,
    *                   0,
    *                   0
    *                 ],
-   *                 "phr": 40,
+   *                 "phr": 31,
    *                 "rlcReport": [
    *                   {
    *                     "lcId": 1,
@@ -241,7 +287,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                 ],
    *                 "pendingMacCes": 0,
    *                 "dlCqiReport": {
-   *                   "sfnSn": 2902,
+   *                   "sfnSn": 10224,
    *                   "csiReport": [
    *                     {
    *                       "servCellIndex": 0,
@@ -254,7 +300,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                   ]
    *                 },
    *                 "ulCqiReport": {
-   *                   "sfnSn": 2902,
+   *                   "sfnSn": 10224,
    *                   "cqiMeas": [
    *                     {
    *                       "type": "FLUCT_SRS",
@@ -274,45 +320,45 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *                   "pcellRsrq": -1
    *                 },
    *                 "pdcpStats": {
-   *                   "pktTx": 89,
-   *                   "pktTxBytes": 33261,
-   *                   "pktTxSn": 88,
-   *                   "pktTxW": 0,
-   *                   "pktTxBytesW": 0,
-   *                   "pktTxAiat": 19328,
-   *                   "pktTxAiatW": 0,
-   *                   "pktRx": 102,
-   *                   "pktRxBytes": 39180,
-   *                   "pktRxSn": 101,
-   *                   "pktRxW": 0,
-   *                   "pktRxBytesW": 0,
-   *                   "pktRxAiat": 21858,
-   *                   "pktRxAiatW": 0,
+   *                   "pktTx": 102,
+   *                   "pktTxBytes": 46622,
+   *                   "pktTxSn": 101,
+   *                   "pktTxW": 1,
+   *                   "pktTxBytesW": 52,
+   *                   "pktTxAiat": 16557,
+   *                   "pktTxAiatW": 101,
+   *                   "pktRx": 89,
+   *                   "pktRxBytes": 20260,
+   *                   "pktRxSn": 99,
+   *                   "pktRxW": 1,
+   *                   "pktRxBytesW": 90,
+   *                   "pktRxAiat": 16512,
+   *                   "pktRxAiatW": 28,
    *                   "pktRxOo": 0,
-   *                   "sfn": "22293"
+   *                   "sfn": "16627"
    *                 },
    *                 "macStats": {
-   *                   "tbsDl": 693,
+   *                   "tbsDl": 57,
    *                   "tbsUl": 63,
    *                   "prbRetxDl": 0,
    *                   "prbRetxUl": 0,
-   *                   "prbDl": 9,
+   *                   "prbDl": 3,
    *                   "prbUl": 0,
    *                   "mcs1Dl": 28,
-   *                   "mcs2Dl": 26,
+   *                   "mcs2Dl": 10,
    *                   "mcs1Ul": 10,
    *                   "mcs2Ul": 10,
-   *                   "totalBytesSdusUl": 59633,
-   *                   "totalBytesSdusDl": 33885,
-   *                   "totalPrbDl": 526,
-   *                   "totalPrbUl": 1748,
+   *                   "totalBytesSdusUl": 37962,
+   *                   "totalBytesSdusDl": 47290,
+   *                   "totalPrbDl": 658,
+   *                   "totalPrbUl": 1435,
    *                   "totalPduDl": 74,
-   *                   "totalPduUl": 368,
-   *                   "totalTbsDl": 36423,
-   *                   "totalTbsUl": 59615,
+   *                   "totalPduUl": 314,
+   *                   "totalTbsDl": 49923,
+   *                   "totalTbsUl": 47484,
    *                   "macSdusDl": [
    *                     {
-   *                       "sduLength": 655,
+   *                       "sduLength": 56,
    *                       "lcid": 3
    *                     }
    *                   ],
@@ -334,7 +380,6 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *         }
    *       ]
    *     }
-   *
    * @apiError BadRequest The given stats type is invalid.
    *
    * @apiErrorExample Error-Response:
@@ -345,30 +390,32 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
       Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
 
   /**
-   * @api {get} /stats/enb/:id/:type? Get RAN statistics in JSON
+   * @api {get} /stats/enb/:id/:type? Get RAN statistics in JSON for one eNB
    * @apiName GetStatsEnb
    * @apiGroup Stats
-   * @apiParam {string} id the ID of the eNB (agent ID or global eNB ID)
-   * @apiParam {string} [type=all] available types are: enb_config (eNB
-   * configuration), mac_stats (current TTI statistics), all
+   * @apiParam {Number} id The ID of the agent for which to change the
+   * slice configuration. This can be one of the following: -1 (last added
+   * agent), the eNB ID (in hex, preceded by "0x", or decimal) or the internal
+   * agent ID which can be obtained through a `stats` call.  Numbers smaller
+   * than 1000 are parsed as the agent ID.
+   * @apiParam {string=enb_config,mac_stats,all} [type=all] The type of
+   * statistics to be returned. The following types are allowed:
+   * * `enb_config`: static configuration (for eNB, UE, and LC)
+   * * `mac_stats`:  statistics about various eNB layers (PDCP, RLC, MAC)
+   * * `all`:        both of the above
    *
-   * @apiDescription This API gets the RAN config and status for the current TTI
-   * for a given eNB in JSON format. The ID can be either the agent ID (internal
-   * ID for every agent in the controller, starting from 0) or the global eNB ID
-   * (a mask consisting of the module ID, the eNB ID and the cell ID). The
-   * global eNB ID can be in hexadecimal or decimal notation. In the former
-   * case, a "0x" needs to preceed the number (hence the ID as string). For the
-   * type enb_config, the API endpoint gets eNB, UE, and LC configurations, and
-   * for mac_stats the status of eNB and UE at different layers, namely PDCP,
-   * RLC, MAC, and PHY layer form the FlexRAN controller. No human-readable
+   * @apiDescription This API gets the RAN config and status for the current
+   * TTI for a given eNB. The output is in JSON format. No human-readable
    * format exists corresponding to this endpoint.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage:
-   *    curl -X GET http://127.0.0.1:9999/stats/enb/0/
+   *    curl -X GET http://127.0.0.1:9999/stats/enb/-1/
    * @apiExample Example usage:
    *    curl -X GET http://127.0.0.1:9999/stats/enb/234881037/mac_stats
+   * @apiExample Example usage:
+   *    curl -X GET http://127.0.0.1:9999/stats/enb/0xe000000/enb_config
    *
    * @apiError BadRequest The given statistics type or the eNB ID is invalid.
    * @apiErrorExample Error-Response:
@@ -386,12 +433,18 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    * @api {get} /stats/ue/:id/:type? Get UE statistics in JSON
    * @apiName GetStatsUE
    * @apiGroup Stats
-   * @apiParam {number} id the ID of the UE (RNTI or IMSI)
+   * @apiParam {Number} id The ID of the UE in the form of either an RNTI or
+   * the IMSI. Everything shorter than 6 digits will be treated as the RNTI,
+   * the rest as the IMSI.
+   * @apiParam {string=enb_config,mac_stats,all} [type=all] The type of
+   * statistics to be returned. The following types are allowed:
+   * * `enb_config`: static configuration (for eNB, UE, and LC)
+   * * `mac_stats`:  statistics about various eNB layers (PDCP, RLC, MAC)
+   * * `all`:        both of the above
    *
-   * @apiDescription This API gets the UE statistics ("mac_stats") for one UE
-   * across all UEs registered at eNBs managed by the controller. The ID can be
-   * either the RNTI or IMSI which can be obtained via the (#Stats.GetStats)
-   * endpoint. No human-readable format exists corresponding to this endpoint.
+   * @apiDescription This API gets the UE statistics (`mac_stats`) for one UE
+   * registered at any eNB managed by the controller. No
+   * human-readable format exists corresponding to this endpoint.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -410,19 +463,18 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    * @api {get} /stats/enb/:id_enb/ue/:id_ue Get UE statistics in JSON, delimited to a given eNB
    * @apiName GetStatsUELimited
    * @apiGroup Stats
-   * @apiParam {number} id_enb the ID of the eNB (agent ID or global eNB ID)
-   * @apiParam {number} id_ue the ID of the UE (RNTI or IMSI)
+   * @apiParam {Number} id_enb The ID of the agent for which to change the
+   * slice configuration. This can be one of the following: -1 (last added
+   * agent), the eNB ID (in hex, preceded by "0x", or decimal) or the internal
+   * agent ID which can be obtained through a `stats` call.  Numbers smaller
+   * than 1000 are parsed as the agent ID.
+   * @apiParam {number} id_ue The ID of the UE in the form of either an RNTI or
+   * the IMSI. Everything shorter than 6 digits will be treated as the RNTI,
+   * the rest as the IMSI.
    *
-   * @apiDescription This API gets the UE statistics ("mac_stats") for one UE
-   * across all UEs. The search is restrained to a given eNB registered at the
-   * controller. The ID of the UE can be either the RNTI or IMSI which can be
-   * obtained via the (#Stats.GetStats) endpoint. The ID of the eNB can be
-   * either the agent ID (internal ID for every agent in the controller, starting
-   * from 0) or the global eNB ID (a mask consisting of the module ID, the eNB
-   * ID and the cell ID). The global eNB ID can be in hexadecimal or decimal
-   * notation. In the former case, a "0x" needs to preceed the number (hence the
-   * ID as string). No human-readable format exists corresponding to this
-   * endpoint.
+   * @apiDescription This API gets the UE statistics ("mac_stats") for one UE.
+   * The search is restrained to a given eNB registered at the controller. No
+   * human-readable format exists corresponding to this endpoint.
    *
    * @apiVersion v0.1.0
    * @apiPermission None

@@ -532,42 +532,26 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats(const Pistache::
 
 void flexran::north_api::stats_manager_calls::obtain_json_stats_enb(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-  const std::string enb_id_s = request.param(":id").as<std::string>();
-  uint64_t enb_id;
-  bool is_agent_id = false;
-  try {
-    is_agent_id = parse_enb_agent_id(enb_id_s, enb_id);
-  } catch (std::invalid_argument e) {
+  int agent_id = stats_app->parse_enb_agent_id(request.param(":id").as<std::string>());
+  if (agent_id < 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"invalid ID\"}", MIME(Application, Json));
+        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
     return;
   }
 
   const std::string type = request.hasParam(":type") ?
       request.param(":type").as<std::string>() : REQ_TYPE::ALL_STATS;
+
   std::string resp;
-  bool found = false;
   if (type == REQ_TYPE::ALL_STATS) {
-    found = is_agent_id ?
-        stats_app->stats_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
-      : stats_app->stats_by_enb_id_to_json_string(enb_id, resp);
+    stats_app->stats_by_agent_id_to_json_string(agent_id, resp);
   } else if (type == REQ_TYPE::ENB_CONFIG) {
-    found = is_agent_id ?
-        stats_app->enb_configs_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
-      : stats_app->enb_configs_by_enb_id_to_json_string(enb_id, resp);
+    stats_app->enb_configs_by_agent_id_to_json_string(agent_id, resp);
   } else if (type == REQ_TYPE::MAC_STATS) {
-    found = is_agent_id ?
-        stats_app->mac_configs_by_agent_id_to_json_string(static_cast<int>(enb_id), resp)
-      : stats_app->mac_configs_by_enb_id_to_json_string(enb_id, resp);
+    stats_app->mac_configs_by_agent_id_to_json_string(agent_id, resp);
   } else {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"invalid statistics type\"}", MIME(Application, Json));
-    return;
-  }
-
-  if (!found) {
-    response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"invalid ID\" }", MIME(Application, Json));
+        "{ \"error\": \"invalid statistics type\" }", MIME(Application, Json));
     return;
   }
 
@@ -577,18 +561,17 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats_enb(const Pistac
 
 void flexran::north_api::stats_manager_calls::obtain_json_stats_ue(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+  int agent_id = -1;
   const bool check_enb = request.hasParam(":id_enb");
-  uint64_t enb_id;
-  bool is_agent_id = false;
   if (check_enb) {
-    try {
-      is_agent_id = parse_enb_agent_id(request.param(":id_enb").as<std::string>(), enb_id);
-    } catch (std::invalid_argument e) {
+    agent_id = stats_app->parse_enb_agent_id(request.param(":id_enb").as<std::string>());
+    if (agent_id < 0) {
       response.send(Pistache::Http::Code::Bad_Request,
-          "{ \"error\": \"invalid eNB ID\" }", MIME(Application, Json));
+          "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
       return;
     }
   }
+
 
   const std::string ue_id_s = request.param(":id_ue").as<std::string>();
   uint64_t ue_id;
@@ -602,51 +585,23 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats_ue(const Pistach
   }
 
   std::string resp;
-  bool found = false;
   if (check_enb) {
-    if (is_rnti && !is_agent_id)
-      found = stats_app->ue_stats_by_rnti_by_enb_id_to_json_string(
-          static_cast<flexran::rib::rnti_t>(ue_id), resp, enb_id);
-    else if (is_rnti && is_agent_id)
-      found = stats_app->ue_stats_by_rnti_by_agent_id_to_json_string(
-          static_cast<flexran::rib::rnti_t>(ue_id), resp, static_cast<int>(enb_id));
-    else if (!is_rnti && !is_agent_id)
-      found = stats_app->ue_stats_by_imsi_by_enb_id_to_json_string(
-          ue_id, resp, enb_id);
+    if (is_rnti)
+      stats_app->ue_stats_by_rnti_by_agent_id_to_json_string(
+          static_cast<flexran::rib::rnti_t>(ue_id), resp, agent_id);
     else
       /* !is_rnti (==imsi) && agent_id) */
-      found = stats_app->ue_stats_by_imsi_by_agent_id_to_json_string(
-          ue_id, resp, static_cast<int>(enb_id));
+      stats_app->ue_stats_by_imsi_by_agent_id_to_json_string(ue_id, resp, agent_id);
   }
   else {
-    found = is_rnti ?
-        stats_app->ue_stats_by_rnti_to_json_string(static_cast<flexran::rib::rnti_t>(ue_id), resp)
-      : stats_app->ue_stats_by_imsi_to_json_string(ue_id, resp);
-  }
-
-  if (!found) {
-    response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"invalid ID (eNB and/or UE)\" }", MIME(Application, Json));
-    return;
+    if (is_rnti)
+      stats_app->ue_stats_by_rnti_to_json_string(static_cast<flexran::rib::rnti_t>(ue_id), resp);
+    else
+      stats_app->ue_stats_by_imsi_to_json_string(ue_id, resp);
   }
 
   response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
   response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
-}
-
-bool flexran::north_api::stats_manager_calls::parse_enb_agent_id(const std::string& enb_id_s, uint64_t& enb_id)
-{
-  bool is_agent_id = false;
-  if (enb_id_s.length() >= AGENT_ID_LENGTH_LIMIT && enb_id_s.substr(0, 2) == "0x") {
-    /* it is a hex -> we assume it is not an RNTI */
-    enb_id = std::stoll(enb_id_s, 0, 16);
-  } else {
-    enb_id = std::stoll(enb_id_s);
-    /* if the number is shorter than some characters, we assume it is an
-     * agent_id (internal identification of the agents in the controller) */
-    is_agent_id = enb_id_s.length () < AGENT_ID_LENGTH_LIMIT;
-  }
-  return is_agent_id;
 }
 
 bool flexran::north_api::stats_manager_calls::parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id)

@@ -66,6 +66,10 @@ namespace flexran {
       bool ue_stats_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const;
       bool ue_stats_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const;
 
+      // returns the agent_id of matching agent/enb ID string or -1 if not
+      // found
+      int parse_enb_agent_id(const std::string& enb_agent_id_s) const;
+
       private:
 
         std::set<int> agent_list_;

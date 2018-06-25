@@ -204,3 +204,8 @@ bool flexran::app::stats::stats_manager::ue_stats_by_imsi_by_agent_id_to_json_st
 {
   return rib_.dump_ue_by_imsi_by_agent_id_to_json_string(imsi, out, agent_id);
 }
+
+int flexran::app::stats::stats_manager::parse_enb_agent_id(const std::string& enb_agent_id_s) const
+{
+  return rib_.parse_enb_agent_id(enb_agent_id_s);
+}

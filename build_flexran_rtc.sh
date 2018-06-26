@@ -72,4 +72,4 @@ else
     ARGS="$ARGS -DNEO4J_SUPPORT=ON"
 fi
 
-cmake $ARGS . && make
+cmake $ARGS . && make -j $(nproc)

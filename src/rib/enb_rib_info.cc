@@ -312,16 +312,6 @@ bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_rnti_to_json_string(rnti_
   return true;
 }
 
-bool flexran::rib::enb_rib_info::dump_ue_spec_stats_by_imsi_to_json_string(uint64_t imsi, std::string& out) const
-{
-  for (int i = 0; i < ue_config_.ue_config_size(); i++) {
-    if (imsi == ue_config_.ue_config(i).imsi()) {
-      return dump_ue_spec_stats_by_rnti_to_json_string(ue_config_.ue_config(i).rnti(), out);
-    }
-  }
-  return false;
-}
-
 bool flexran::rib::enb_rib_info::parse_rnti_imsi(const std::string& rnti_imsi_s,
     rnti_t& rnti) const
 {

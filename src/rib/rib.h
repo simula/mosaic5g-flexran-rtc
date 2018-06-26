@@ -74,24 +74,17 @@ namespace flexran {
 
       std::string dump_all_mac_stats_to_string() const;
       std::string dump_all_mac_stats_to_json_string() const;
-      bool dump_mac_stats_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
       bool dump_mac_stats_by_agent_id_to_json_string(int agent_id, std::string& out) const;
 
       static std::string format_mac_stats_to_json(const std::vector<std::string>& mac_stats_json);
       
       std::string dump_all_enb_configurations_to_string() const;
       std::string dump_all_enb_configurations_to_json_string() const;
-      bool dump_enb_configurations_by_enb_id_to_json_string(uint64_t enb_id, std::string& out) const;
       bool dump_enb_configurations_by_agent_id_to_json_string(int agent_id, std::string& out) const;
 
       static std::string format_enb_configurations_to_json(const std::vector<std::string>& enb_configurations_json);
 
-      bool dump_ue_by_rnti_to_json_string(rnti_t rnti, std::string& out) const;
-      bool dump_ue_by_rnti_by_enb_id_to_json_string(rnti_t rnti, std::string& out, uint64_t enb_id) const;
       bool dump_ue_by_rnti_by_agent_id_to_json_string(rnti_t rnti, std::string& out, int agent_id) const;
-      bool dump_ue_by_imsi_to_json_string(uint64_t imsi, std::string& out) const;
-      bool dump_ue_by_imsi_by_enb_id_to_json_string(uint64_t imsi, std::string& out, uint64_t enb_id) const;
-      bool dump_ue_by_imsi_by_agent_id_to_json_string(uint64_t imsi, std::string& out, int agent_id) const;
 
       int get_agent_id(uint64_t enb_id) const;
       int parse_enb_agent_id(const std::string& enb_agent_id_s) const;

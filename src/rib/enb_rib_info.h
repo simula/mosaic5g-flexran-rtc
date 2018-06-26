@@ -80,7 +80,6 @@ namespace flexran {
                                                 const std::string& lc_config_json);
 
       bool dump_ue_spec_stats_by_rnti_to_json_string(rnti_t rnti, std::string& out) const;
-      bool dump_ue_spec_stats_by_imsi_to_json_string(uint64_t imsi, std::string& out) const;
 
       frame_t get_current_frame() const { return current_frame_; }
 

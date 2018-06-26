@@ -572,40 +572,20 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats_ue(const Pistach
     }
   }
 
-
   const std::string ue_id_s = request.param(":id_ue").as<std::string>();
-  uint64_t ue_id;
-  bool is_rnti = false;
-  try {
-    is_rnti = parse_ue_id(ue_id_s, ue_id);
-  } catch (std::invalid_argument e) {
+  flexran::rib::rnti_t rnti;
+  bool found = false;
+  found = check_enb ? stats_app->parse_rnti_imsi(agent_id, ue_id_s, rnti) :
+                      stats_app->parse_rnti_imsi_find_agent(ue_id_s, rnti, agent_id);
+  if (!found) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"invalid UE ID\" }", MIME(Application, Json));
     return;
   }
 
+  /* at this point, both the correct agent_id and RNTI will be known */
   std::string resp;
-  if (check_enb) {
-    if (is_rnti)
-      stats_app->ue_stats_by_rnti_by_agent_id_to_json_string(
-          static_cast<flexran::rib::rnti_t>(ue_id), resp, agent_id);
-    else
-      /* !is_rnti (==imsi) && agent_id) */
-      stats_app->ue_stats_by_imsi_by_agent_id_to_json_string(ue_id, resp, agent_id);
-  }
-  else {
-    if (is_rnti)
-      stats_app->ue_stats_by_rnti_to_json_string(static_cast<flexran::rib::rnti_t>(ue_id), resp);
-    else
-      stats_app->ue_stats_by_imsi_to_json_string(ue_id, resp);
-  }
-
+  stats_app->ue_stats_by_rnti_by_agent_id_to_json_string(rnti, resp, agent_id);
   response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
   response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
-}
-
-bool flexran::north_api::stats_manager_calls::parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id)
-{
-  ue_id = std::stoll(ue_id_s);
-  return ue_id_s.length() < RNTI_ID_LENGTH_LIMIT;
 }

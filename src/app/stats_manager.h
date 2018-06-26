@@ -69,6 +69,13 @@ namespace flexran {
       // returns the agent_id of matching agent/enb ID string or -1 if not
       // found
       int parse_enb_agent_id(const std::string& enb_agent_id_s) const;
+      /// returns true if the given RNTI/IMSI string for agent agent_id is
+      /// found (saving the rnti), or false
+      bool parse_rnti_imsi(int agent_id, const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti) const;
+      /// returns true if the given RNTI/IMSI string in any agent agent_id is
+      /// found (saving the rnti and agent_id), or false
+      bool parse_rnti_imsi_find_agent(const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti,
+          int& agent_id) const;
 
       private:
 

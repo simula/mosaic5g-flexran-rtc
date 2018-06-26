@@ -51,8 +51,6 @@ namespace flexran {
       void obtain_json_stats_ue(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:
-      static bool parse_ue_id(const std::string& ue_id_s, uint64_t& ue_id);
-
       std::shared_ptr<flexran::app::stats::stats_manager> stats_app;
 
     };

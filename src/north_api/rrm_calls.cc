@@ -94,10 +94,14 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * scheduling.
    * @apiParam (JSON DL part parameters) {Number{0-24}} [positionLow] When
    * positioning a slice in the frequency plane, this parameter marks the lower
-   * end.  Expressed in *RBG*. Must be lower than `positionHigh`.
+   * end (inclusive, i.e. `posL <= RB`).  Expressed in *RBG*. Must be lower
+   * than `positionHigh`. During the multiplexing phase, other RBs could be
+   * chosen, too. See `intersliceShareActive` for more information.
    * @apiParam (JSON DL part parameters) {Number{1-25}} [positionHigh] When
    * positioning a slice in the frequency plane, this parameter marks the high
-   * end.  Expressedn in *RBG*. Must be higher than `positionLow`.
+   * end (inclusive, i.e. `RB <= posH`).  Expressed in *RBG*. Must be higher
+   * than `positionLow`. During the multiplexing phase, other RBs could be
+   * chosen, too. See `intersliceShareActive` for more information.
    * @apiParam (JSON DL part parameters) {Number{0-28}} [maxmcs] The maximum
    * MCS that this slice is allowed to use.
    * @apiParam (JSON DL part parameters) {String[]="CR_ROUND","CR_SRB12","CR_HOL","CR_LC","CR_CQI","CR_LCP"} [sorting]

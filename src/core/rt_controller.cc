@@ -86,6 +86,8 @@ int main(int argc, char* argv[]) {
   
   bool debug = false;
 
+  bool expl_log_config = false;
+
   sigset_t sigmask;
   int rc, sig;
 
@@ -101,6 +103,8 @@ int main(int argc, char* argv[]) {
   try {
     po::options_description desc("Help");
     desc.add_options()
+      ("config,c", po::value<std::string>(), "Path to logger configuration file. "
+       "Without it, FLEXRAN_RTC_HOME or ../ is tried")
       ("debug,d", "Enables debugging messages to be displayed and logged")
       ("help,h", "Prints this help message")
       ("nport,n", po::value<int>()->default_value(9999),
@@ -121,6 +125,11 @@ int main(int argc, char* argv[]) {
       std::cout << "Debugging enabled" << std::endl;
       debug = true;
     }
+
+    if (opts.count("config")) {
+      expl_log_config = true;
+      path = opts["config"].as<std::string>();
+    }
     
     try {
       po::notify(opts);
@@ -137,7 +146,10 @@ int main(int argc, char* argv[]) {
     return 2;
   } 
 
-  if (!debug) {
+  if (expl_log_config) {
+    // Initialize the logger with custom config file from parameters in path
+    flexran_log::PropertyConfigurator::configure(path);
+  } else if (!debug) {
     // Initialize the logger with default properties
     flexran_log::PropertyConfigurator::configure(path + "/log_config/basic_log");
   } else {

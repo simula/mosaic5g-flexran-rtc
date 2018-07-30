@@ -101,12 +101,12 @@ int main(int argc, char* argv[]) {
   try {
     po::options_description desc("Help");
     desc.add_options()
-      ("port,p", po::value<int>()->default_value(2210),
-       "Port for incoming agent connections")
+      ("debug,d", "Enables debugging messages to be displayed and logged")
+      ("help,h", "Prints this help message")
       ("nport,n", po::value<int>()->default_value(9999),
        "Port for northbound API calls")
-      ("help,h", "Prints this help message")
-      ("debug,d", "Enables debugging messages to be displayed and logged");
+      ("port,p", po::value<int>()->default_value(2210),
+       "Port for incoming agent connections");
     
     po::variables_map opts;
     po::store(po::parse_command_line(argc, argv, desc), opts);

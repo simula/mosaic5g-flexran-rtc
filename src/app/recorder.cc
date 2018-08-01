@@ -227,6 +227,8 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
     job_type type,
     const std::map<uint64_t, bs_dump>& dump_chunk)
 {
+  /* TODO use flexran::rib::Rib::format_statistics_to_json() when time stamps
+   * for single chunks are collected */
   s << "{";
 
   if (type != job_type::stats) {

@@ -33,6 +33,7 @@
 #include "agent_info.h"
 #include <memory>
 #include <set>
+#include <chrono>
 
 namespace flexran {
 
@@ -80,6 +81,10 @@ namespace flexran {
 
       uint64_t get_bs_id(int agent_id) const;
       uint64_t parse_enb_agent_id(const std::string& enb_agent_id_s) const;
+      static std::string format_statistics_to_json(
+          std::chrono::time_point<std::chrono::system_clock> t,
+          const std::string& configurations, const std::string& mac_stats);
+      static std::string format_date_time(std::chrono::time_point<std::chrono::system_clock> t);
       
     private:
       std::map<uint64_t, std::shared_ptr<enb_rib_info>> eNB_configs_;

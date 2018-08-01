@@ -26,6 +26,8 @@
 #include "rib.h"
 #include <algorithm>
 #include <stdexcept>
+#include <iomanip>
+#include <sstream>
 
 bool flexran::rib::Rib::add_pending_agent(std::shared_ptr<agent_info> ai)
 {
@@ -214,7 +216,7 @@ std::string flexran::rib::Rib::format_mac_stats_to_json(
     const std::vector<std::string>& mac_stats_json)
 {
   std::string str;
-  str += "\"mac_stats\":[";
+  str += "[";
   for (auto it = mac_stats_json.begin(); it != mac_stats_json.end(); it++) {
     if (it != mac_stats_json.begin()) str += ",";
     str += "{";
@@ -269,7 +271,7 @@ std::string flexran::rib::Rib::format_enb_configurations_to_json(
     const std::vector<std::string>& enb_configurations_json)
 {
   std::string str;
-  str += "\"eNB_config\":[";
+  str += "[";
   for (auto it = enb_configurations_json.begin(); it != enb_configurations_json.end(); it++) {
     if (it != enb_configurations_json.begin()) str += ",";
     str += "{";
@@ -278,6 +280,33 @@ std::string flexran::rib::Rib::format_enb_configurations_to_json(
   }
   str += "]";
   return str;
+}
+
+std::string flexran::rib::Rib::format_statistics_to_json(
+    std::chrono::time_point<std::chrono::system_clock> t,
+    const std::string& configurations,
+    const std::string& mac_stats)
+{
+  std::string str = "{";
+  str += "\"date_time\":" + format_date_time(t) + ",";
+  if (!configurations.empty())
+    str += "\"eNB_config\":" + configurations;
+  if (!configurations.empty() && !mac_stats.empty())
+    str += ",";
+  if (!mac_stats.empty())
+    str += "\"mac_stats\":" + mac_stats;
+  str += "}";
+  return str;
+}
+
+std::string flexran::rib::Rib::format_date_time(std::chrono::time_point<std::chrono::system_clock> t)
+{
+  std::ostringstream oss;
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()) % 1000;
+  std::time_t time = std::chrono::system_clock::to_time_t(t);
+  oss << std::put_time(std::localtime(&time), "%Y-%m-%dT%H:%M:%S.")
+    << std::setfill('0') << std::setw(3) << ms.count();
+  return oss.str();
 }
 
 bool flexran::rib::Rib::dump_ue_by_rnti_by_bs_id_to_json_string(

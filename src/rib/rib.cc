@@ -288,7 +288,7 @@ std::string flexran::rib::Rib::format_statistics_to_json(
     const std::string& mac_stats)
 {
   std::string str = "{";
-  str += "\"date_time\":" + format_date_time(t) + ",";
+  str += "\"date_time\":\"" + format_date_time(t) + "\",";
   if (!configurations.empty())
     str += "\"eNB_config\":" + configurations;
   if (!configurations.empty() && !mac_stats.empty())

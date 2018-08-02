@@ -1384,6 +1384,15 @@ bool flexran::app::scheduler::flexible_scheduler::verify_cell_config_for_restart
       return false;
     }
     break;
+  case 28:
+    if (c.dl_freq() < 758 || c.dl_freq() >= 803) {
+      error_message = "dl_freq must be within [758,803) (MHz) for band 28";
+      return false;
+    }
+    if (c.dl_freq() - c.ul_freq() != 55) {
+      error_message = "freq offset must be 55MHz for band 28";
+      return false;
+    }
   default:
     error_message = "unrecognized band " + std::to_string(c.eutra_band());
     return false;

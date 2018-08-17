@@ -52,18 +52,25 @@ void flexran::core::rt::rt_task::set_scheduling_policy(Policy pol,
   __u32 sched_policy;
 
   switch (pol) {
+  case Policy::DEFAULT:
+    sched_policy = SCHED_OTHER;
+    priority = 0;
+    runtime = 0;
+    deadline = 0;
+    period = 0;
+    break;
   case Policy::FIFO:
     sched_policy = SCHED_FIFO;
     break;
   case Policy::DEADLINE:
     sched_policy = SCHED_DEADLINE;
     break;
-  default:
-    LOG4CXX_ERROR(flog::core, "unsupported policy " << static_cast<int>(pol)
-        << ", using SCHED_RR instead");
   case Policy::RR:
     sched_policy = SCHED_RR;
     break;
+  default:
+    LOG4CXX_ERROR(flog::core, "unsupported policy " << static_cast<int>(pol)
+        << ", using SCHED_RR instead");
   }
 
   sched_priority min = sched_get_priority_min(sched_policy);

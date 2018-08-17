@@ -43,7 +43,7 @@ namespace flexran {
 	
 #ifdef LOWLATENCY
 	
-	enum class Policy {RR = SCHED_RR, DEADLINE = SCHED_DEADLINE, FIFO = SCHED_FIFO};
+	enum class Policy {DEFAULT = SCHED_OTHER, RR = SCHED_RR, DEADLINE = SCHED_DEADLINE, FIFO = SCHED_FIFO};
 	
 #else
 

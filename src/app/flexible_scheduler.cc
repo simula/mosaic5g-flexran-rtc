@@ -35,6 +35,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
+#include "band_check.h"
 
 #include "flexran_log.h"
 
@@ -1349,54 +1350,11 @@ bool flexran::app::scheduler::flexible_scheduler::verify_cell_config_for_restart
     error_message = "dl_bandwidth and ul_bandwidth must be the same (6, 15, 25, 50, 100)";
     return false;
   }
-  switch (c.dl_bandwidth()) {
-  case 6:
-  case 15:
-  case 25:
-  case 50:
-  case 100:
-    /* good, do nothing */
-    break;
-  default:
-    error_message = "dl_bandwidth must be in (6, 15, 25, 50, 100)";
+  if (!check_eutra_bandwidth(c.dl_bandwidth(), error_message))
     return false;
-  }
-  switch (c.eutra_band()) {
-    /* when comparing the freq offset: dl_freq/ul_freq are unsigned, so the
-     * resulting value needs to be positive */
-  case 7:
-    if (c.dl_freq() < 2620 || c.dl_freq() >= 2690) {
-      error_message = "dl_freq must be within [2620,2690) (MHz) for band 7";
-      return false;
-    }
-    if (c.dl_freq() - c.ul_freq() != 120) {
-      error_message = "freq offset must be 120MHz for band 7";
-      return false;
-    }
-    break;
-  case 13:
-    if (c.dl_freq() < 746 || c.dl_freq() >= 756) {
-      error_message = "dl_freq must we within [746,756) (MHz) for band 13";
-      return false;
-    }
-    if (c.ul_freq() - c.dl_freq() != 31) {
-      error_message = "freq offset must be -31MHz for band 7";
-      return false;
-    }
-    break;
-  case 28:
-    if (c.dl_freq() < 758 || c.dl_freq() >= 803) {
-      error_message = "dl_freq must be within [758,803) (MHz) for band 28";
-      return false;
-    }
-    if (c.dl_freq() - c.ul_freq() != 55) {
-      error_message = "freq offset must be 55MHz for band 28";
-      return false;
-    }
-  default:
-    error_message = "unrecognized band " + std::to_string(c.eutra_band());
+  // checking function tests against Hz, but ul_freq/dl_freq are in MHz!
+  if (!check_eutra_band(c.eutra_band(), c.ul_freq() * 1000000, c.dl_freq() * 1000000, error_message, c.dl_bandwidth(), true))
     return false;
-  }
 
   return true;
 }

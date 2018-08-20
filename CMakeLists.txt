@@ -227,6 +227,7 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
   ${RT_CONTROLLER_APP_DIR}/rib_management.cc
   ${RT_CONTROLLER_APP_DIR}/recorder.cc
+  ${RT_CONTROLLER_APP_DIR}/band_check.cc
 )
 
 if(NEO4J_SUPPORT)

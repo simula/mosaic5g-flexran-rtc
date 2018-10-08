@@ -25,7 +25,7 @@
 
 #include <iostream>
 #include <algorithm>
-
+#include <stdexcept>
 
 #include <google/protobuf/util/json_util.h>
 
@@ -35,9 +35,19 @@
 
 
 
-flexran::rib::enb_rib_info::enb_rib_info(int agent_id)
-  : agent_id_(agent_id) {
+flexran::rib::enb_rib_info::enb_rib_info(uint64_t bs_id,
+    const std::set<std::shared_ptr<agent_info>>& agents)
+  : bs_id_(bs_id),
+    agents_(agents)
+{
   last_checked = st_clock::now();
+  for (auto a: agents) {
+    if (a->bs_id != bs_id_)
+      throw std::runtime_error("invalid bs_id " + std::to_string(a->bs_id)
+          + " from agent " + std::to_string(a->agent_id)
+          + " for BS " + std::to_string(bs_id));
+  }
+  /* TODO check capabilities is complete */
 }
 
 void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update) {
@@ -184,7 +194,7 @@ void flexran::rib::enb_rib_info::update_liveness() {
 }
 
 void flexran::rib::enb_rib_info::dump_mac_stats() const {
-  LOG4CXX_INFO(flog::rib, "UE MAC stats for agent " << agent_id_);
+  LOG4CXX_INFO(flog::rib, "UE MAC stats for BS " << bs_id_);
   for (auto ue_stats : ue_mac_info_) {
     ue_stats.second->dump_stats();
   }
@@ -193,8 +203,8 @@ void flexran::rib::enb_rib_info::dump_mac_stats() const {
 std::string flexran::rib::enb_rib_info::dump_mac_stats_to_string() const {
   std::string str;
 
-  str += "UE MAC stats for agent ";
-  str += agent_id_;
+  str += "UE MAC stats for BS ";
+  str += bs_id_;
   str += "\n";
   for (auto ue_stats : ue_mac_info_) {
     str += ue_stats.second->dump_stats_to_string();
@@ -213,18 +223,16 @@ std::string flexran::rib::enb_rib_info::dump_mac_stats_to_json_string() const
       { return ue_stats.second->dump_stats_to_json_string(); }
   );
 
-  return format_mac_stats_to_json(agent_id_, eNB_config_.enb_id(), ue_mac_stats);
+  return format_mac_stats_to_json(bs_id_, ue_mac_stats);
 }
 
-std::string flexran::rib::enb_rib_info::format_mac_stats_to_json(int agent_id,
-    uint64_t enb_id,
+std::string flexran::rib::enb_rib_info::format_mac_stats_to_json(
+    uint64_t bs_id,
     const std::vector<std::string>& ue_mac_stats_json)
 {
   std::string str;
-  str += "\"agent_id\":";
-  str += std::to_string(agent_id);
-  str += ",\"eNBId\":";
-  str += std::to_string(enb_id);
+  str += "\"bs_id\":";
+  str += std::to_string(bs_id);
   str += ",\"ue_mac_stats\":[";
   for (auto it = ue_mac_stats_json.begin(); it != ue_mac_stats_json.end(); it++) {
     if (it != ue_mac_stats_json.begin()) str += ",";
@@ -235,6 +243,9 @@ std::string flexran::rib::enb_rib_info::format_mac_stats_to_json(int agent_id,
 }
 
 void flexran::rib::enb_rib_info::dump_configs() const {
+  LOG4CXX_INFO(flog::rib, "dump_configs() for BS " << bs_id_);
+  for (auto a : agents_)
+    LOG4CXX_INFO(flog::rib, a->to_string());
   eNB_config_mutex_.lock();
   LOG4CXX_INFO(flog::rib, eNB_config_.DebugString());
   eNB_config_mutex_.unlock();
@@ -248,6 +259,9 @@ void flexran::rib::enb_rib_info::dump_configs() const {
 
 std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
   std::string str;
+  str += "configs for BS " + std::to_string(bs_id_) + "\n";
+  for (auto a : agents_)
+    str += a->to_string() + "\n";
   eNB_config_mutex_.lock();
   str += eNB_config_.DebugString();
   eNB_config_mutex_.unlock();
@@ -266,12 +280,17 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
 
 std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const
 {
-  std::string enb_config, ue_config, lc_config;
-  uint64_t enb_id;
+  std::string agent_info, enb_config, ue_config, lc_config;
+
+  agent_info = "[";
+  for (auto it = agents_.begin(); it != agents_.end(); ++it) {
+    if (it != agents_.begin()) agent_info += ",";
+    agent_info += (*it)->to_json();
+  }
+  agent_info += "]";
 
   eNB_config_mutex_.lock();
   google::protobuf::util::MessageToJsonString(eNB_config_, &enb_config, google::protobuf::util::JsonPrintOptions());
-  enb_id = eNB_config_.enb_id();
   eNB_config_mutex_.unlock();
 
   ue_config_mutex_.lock();
@@ -282,20 +301,21 @@ std::string flexran::rib::enb_rib_info::dump_configs_to_json_string() const
   google::protobuf::util::MessageToJsonString(lc_config_, &lc_config, google::protobuf::util::JsonPrintOptions());
   lc_config_mutex_.unlock();
 
-  return format_configs_to_json(agent_id_, enb_id, enb_config, ue_config, lc_config);
+  return format_configs_to_json(bs_id_, agent_info, enb_config, ue_config, lc_config);
 }
 
 std::string flexran::rib::enb_rib_info::format_configs_to_json(
-    int agent_id, uint64_t enb_id,
+    uint64_t bs_id,
+    const std::string& agent_info_json,
     const std::string& eNB_config_json,
     const std::string& ue_config_json,
     const std::string& lc_config_json)
 {
   std::string str;
-  str += "\"agent_id\":";
-  str += std::to_string(agent_id);
-  str += ",\"eNBId\":";
-  str += std::to_string(enb_id);
+  str += "\"bs_id\":";
+  str += std::to_string(bs_id);
+  str += ",\"agent_info\":";
+  str += agent_info_json;
   str += ",\"eNB\":";
   str += eNB_config_json;
   str += ",\"UE\":";

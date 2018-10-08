@@ -36,6 +36,7 @@ using st_clock = std::chrono::steady_clock;
 #include "rib_common.h"
 #include "ue_mac_rib_info.h"
 #include "cell_mac_rib_info.h"
+#include "agent_info.h"
 
 namespace flexran {
 
@@ -43,7 +44,7 @@ namespace flexran {
 
     class enb_rib_info {
     public:
-      enb_rib_info(int agent_id);
+      enb_rib_info(uint64_t bs_id, const std::set<std::shared_ptr<agent_info>>& agents);
       
       void update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update);
       
@@ -67,7 +68,7 @@ namespace flexran {
 
       std::string dump_mac_stats_to_json_string() const;
 
-      static std::string format_mac_stats_to_json(int agent_id, uint64_t enb_id,
+      static std::string format_mac_stats_to_json(uint64_t bs_id,
           const std::vector<std::string>& ue_mac_stats_json);
 
       void dump_configs() const;
@@ -76,7 +77,8 @@ namespace flexran {
 
       std::string dump_configs_to_json_string() const;
 
-      static std::string format_configs_to_json(int agent_id, uint64_t enb_id,
+      static std::string format_configs_to_json(uint64_t bs_id,
+                                                const std::string& agent_info_json,
                                                 const std::string& eNB_config_json,
                                                 const std::string& ue_config_json,
                                                 const std::string& lc_config_json);
@@ -110,9 +112,13 @@ namespace flexran {
       uint32_t num_dl_slices(uint16_t cell_id = 0) const;
       bool has_ul_slice(uint32_t slice_id, uint16_t cell_id = 0) const;
       uint32_t num_ul_slices(uint16_t cell_id = 0) const;
+
+      std::set<std::shared_ptr<agent_info>> get_agents() const { return agents_; }
+      uint64_t get_id() const { return bs_id_; }
       
     private:
-      int agent_id_;
+      uint64_t bs_id_;
+      std::set<std::shared_ptr<agent_info>> agents_;
 
       st_clock::time_point last_checked;
       /* Was: 500 for clock_t, have CLOCK_PER_SECOND == 1000000.

@@ -26,6 +26,7 @@
 #define RIB_UPDATER_H_
 
 #include "async_xface.h"
+#include "requests_manager.h"
 #include "rib.h"
 #include "flexran.pb.h"
 #include "rt_task.h"
@@ -37,8 +38,9 @@ namespace flexran {
     class rib_updater {
 
     public:
-    rib_updater(flexran::network::async_xface& xface, Rib& storage, int n_msg_check = 350)
-      : net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check) {}
+    rib_updater(Rib& storage, flexran::network::async_xface& xface,
+        flexran::core::requests_manager& netman, int n_msg_check = 350)
+      : rib_(storage), net_xface_(xface), req_manager_(netman), messages_to_check_(n_msg_check) {}
       
       unsigned int run();
       
@@ -80,8 +82,11 @@ namespace flexran {
 
     private:
       
-      flexran::network::async_xface& net_xface_;
       Rib& rib_;
+      // RX, can TX to individual agents
+      flexran::network::async_xface& net_xface_;
+      // TX to base station, possibly inferring the right agent
+      flexran::core::requests_manager& req_manager_;
       
       // Max number of messages to check during a single update period
       std::atomic<int> messages_to_check_;

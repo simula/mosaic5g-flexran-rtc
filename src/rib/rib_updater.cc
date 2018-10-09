@@ -126,7 +126,7 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
     protocol::flexran_message out_message1;
     out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message1.set_allocated_enb_config_request_msg(enb_config_request_msg);
-    net_xface_.send_msg(out_message1, agent_id);
+    req_manager_.send_message(agent_id, out_message1);
   
     // UE config second
     protocol::flexran_message out_message2;
@@ -137,7 +137,7 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
     protocol::flex_ue_config_request *ue_config_request_msg(new protocol::flex_ue_config_request);
     ue_config_request_msg->set_allocated_header(header2);
     out_message2.set_allocated_ue_config_request_msg(ue_config_request_msg);
-    net_xface_.send_msg(out_message2, agent_id);
+    req_manager_.send_message(agent_id, out_message2);
 
     // LC config third
     protocol::flexran_message out_message3;
@@ -148,7 +148,7 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
     protocol::flex_lc_config_request *lc_config_request_msg(new protocol::flex_lc_config_request);
     lc_config_request_msg->set_allocated_header(header3);
     out_message3.set_allocated_lc_config_request_msg(lc_config_request_msg);
-    net_xface_.send_msg(out_message3, agent_id);
+    req_manager_.send_message(agent_id, out_message3);
   } // Hello should originate from controller - Ignore in all other cases
 }
 

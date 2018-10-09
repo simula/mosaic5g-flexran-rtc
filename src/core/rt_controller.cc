@@ -172,14 +172,14 @@ int main(int argc, char* argv[]) {
   // Create the rib
   flexran::rib::Rib rib;
 
+  // Create the requests manager
+  flexran::core::requests_manager rm(rib, net_xface);
+
   // Create the rib update manager
-  flexran::rib::rib_updater r_updater(net_xface, rib);
+  flexran::rib::rib_updater r_updater(rib, net_xface, rm);
 
   // Create the task manager
   flexran::core::task_manager tm(r_updater);
-
-  // Create the requests manager
-  flexran::core::requests_manager rm(net_xface);
 
   // Register any applications that we might want to execute in the controller
   // Stats manager

@@ -45,6 +45,7 @@ namespace flexran {
       unsigned int update_rib();
       
       // Incoming message handlers
+      void handle_new_connection(int agent_id);
       void handle_message(int agent_id,
 			  const protocol::flex_hello& hello_msg,
 			  protocol::flexran_direction dir);

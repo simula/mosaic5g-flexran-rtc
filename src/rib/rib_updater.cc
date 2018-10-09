@@ -42,23 +42,13 @@ unsigned int flexran::rib::rib_updater::update_rib()
   int rem_msgs = messages_to_check_;
   protocol::flexran_message in_message;
   std::shared_ptr<flexran::network::tagged_message> tm;
+
   while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
-    /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
-      LOG4CXX_INFO(flog::rib, "New agent connection established (agent ID " << tm->getTag() << ")");
-      rib_.add_pending_agent(tm->getTag());
-      protocol::flex_header *header(new protocol::flex_header);
-      header->set_type(protocol::FLPT_HELLO);
-      header->set_version(0);
-      header->set_xid(0);
-	
-      protocol::flex_hello *hello_msg(new protocol::flex_hello);
-      hello_msg->set_allocated_header(header);
-	
-      protocol::flexran_message out_message;
-      out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-      out_message.set_allocated_hello_msg(hello_msg);
-      net_xface_.send_msg(out_message, tm->getTag());
+      handle_new_connection(tm->getTag());
+      // TODO add once we have the necessary information
+      //rib_.add_pending_agent(tm->getTag());
+      continue;
     } else { // Message from existing connection. Just update the proper rib entries
       // Deserialize the message
       in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
@@ -94,6 +84,23 @@ unsigned int flexran::rib::rib_updater::update_rib()
     processed++;
   }
   return processed;
+}
+
+void flexran::rib::rib_updater::handle_new_connection(int agent_id)
+{
+  LOG4CXX_INFO(flog::rib, "New agent connection established (agent ID " << agent_id << "), sending hello");
+  protocol::flex_header *header(new protocol::flex_header);
+  header->set_type(protocol::FLPT_HELLO);
+  header->set_version(0);
+  header->set_xid(0);
+
+  protocol::flex_hello *hello_msg(new protocol::flex_hello);
+  hello_msg->set_allocated_header(header);
+
+  protocol::flexran_message out_message;
+  out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+  out_message.set_allocated_hello_msg(hello_msg);
+  net_xface_.send_msg(out_message, agent_id);
 }
 
 // Handle hello message
@@ -197,8 +204,8 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
     rib_.new_eNB_config_entry(agent_id);
     rib_.remove_pending_agent(agent_id);
     LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " with ID "
-        << enb_config_reply_msg.enb_id() << std::hex << " (0x"
-        << enb_config_reply_msg.enb_id()
+        << "REPLACE" << std::hex << " (0x"
+        << "REPLACE"
         << ") was pending, created contiguration entry");
   }// If agent was not pending we should ignore this message. Only for initialization
 

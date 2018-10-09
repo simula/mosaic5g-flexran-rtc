@@ -17,13 +17,24 @@
 
 /*! \file    requests_manager.cc
  *  \brief   bridge between the apps and the network interface
- *  \authors Xenofon Foukas
+ *  \authors Xenofon Foukas, Robert Schmidt
  *  \company Eurecom
- *  \email   x.foukas@sms.ed.ac.uk
+ *  \email   x.foukas@sms.ed.ac.uk, robert.schmidt@eurecom.fr
  */
 
 #include "requests_manager.h"
+#include "agent_info.h"
+#include "flexran_log.h"
 
-void flexran::core::requests_manager::send_message(int agent_id, const protocol::flexran_message& msg) const {
-  net_xface_.send_msg(msg, agent_id); 
+void flexran::core::requests_manager::send_message(uint64_t bs_id,
+    const protocol::flexran_message& msg) const
+{
+  auto bs = rib_.get_bs(bs_id);
+  if (!bs) {
+    LOG4CXX_ERROR(flog::core, "RequestsManager: unknown BS ID " << bs_id);
+    return;
+  }
+  /* TODO verify which agent really needs to receive this */
+  for (auto a : bs->get_agents())
+    net_xface_.send_msg(msg, a->agent_id);
 }

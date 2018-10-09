@@ -46,27 +46,37 @@ namespace flexran {
       
       // Incoming message handlers
       void handle_new_connection(int agent_id);
-      void handle_message(int agent_id,
-			  const protocol::flex_hello& hello_msg,
-			  protocol::flexran_direction dir);
-      void handle_message(int agent_id,
-			  const protocol::flex_echo_request& echo_request_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_echo_reply& echo_reply_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_sf_trigger& sf_trigger_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_enb_config_reply& enb_config_reply_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_ue_config_reply& ue_config_reply_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_lc_config_reply& lc_config_reply_msg);
-      void handle_message(int agent_id,
-			  const protocol::flex_stats_reply& mac_stats_reply);
-      void handle_message(int agent_id,
-			  const protocol::flex_ue_state_change& ue_state_change_msg);
-      void handle_message(int agent_id,
-                          const protocol::flex_disconnect& disconnect_msg);
+
+      void handle_hello(int agent_id,
+          const protocol::flex_hello& hello_msg,
+          protocol::flexran_direction dir);
+
+      void handle_echo_request(int agent_id,
+          const protocol::flex_echo_request& echo_request_msg);
+
+      void handle_echo_reply(int agent_id,
+          const protocol::flex_echo_reply& echo_reply_msg);
+
+      void handle_sf_trigger(int agent_id,
+          const protocol::flex_sf_trigger& sf_trigger_msg);
+
+      void handle_enb_config_reply(int agent_id,
+          const protocol::flex_enb_config_reply& enb_config_reply_msg);
+
+      void handle_ue_config_reply(int agent_id,
+          const protocol::flex_ue_config_reply& ue_config_reply_msg);
+
+      void handle_lc_config_reply(int agent_id,
+          const protocol::flex_lc_config_reply& lc_config_reply_msg);
+
+      void handle_stats_reply(int agent_id,
+          const protocol::flex_stats_reply& mac_stats_reply);
+
+      void handle_ue_state_change(int agent_id,
+          const protocol::flex_ue_state_change& ue_state_change_msg);
+
+      void handle_disconnect(int agent_id,
+          const protocol::flex_disconnect& disconnect_msg);
 
     private:
       

@@ -283,10 +283,14 @@ add_library(RT_CONTROLLER_CORE_LIB
 
 add_executable(rt_controller ${RT_CONTROLLER_CORE_DIR}/rt_controller.cc)
 
+# Important: RT_CONTROLLER_CORE_LIB is mentioned twice because of a circular
+# dependency of RIB and CORE (RIB uses request_manager, CORE uses rib_updater).
+# Please do not remove, it doesn't do any harm (or find a better way)
 target_link_libraries(rt_controller
   RT_CONTROLLER_APP_LIB
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
+  RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_NETWORK_LIB
   ${FLPT_MSG_LIB}
   ${Log4CXX_LIBRARIES}

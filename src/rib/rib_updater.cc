@@ -41,45 +41,13 @@ unsigned int flexran::rib::rib_updater::update_rib()
 {
   unsigned int processed = 0;
   int rem_msgs = messages_to_check_;
-  protocol::flexran_message in_message;
   std::shared_ptr<flexran::network::tagged_message> tm;
 
   while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
       handle_new_connection(tm->getTag());
-      // TODO add once we have the necessary information
-      //rib_.add_pending_agent(tm->getTag());
-      continue;
-    } else { // Message from existing connection. Just update the proper rib entries
-      // Deserialize the message
-      in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
-      // Update the RIB based on the message type
-      if(in_message.has_hello_msg()) {
-        handle_hello(tm->getTag(), in_message.hello_msg(), in_message.msg_dir());
-      } else if(in_message.has_echo_request_msg()) {
-        handle_echo_request(tm->getTag(), in_message.echo_request_msg());
-      } else if(in_message.has_echo_reply_msg()) {
-        handle_echo_reply(tm->getTag(), in_message.echo_reply_msg());
-      } else if(in_message.has_stats_reply_msg()) {
-        handle_stats_reply(tm->getTag(), in_message.stats_reply_msg());
-      } else if(in_message.has_sf_trigger_msg()) {
-        handle_sf_trigger(tm->getTag(), in_message.sf_trigger_msg());
-      } else if(in_message.has_ul_sr_info_msg()) {
-        /* TODO: Need to implement to enable UL scheduling */
-        LOG4CXX_WARN(flog::rib, "NOT IMPLEMENTED Agent " << tm->getTag() << ": received UL sr info msg");
-      } else if(in_message.has_enb_config_reply_msg()) {
-        handle_enb_config_reply(tm->getTag(), in_message.enb_config_reply_msg());
-      } else if(in_message.has_ue_config_reply_msg()) {
-        handle_ue_config_reply(tm->getTag(), in_message.ue_config_reply_msg());
-      } else if(in_message.has_lc_config_reply_msg()) {
-        handle_lc_config_reply(tm->getTag(), in_message.lc_config_reply_msg());
-      } else if(in_message.has_ue_state_change_msg()) {
-        handle_ue_state_change(tm->getTag(), in_message.ue_state_change_msg());
-      } else if(in_message.has_disconnect_msg()) {
-        handle_disconnect(tm->getTag(), in_message.disconnect_msg());
-      } else {
-        LOG4CXX_WARN(flog::rib, "UNKNOWN MESSAGE from Agent " << tm->getTag());
-      }
+    } else {
+      dispatch_message(tm);
     }
     rem_msgs--;
     processed++;
@@ -102,6 +70,55 @@ void flexran::rib::rib_updater::handle_new_connection(int agent_id)
   out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   out_message.set_allocated_hello_msg(hello_msg);
   net_xface_.send_msg(out_message, agent_id);
+}
+
+void flexran::rib::rib_updater::dispatch_message(std::shared_ptr<flexran::network::tagged_message> tm)
+{
+  protocol::flexran_message in_message;
+
+  // Deserialize the message
+  in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
+  // Update the RIB based on the message type
+  switch (in_message.msg_case()) {
+  case protocol::flexran_message::kHelloMsg:
+    handle_hello(tm->getTag(), in_message.hello_msg(), in_message.msg_dir());
+    break;
+  case protocol::flexran_message::kEchoRequestMsg:
+    handle_echo_request(tm->getTag(), in_message.echo_request_msg());
+    break;
+  case protocol::flexran_message::kEchoReplyMsg:
+    handle_echo_reply(tm->getTag(), in_message.echo_reply_msg());
+    break;
+  case protocol::flexran_message::kStatsReplyMsg:
+    handle_stats_reply(tm->getTag(), in_message.stats_reply_msg());
+    break;
+  case protocol::flexran_message::kSfTriggerMsg:
+    handle_sf_trigger(tm->getTag(), in_message.sf_trigger_msg());
+    break;
+  case protocol::flexran_message::kUlSrInfoMsg:
+    /* TODO: Need to implement to enable UL scheduling */
+    LOG4CXX_WARN(flog::rib, "NOT IMPLEMENTED Agent " << tm->getTag()
+                 << ": received UL sr info msg");
+    break;
+  case protocol::flexran_message::kEnbConfigReplyMsg:
+    handle_enb_config_reply(tm->getTag(), in_message.enb_config_reply_msg());
+    break;
+  case protocol::flexran_message::kUeConfigReplyMsg:
+    handle_ue_config_reply(tm->getTag(), in_message.ue_config_reply_msg());
+    break;
+  case protocol::flexran_message::kLcConfigReplyMsg:
+    handle_lc_config_reply(tm->getTag(), in_message.lc_config_reply_msg());
+    break;
+  case protocol::flexran_message::kUeStateChangeMsg:
+    handle_ue_state_change(tm->getTag(), in_message.ue_state_change_msg());
+    break;
+  case protocol::flexran_message::kDisconnectMsg:
+    handle_disconnect(tm->getTag(), in_message.disconnect_msg());
+    break;
+  default:
+    LOG4CXX_WARN(flog::rib, "UNKNOWN MESSAGE from Agent " << tm->getTag());
+    break;
+  }
 }
 
 // Handle hello message

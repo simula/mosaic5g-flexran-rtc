@@ -48,6 +48,7 @@ namespace flexran {
       
       // Incoming message handlers
       void handle_new_connection(int agent_id);
+      void dispatch_message(std::shared_ptr<flexran::network::tagged_message> tm);
 
       void handle_hello(int agent_id,
           const protocol::flex_hello& hello_msg,

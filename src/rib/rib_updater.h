@@ -45,6 +45,8 @@ namespace flexran {
       unsigned int run();
       
       unsigned int update_rib();
+
+    private:
       
       // Incoming message handlers
       void handle_new_connection(int agent_id);
@@ -81,7 +83,9 @@ namespace flexran {
       void handle_disconnect(int agent_id,
           const protocol::flex_disconnect& disconnect_msg);
 
-    private:
+      void trigger_bs_config(uint64_t bs_id);
+
+      void warn_unknown_agent_bs(const std::string& function, int agent_id);
       
       Rib& rib_;
       // RX, can TX to individual agents
@@ -91,6 +95,7 @@ namespace flexran {
       
       // Max number of messages to check during a single update period
       std::atomic<int> messages_to_check_;
+      static constexpr const uint64_t BS_ID_OFFSET = 10000;
       
     };
 

@@ -115,6 +115,11 @@ namespace flexran {
 
       std::set<std::shared_ptr<agent_info>> get_agents() const { return agents_; }
       uint64_t get_id() const { return bs_id_; }
+
+    private:
+
+      void clear_repeated_if_present(google::protobuf::Message *dst,
+          const google::protobuf::Message& src);
       
     private:
       uint64_t bs_id_;

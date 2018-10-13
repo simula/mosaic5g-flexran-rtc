@@ -28,7 +28,7 @@
 #include <stdexcept>
 
 #include <google/protobuf/util/json_util.h>
-
+#include <google/protobuf/reflection.h>
 
 #include "enb_rib_info.h"
 #include "flexran_log.h"
@@ -50,42 +50,87 @@ flexran::rib::enb_rib_info::enb_rib_info(uint64_t bs_id,
   /* TODO check capabilities is complete */
 }
 
-void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update) {
+void flexran::rib::enb_rib_info::update_eNB_config(
+    const protocol::flex_enb_config_reply& enb_config_update)
+{
+  // we cannot simply call eNB_config_.MergeFrom as this would append repeated
+  // fields (e.g. "PHY agent" has part of flex_cell_config, "RRC agent" has
+  // one, leaving two flex_cell_configs instead of one unified), therefore we
+  // do this independently for every flex_cell_config. In the following, we
+  // also suppose that it is safe to replace(!) repeated fields within a
+  // flex_cell_config, eg. mbsfn_subframe_config_rfperiod
+
+  if (eNB_config_.cell_config_size() > 0
+      && eNB_config_.cell_config_size() != enb_config_update.cell_config_size())
+    LOG4CXX_WARN(flog::rib, __func__ << "(): differing numbers of cell_configs");
+
   eNB_config_mutex_.lock();
-  eNB_config_.CopyFrom(enb_config_update);
+  if (eNB_config_.cell_config_size() == 0) { // saved config is empty
+    eNB_config_.CopyFrom(enb_config_update);
+  } else {
+    const int n = std::min(eNB_config_.cell_config_size(), enb_config_update.cell_config_size());
+    for (int i = 0; i < n; ++i) {
+      protocol::flex_cell_config *dst = eNB_config_.mutable_cell_config(i);
+      const protocol::flex_cell_config& src = enb_config_update.cell_config(i);
+      clear_repeated_if_present(dst, src);
+      dst->MergeFrom(src);
+    }
+  }
   eNB_config_mutex_.unlock();
   update_liveness();
 }
 
-void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config_reply& ue_config_update) {
-  ue_config_mutex_.lock();
-  ue_config_.CopyFrom(ue_config_update);
-  ue_config_mutex_.unlock();
-  rnti_t rnti;
-  
-  // Check if UE exists and if not create a ue_mac_rib_info entry
-  for (int i = 0; i < ue_config_update.ue_config_size(); i++) {
-    rnti = ue_config_update.ue_config(i).rnti();
-    LOG4CXX_DEBUG(flog::rib, "update UE config for RNTI " << rnti);
-    auto it = ue_mac_info_.find(rnti);
-    if (it == ue_mac_info_.end()) {
-      ue_mac_info_.insert(std::pair<int,
-			  std::shared_ptr<ue_mac_rib_info>>(rnti,
-							    std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
-    }
+void flexran::rib::enb_rib_info::update_UE_config(
+    const protocol::flex_ue_config_reply& ue_config_update)
+{
+  // we cannot simply call ue_config_.MergeFrom as this would append repeated
+  // fields (e.g. "MAC agent" has part of flex_ue_config, "RRC agent" has
+  // one, leaving two flex_ue_configs instead of one unified), therefore we
+  // do this independently for every flex_ue_config. In the following, we
+  // also suppose that it is safe to replace(!) repeated fields within a
+  // flex_ue_config, eg. mbsfn_subframe_config_rfperiod. Furthermore, we
+  // suppose that the order in ue_config_ and ue_config_update is the same
+  // (because a flex_ue_state_change notified already).
+
+
+  if (ue_config_.ue_config_size() != ue_config_update.ue_config_size()) {
+    LOG4CXX_WARN(flog::rib, __func__ << "(): "
+        << "flex_ue_config_reply update has differing number of UEs ("
+        << ue_config_update.ue_config_size() << ") than ue_config_ ("
+        << ue_config_.ue_config_size() << "); "
+        << "expected flex_ue_state_change first, refusing update");
+    return;
   }
+
+  ue_config_mutex_.lock();
+  for (int i = 0; i < ue_config_.ue_config_size(); ++i) {
+    protocol::flex_ue_config *dst = ue_config_.mutable_ue_config(i);
+    const protocol::flex_ue_config& src = ue_config_update.ue_config(i);
+    if (dst->rnti() != src.rnti()) {
+      LOG4CXX_WARN(flog::rib, __func__ << "(): unexpected RNTI "
+          << src.rnti() << " in ue_config_update, expected RNTI "
+          << dst->rnti());
+      continue;
+    }
+    clear_repeated_if_present(dst, src);
+    dst->MergeFrom(src);
+  }
+  ue_config_mutex_.unlock();
+
   update_liveness();
 }
 
 void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_change& ue_state_change) {
-  rnti_t rnti;  
   // releases itself when leaving scope
   std::lock_guard<std::mutex> lg(ue_config_mutex_);
   if (ue_state_change.type() == protocol::FLUESC_ACTIVATED) {
     protocol::flex_ue_config *c = ue_config_.add_ue_config();
     c->CopyFrom(ue_state_change.config());
-    rnti = ue_state_change.config().rnti();
-    ue_mac_info_.insert(std::pair<int,
+    std::sort(ue_config_.mutable_ue_config()->begin(), ue_config_.mutable_ue_config()->end(),
+        [] (protocol::flex_ue_config& a, protocol::flex_ue_config& b) { return a.rnti() < b.rnti(); }
+    );
+    const rnti_t rnti = ue_state_change.config().rnti();
+    ue_mac_info_.emplace(std::pair<int,
 			std::shared_ptr<ue_mac_rib_info>>(rnti,
 							  std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
     return;
@@ -403,4 +448,27 @@ uint32_t flexran::rib::enb_rib_info::num_ul_slices(uint16_t cell_id) const
 {
   std::lock_guard<std::mutex> lg(eNB_config_mutex_);
   return eNB_config_.cell_config(cell_id).slice_config().ul_size();
+}
+
+/*
+ * Clear all repeated fields in protobuf message dst which are present in src
+ */
+void flexran::rib::enb_rib_info::clear_repeated_if_present(
+    google::protobuf::Message *dst, const google::protobuf::Message& src)
+{
+  const google::protobuf::Descriptor *desc_src = src.GetDescriptor();
+  const google::protobuf::Reflection *refl_src = src.GetReflection();
+  const google::protobuf::Descriptor *desc_dst = dst->GetDescriptor();
+  const google::protobuf::Reflection *refl_dst = dst->GetReflection();
+  for (int i = 0; i < desc_src->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field_src = desc_src->FindFieldByNumber(i);
+    if (!field_src) continue;
+    if (!field_src->is_repeated()) continue;
+    if (refl_src->FieldSize(src, field_src) == 0) continue;
+
+    const google::protobuf::FieldDescriptor *field_dst = desc_dst->FindFieldByNumber(i);
+    if (!field_dst) continue;
+    if (!field_dst->is_repeated()) continue;
+    refl_dst->ClearField(dst, field_dst);
+  }
 }

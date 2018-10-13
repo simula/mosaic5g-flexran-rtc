@@ -120,42 +120,54 @@ void flexran::rib::enb_rib_info::update_UE_config(
   update_liveness();
 }
 
-void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_change& ue_state_change) {
+void flexran::rib::enb_rib_info::update_UE_config(
+    const protocol::flex_ue_state_change& ue_state_change)
+{
   // releases itself when leaving scope
-  std::lock_guard<std::mutex> lg(ue_config_mutex_);
-  if (ue_state_change.type() == protocol::FLUESC_ACTIVATED) {
-    protocol::flex_ue_config *c = ue_config_.add_ue_config();
-    c->CopyFrom(ue_state_change.config());
-    std::sort(ue_config_.mutable_ue_config()->begin(), ue_config_.mutable_ue_config()->end(),
-        [] (protocol::flex_ue_config& a, protocol::flex_ue_config& b) { return a.rnti() < b.rnti(); }
-    );
-    const rnti_t rnti = ue_state_change.config().rnti();
-    ue_mac_info_.emplace(std::pair<int,
-			std::shared_ptr<ue_mac_rib_info>>(rnti,
-							  std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
-    return;
-  }
-  for (int i = 0; i < ue_config_.ue_config_size(); i++) {
-    rnti = ue_config_.ue_config(i).rnti();
-    if (rnti == ue_state_change.config().rnti()) {
-      // Check if this was updated or removed
-      if (ue_state_change.type() == protocol::FLUESC_DEACTIVATED) {
-	ue_config_.mutable_ue_config()->DeleteSubrange(i, 1);
-	// Erase mac info
-	ue_mac_info_.erase(rnti);
-	// Erase lc info as well
-        lc_config_mutex_.lock();
-	for (int j = 0; j < lc_config_.lc_ue_config_size(); j++) {
-	  if (rnti == lc_config_.lc_ue_config(j).rnti()) {
-	    lc_config_.mutable_lc_ue_config()->DeleteSubrange(j, 1);
-	  }
-	}
-        lc_config_mutex_.unlock();
-	return;
-      } else if (ue_state_change.type() == protocol::FLUESC_UPDATED) {
-	ue_config_.mutable_ue_config(i)->CopyFrom(ue_state_change.config());
-      }
+  std::lock_guard<std::mutex> lg_ue(ue_config_mutex_);
+  std::lock_guard<std::mutex> lg_lc(lc_config_mutex_);
+  const rnti_t rnti = ue_state_change.config().rnti();
+  google::protobuf::RepeatedPtrField<protocol::flex_ue_config>::iterator it = ue_config_.mutable_ue_config()->begin();
+  it = std::find_if(ue_config_.mutable_ue_config()->begin(), ue_config_.mutable_ue_config()->end(),
+      [rnti] (const protocol::flex_ue_config& c) { return rnti == c.rnti(); }
+  );
+
+  switch (ue_state_change.type()) {
+  case protocol::FLUESC_ACTIVATED:
+    LOG4CXX_WARN(flog::rib, "UE RNTI " << rnti << " activated");
+    /* create new entry if not present, otherwise just update */
+    if (it == ue_config_.mutable_ue_config()->end()) {
+      protocol::flex_ue_config *c = ue_config_.add_ue_config();
+      c->CopyFrom(ue_state_change.config());
+      ue_mac_info_.emplace(rnti, std::make_shared<ue_mac_rib_info>(rnti));
+    } else {
+      /* dereference RepeatedPtrIterator, pass raw pointer */
+      clear_repeated_if_present(&(*it), ue_state_change.config());
+      it->MergeFrom(ue_state_change.config());
     }
+    break;
+  case protocol::FLUESC_DEACTIVATED:
+    LOG4CXX_WARN(flog::rib, "UE RNTI " << rnti << " deactivated");
+    if (it != ue_config_.mutable_ue_config()->end()) {
+      ue_config_.mutable_ue_config()->erase(it);
+      ue_mac_info_.erase(rnti);
+      auto lcit = std::find_if(lc_config_.lc_ue_config().cbegin(), lc_config_.lc_ue_config().cend(),
+          [rnti] (const protocol::flex_lc_ue_config& c) { return rnti == c.rnti(); }
+      );
+      if (lcit != lc_config_.lc_ue_config().cend())
+        lc_config_.mutable_lc_ue_config()->erase(lcit);
+    }
+    break;
+  case protocol::FLUESC_UPDATED:
+    LOG4CXX_INFO(flog::rib, "UE RNTI " << rnti << " updated");
+    if (it != ue_config_.mutable_ue_config()->end()) {
+      clear_repeated_if_present(&(*it), ue_state_change.config());
+      it->MergeFrom(ue_state_change.config());
+    }
+    break;
+  default:
+    LOG4CXX_WARN(flog::rib, "unhandled ue_state_change type " << ue_state_change.type()
+        << " in " << __func__);
   }
 }
 

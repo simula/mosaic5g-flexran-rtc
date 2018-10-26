@@ -317,3 +317,34 @@ endif()
 if(NEO4J_SUPPORT)
   target_link_libraries(rt_controller neo4j-client)
 endif()
+
+# Tests
+set(RT_CONTROLLER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/controller_test)
+set(CATCH_INCLUDE_DIR ${RT_CONTROLLER_TEST_DIR})
+add_library(Catch2::Catch IMPORTED INTERFACE)
+#set_property(Catch2::Catch PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  #"${CATCH_INCLUDE_DIR}")
+
+include_directories(${RT_CONTROLLER_TEST_DIR})
+set (RT_CONTROLLER_TEST_SRC
+    ${RT_CONTROLLER_TEST_DIR}/test.cc
+)
+add_library(RT_CONTROLLER_TEST_LIB ${RT_CONTROLLER_TEST_SRC})
+
+add_executable(check ${RT_CONTROLLER_TEST_SRC})
+target_link_libraries(check
+  RT_CONTROLLER_APP_LIB
+  RT_CONTROLLER_CORE_LIB
+  RT_CONTROLLER_RIB_LIB
+  RT_CONTROLLER_CORE_LIB
+  RT_CONTROLLER_NETWORK_LIB
+  ${FLPT_MSG_LIB}
+  #${Log4CXX_LIBRARIES}
+  ${Boost_LIBRARIES}
+  #${CMAKE_THREAD_LIBS_INIT}
+  ${PROTOBUF_LIBRARY}
+  Catch2::Catch
+)
+
+enable_testing()
+add_test(NAME rt_controller_test COMMAND check)

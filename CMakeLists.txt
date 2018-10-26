@@ -329,6 +329,7 @@ add_library(Catch2::Catch IMPORTED INTERFACE)
 include_directories(${RT_CONTROLLER_TEST_DIR})
 set (RT_CONTROLLER_TEST_SRC
     ${RT_CONTROLLER_TEST_DIR}/test.cc
+    ${RT_CONTROLLER_TEST_DIR}/agent_capabilities.cc
 )
 add_library(RT_CONTROLLER_TEST_LIB ${RT_CONTROLLER_TEST_SRC})
 

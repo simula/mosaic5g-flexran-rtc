@@ -29,32 +29,32 @@
 void flexran::app::management::rib_management::periodic_task()
 {
   // only execute every second
-  ms_counter++;
-  ms_counter %= 1000;
-  if (ms_counter != 0) return;
+  ms_counter_++;
+  ms_counter_ %= 1000;
+  if (ms_counter_ != 0) return;
 
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-  for (int agent_id: rib_.get_available_agents()) {
-    send_enb_config_request(agent_id);
-    send_ue_config_request(agent_id);
-    std::chrono::duration<float> inactive = now - rib_.get_agent(agent_id)->last_active();
+  for (uint64_t bs_id: rib_.get_available_base_stations()) {
+    send_enb_config_request(bs_id);
+    send_ue_config_request(bs_id);
+    send_lc_config_request(bs_id);
+    std::chrono::duration<float> inactive = now - rib_.get_bs(bs_id)->last_active();
     /* inactive for longer than 1.5s */
     if (inactive.count() >= 1.5) {
-      inactive_agents.insert(agent_id);
-      LOG4CXX_WARN(flog::app, "RibManagement: no connection to agent " << agent_id
+      inactive_bs_.insert(bs_id);
+      LOG4CXX_WARN(flog::app, "RibManagement: no connection to BS " << bs_id
           << " since " << inactive.count() << "s");
     } else {
-      if (inactive_agents.find(agent_id) != inactive_agents.end()) {
-        inactive_agents.erase(agent_id);
-        LOG4CXX_INFO(flog::app, "RibManagement: connection to agent " << agent_id
+      if (inactive_bs_.find(bs_id) != inactive_bs_.end()) {
+        inactive_bs_.erase(bs_id);
+        LOG4CXX_INFO(flog::app, "RibManagement: connection to BS " << bs_id
             << " is now active again");
       }
     }
   }
-  last_now = now;
 }
 
-void flexran::app::management::rib_management::send_enb_config_request(int agent_id)
+void flexran::app::management::rib_management::send_enb_config_request(uint64_t bs_id)
 {
   // request eNB config file
   protocol::flex_header *header1(new protocol::flex_header);
@@ -68,10 +68,10 @@ void flexran::app::management::rib_management::send_enb_config_request(int agent
   protocol::flexran_message out_message1;
   out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
   out_message1.set_allocated_enb_config_request_msg(enb_config_request_msg);
-  req_manager_.send_message(agent_id, out_message1);
+  req_manager_.send_message(bs_id, out_message1);
 }
 
-void flexran::app::management::rib_management::send_ue_config_request(int agent_id)
+void flexran::app::management::rib_management::send_ue_config_request(uint64_t bs_id)
 {
   // request eNB config file
   protocol::flex_header *header1(new protocol::flex_header);
@@ -85,5 +85,21 @@ void flexran::app::management::rib_management::send_ue_config_request(int agent_
   protocol::flexran_message out_message1;
   out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
   out_message1.set_allocated_ue_config_request_msg(ue_config_request_msg);
-  req_manager_.send_message(agent_id, out_message1);
+  req_manager_.send_message(bs_id, out_message1);
+}
+
+void flexran::app::management::rib_management::send_lc_config_request(uint64_t bs_id)
+{
+  protocol::flex_header *header1(new protocol::flex_header);
+  header1->set_type(protocol::FLPT_GET_LC_CONFIG_REQUEST);
+  header1->set_version(0);
+  header1->set_xid(0);
+
+  protocol::flex_lc_config_request *lc_config_request_msg(new protocol::flex_lc_config_request);
+  lc_config_request_msg->set_allocated_header(header1);
+
+  protocol::flexran_message out_message1;
+  out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
+  out_message1.set_allocated_lc_config_request_msg(lc_config_request_msg);
+  req_manager_.send_message(bs_id, out_message1);
 }

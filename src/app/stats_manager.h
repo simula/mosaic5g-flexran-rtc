@@ -48,33 +48,33 @@ namespace flexran {
 
       std::string all_stats_to_string() const;
       std::string all_stats_to_json_string() const;
-      bool stats_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const;
+      bool stats_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const;
 
       std::string all_enb_configs_to_string() const;
       std::string all_enb_configs_to_json_string() const;
-      bool enb_configs_by_agent_id_to_json_string(int agent_id, std::string& out) const;
+      bool enb_configs_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const;
 
       std::string all_mac_configs_to_string() const;
       std::string all_mac_configs_to_json_string() const;
-      bool mac_configs_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const;
+      bool mac_configs_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const;
 
-      bool ue_stats_by_rnti_by_agent_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out,
-          int agent_id) const;
+      bool ue_stats_by_rnti_by_bs_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out,
+          uint64_t bs_id) const;
 
-      // returns the agent_id of matching agent/enb ID string or -1 if not
+      // returns the bs_id of matching agent/enb ID string or zero if not
       // found
-      int parse_enb_agent_id(const std::string& enb_agent_id_s) const;
-      /// returns true if the given RNTI/IMSI string for agent agent_id is
+      uint64_t parse_bs_agent_id(const std::string& bs_agent_id_s) const;
+      /// returns true if the given RNTI/IMSI string for agent bs_id is
       /// found (saving the rnti), or false
-      bool parse_rnti_imsi(int agent_id, const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti) const;
-      /// returns true if the given RNTI/IMSI string in any agent agent_id is
-      /// found (saving the rnti and agent_id), or false
-      bool parse_rnti_imsi_find_agent(const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti,
-          int& agent_id) const;
+      bool parse_rnti_imsi(uint64_t bs_id, const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti) const;
+      /// returns true if the given RNTI/IMSI string in any BS bs_id is
+      /// found (saving the rnti and bs_id), or false
+      bool parse_rnti_imsi_find_bs(const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti,
+          uint64_t& bs_id) const;
 
       private:
 
-        std::set<int> agent_list_;
+        std::set<uint64_t> bs_list_;
 
       };
 

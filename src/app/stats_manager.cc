@@ -32,13 +32,12 @@
 
 void flexran::app::stats::stats_manager::periodic_task() {
 
-  // Simply request stats for any registered eNB and print them
-  std::set<int> current_agents = rib_.get_available_agents();
-
-  for (auto agent_id : current_agents) {
-    auto it = agent_list_.find(agent_id);
-    if (it == agent_list_.end()) {
-      agent_list_.insert(agent_id);
+  std::set<uint64_t> current_bss = rib_.get_available_base_stations();
+  for (uint64_t bs_id : current_bss) {
+    auto it = bs_list_.find(bs_id);
+    if (it == bs_list_.end()) {
+      const int periodicity = 100;
+      bs_list_.insert(bs_id);
       // Make a new stats request for the newly added agents
       protocol::flex_header *header(new protocol::flex_header);
       header->set_type(protocol::FLPT_STATS_REQUEST);
@@ -47,8 +46,8 @@ void flexran::app::stats::stats_manager::periodic_task() {
       header->set_xid(0);
       
       protocol::flex_complete_stats_request *complete_stats_request(new protocol::flex_complete_stats_request);
-      complete_stats_request->set_report_frequency(protocol::FLSRF_CONTINUOUS);
-      complete_stats_request->set_sf(2);
+      complete_stats_request->set_report_frequency(protocol::FLSRF_PERIODICAL);
+      complete_stats_request->set_sf(periodicity);
       int ue_flags = 0;
       ue_flags |= protocol::FLUST_PHR;
       ue_flags |= protocol::FLUST_DL_CQI;
@@ -72,8 +71,20 @@ void flexran::app::stats::stats_manager::periodic_task() {
       protocol::flexran_message msg;
       msg.set_msg_dir(protocol::INITIATING_MESSAGE);
       msg.set_allocated_stats_request_msg(stats_request_msg);
-      req_manager_.send_message(agent_id, msg);
-      LOG4CXX_INFO(flog::app, "Time to make a new request for stats");
+      LOG4CXX_INFO(flog::app, "Sending " << periodicity
+          << "ms periodical full stats request to BS " << bs_id);
+      req_manager_.send_message(bs_id, msg);
+    }
+  }
+  if (bs_list_.size() > current_bss.size()) {
+    for (std::set<uint64_t>::iterator it = bs_list_.begin(); it != bs_list_.end();) {
+      /* if the current BS cannot be found in the list of BSs, delete it */
+      if (current_bss.find(*it) == current_bss.end()) {
+        LOG4CXX_INFO(flog::rib, "removing BS " << *it);
+        it = bs_list_.erase(it); // important, retain iterator past removed one
+      } else {
+        it++;
+      }
     }
   }
 }
@@ -89,13 +100,13 @@ std::string flexran::app::stats::stats_manager::all_stats_to_json_string() const
     + rib_.dump_all_mac_stats_to_json_string() + "}";
 }
 
-bool flexran::app::stats::stats_manager::stats_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const
+bool flexran::app::stats::stats_manager::stats_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const
 {
   std::string json1, json2;
   out = "{}";
-  bool found = rib_.dump_enb_configurations_by_agent_id_to_json_string(agent_id, json1);
+  bool found = rib_.dump_enb_configurations_by_bs_id_to_json_string(bs_id, json1);
   if (!found) return false;
-  found = rib_.dump_mac_stats_by_agent_id_to_json_string(agent_id, json2);
+  found = rib_.dump_mac_stats_by_bs_id_to_json_string(bs_id, json2);
   if (!found) return false;
   out = "{" + json1 + "," + json2 + "}";
   return true;
@@ -104,9 +115,9 @@ bool flexran::app::stats::stats_manager::stats_by_agent_id_to_json_string(uint64
 std::string flexran::app::stats::stats_manager::all_enb_configs_to_string() const
 {
   std::string str;
-  str += "*************************\n";
-  str += "Agent/Cell Configurations\n";
-  str += "*************************\n";
+  str += "**************************\n";
+  str += "* BS/Cell Configurations *\n";
+  str += "**************************\n";
   str += rib_.dump_all_enb_configurations_to_string();
 
   return str;
@@ -117,10 +128,10 @@ std::string flexran::app::stats::stats_manager::all_enb_configs_to_json_string()
   return "{" + rib_.dump_all_enb_configurations_to_json_string() + "}";
 }
 
-bool flexran::app::stats::stats_manager::enb_configs_by_agent_id_to_json_string(int agent_id, std::string& out) const
+bool flexran::app::stats::stats_manager::enb_configs_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const
 {
   std::string json;
-  bool found = rib_.dump_enb_configurations_by_agent_id_to_json_string(agent_id, json);
+  bool found = rib_.dump_enb_configurations_by_bs_id_to_json_string(bs_id, json);
   out = "{" + json + "}";
   return found;
 }
@@ -141,37 +152,36 @@ std::string flexran::app::stats::stats_manager::all_mac_configs_to_json_string()
   return "{" + rib_.dump_all_mac_stats_to_json_string() + "}";
 }
 
-bool flexran::app::stats::stats_manager::mac_configs_by_agent_id_to_json_string(uint64_t agent_id, std::string& out) const
+bool flexran::app::stats::stats_manager::mac_configs_by_bs_id_to_json_string(uint64_t bs_id, std::string& out) const
 {
   std::string json;
-  bool found = rib_.dump_mac_stats_by_agent_id_to_json_string(agent_id, json);
+  bool found = rib_.dump_mac_stats_by_bs_id_to_json_string(bs_id, json);
   out = "{" + json + "}";
   return found;
 }
 
-bool flexran::app::stats::stats_manager::ue_stats_by_rnti_by_agent_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, int agent_id) const
+bool flexran::app::stats::stats_manager::ue_stats_by_rnti_by_bs_id_to_json_string(flexran::rib::rnti_t rnti, std::string& out, uint64_t bs_id) const
 {
-  return rib_.dump_ue_by_rnti_by_agent_id_to_json_string(rnti, out, agent_id);
+  return rib_.dump_ue_by_rnti_by_bs_id_to_json_string(rnti, out, bs_id);
 }
 
-int flexran::app::stats::stats_manager::parse_enb_agent_id(const std::string& enb_agent_id_s) const
+uint64_t flexran::app::stats::stats_manager::parse_bs_agent_id(const std::string& bs_agent_id_s) const
 {
-  return rib_.parse_enb_agent_id(enb_agent_id_s);
+  return rib_.parse_enb_agent_id(bs_agent_id_s);
 }
 
-bool flexran::app::stats::stats_manager::parse_rnti_imsi(int agent_id, const std::string& rnti_imsi_s,
+bool flexran::app::stats::stats_manager::parse_rnti_imsi(uint64_t bs_id, const std::string& rnti_imsi_s,
     flexran::rib::rnti_t& rnti) const
 {
-  return rib_.get_agent(agent_id)->parse_rnti_imsi(rnti_imsi_s, rnti);
+  return rib_.get_bs(bs_id)->parse_rnti_imsi(rnti_imsi_s, rnti);
 }
 
-bool flexran::app::stats::stats_manager::parse_rnti_imsi_find_agent(const std::string& rnti_imsi_s,
-    flexran::rib::rnti_t& rnti, int& agent_id) const
+bool flexran::app::stats::stats_manager::parse_rnti_imsi_find_bs(const std::string& rnti_imsi_s,
+    flexran::rib::rnti_t& rnti, uint64_t& bs_id) const
 {
-  std::set<int> current_agents = rib_.get_available_agents();
-  for (int agent: current_agents) {
-    if (rib_.get_agent(agent)->parse_rnti_imsi(rnti_imsi_s, rnti)) {
-      agent_id = agent;
+  for (uint64_t xbs_id: rib_.get_available_base_stations()) {
+    if (rib_.get_bs(xbs_id)->parse_rnti_imsi(rnti_imsi_s, rnti)) {
+      bs_id = xbs_id;
       return true;
     }
   }

@@ -175,10 +175,12 @@ void flexran::rib::enb_rib_info::update_UE_config(
 }
 
 void flexran::rib::enb_rib_info::update_LC_config(const protocol::flex_lc_config_reply& lc_config_update) {
+  update_liveness();
+  if (lc_config_update.lc_ue_config_size() == 0)
+    return;
   lc_config_mutex_.lock();
   lc_config_.CopyFrom(lc_config_update);
   lc_config_mutex_.unlock();
-  update_liveness();
 }
 
 void flexran::rib::enb_rib_info::update_subframe(const protocol::flex_sf_trigger& sf_trigger) {

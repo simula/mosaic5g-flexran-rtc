@@ -73,6 +73,9 @@ void flexran::rib::enb_rib_info::update_eNB_config(
       protocol::flex_cell_config *dst = eNB_config_.mutable_cell_config(i);
       const protocol::flex_cell_config& src = enb_config_update.cell_config(i);
       clear_repeated_if_present(dst, src);
+      /* the above should be recursively going down. ATM, delete complete slice
+       * config if present */
+      if (src.has_slice_config()) dst->clear_slice_config();
       dst->MergeFrom(src);
     }
   }

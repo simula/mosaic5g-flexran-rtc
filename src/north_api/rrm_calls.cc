@@ -589,10 +589,10 @@ void flexran::north_api::rrm_calls::change_scheduler(const Pistache::Rest::Reque
   auto sched_type = request.param(":sched_type").as<int>();
   
   if (sched_type == 0) { // Local scheduler
-    sched_app->enable_central_scheduling(false);
+    //sched_app->enable_central_scheduling(false);
     response.send(Pistache::Http::Code::Ok, "Loaded Local Scheduler");
   } else if (sched_type == 1) { //Remote scheduler 
-    sched_app->enable_central_scheduling(true);
+    //sched_app->enable_central_scheduling(true);
     response.send(Pistache::Http::Code::Ok, "Loaded Remote Scheduler");
   } else { // Scheduler type not supported
     response.send(Pistache::Http::Code::Not_Found, "Scheduler type does not exist");
@@ -604,12 +604,12 @@ void flexran::north_api::rrm_calls::apply_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = request.hasParam(":id") ?
+  uint64_t bs_id = request.hasParam(":id") ?
       sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      sched_app->get_last_agent();
-  if (agent_id < 0) {
+      sched_app->get_last_bs();
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -621,7 +621,7 @@ void flexran::north_api::rrm_calls::apply_slice_config(
   }
 
   std::string error_reason;
-  if (!sched_app->apply_slice_config_policy(agent_id, policy, error_reason)) {
+  if (!sched_app->apply_slice_config_policy(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -634,10 +634,10 @@ void flexran::north_api::rrm_calls::apply_slice_config_short(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
-  if (agent_id < 0) {
+  uint64_t bs_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -648,7 +648,7 @@ void flexran::north_api::rrm_calls::apply_slice_config_short(
   policy += "}]}";
 
   std::string error_reason;
-  if (!sched_app->apply_slice_config_policy(agent_id, policy, error_reason)) {
+  if (!sched_app->apply_slice_config_policy(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -661,12 +661,12 @@ void flexran::north_api::rrm_calls::remove_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = request.hasParam(":id") ?
+  uint64_t bs_id = request.hasParam(":id") ?
       sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      sched_app->get_last_agent();
-  if (agent_id < 0) {
+      sched_app->get_last_bs();
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -678,7 +678,7 @@ void flexran::north_api::rrm_calls::remove_slice_config(
   }
 
   std::string error_reason;
-  if (!sched_app->remove_slice(agent_id, policy, error_reason)) {
+  if (!sched_app->remove_slice(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -691,10 +691,10 @@ void flexran::north_api::rrm_calls::remove_slice_config_short(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
-  if (agent_id < 0) {
+  uint64_t bs_id = sched_app->parse_enb_agent_id(request.param(":id").as<std::string>());
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -705,7 +705,7 @@ void flexran::north_api::rrm_calls::remove_slice_config_short(
   policy += ",percentage:0}]}";
 
   std::string error_reason;
-  if (!sched_app->remove_slice(agent_id, policy, error_reason)) {
+  if (!sched_app->remove_slice(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -718,12 +718,12 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = request.hasParam(":id") ?
+  uint64_t bs_id = request.hasParam(":id") ?
       sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      sched_app->get_last_agent();
-  if (agent_id < 0) {
+      sched_app->get_last_bs();
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -735,7 +735,7 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc(
   }
 
   std::string error_reason;
-  if (!sched_app->change_ue_slice_association(agent_id, policy, error_reason)) {
+  if (!sched_app->change_ue_slice_association(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -748,10 +748,10 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc_short(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = sched_app->parse_enb_agent_id(request.param(":enb_id").as<std::string>());
-  if (agent_id < 0) {
+  uint64_t bs_id = sched_app->parse_enb_agent_id(request.param(":enb_id").as<std::string>());
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -759,9 +759,9 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc_short(
    * is, so let the RIB figure it out. We will receive a valid RNTI to proceed,
    * or an error */
   flexran::rib::rnti_t rnti;
-  if (!sched_app->parse_rnti_imsi(agent_id, request.param(":rnti_imsi").as<std::string>(), rnti)) {
+  if (!sched_app->parse_rnti_imsi(bs_id, request.param(":rnti_imsi").as<std::string>(), rnti)) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find UE for given agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find UE for given BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -774,7 +774,7 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc_short(
   policy += std::to_string(slice_id) + "}]}";
 
   std::string error_reason;
-  if (!sched_app->change_ue_slice_association(agent_id, policy, error_reason)) {
+  if (!sched_app->change_ue_slice_association(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
@@ -787,11 +787,11 @@ void flexran::north_api::rrm_calls::yaml_compat(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = request.hasParam(":id") ?
+  uint64_t bs_id = request.hasParam(":id") ?
       sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      sched_app->get_last_agent();
-  if (agent_id < 0) {
-    response.send(Pistache::Http::Code::Not_Found, "Policy not set (no such agent)\n");
+      sched_app->get_last_bs();
+  if (bs_id == 0) {
+    response.send(Pistache::Http::Code::Not_Found, "Policy not set (no such BS)\n");
     return;
   }
   if (request.body().length() == 0) {
@@ -799,9 +799,9 @@ void flexran::north_api::rrm_calls::yaml_compat(
     return;
   }
 
-  LOG4CXX_INFO(flog::app, "sending YAML request to agent " << agent_id
+  LOG4CXX_INFO(flog::app, "sending YAML request to BS " << bs_id
       << " (compat):\n" << request.body());
-  sched_app->reconfigure_agent_string(agent_id, request.body());
+  //sched_app->reconfigure_agent_string(agent_id, request.body());
   response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
 }
 
@@ -809,12 +809,12 @@ void flexran::north_api::rrm_calls::cell_reconfiguration(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  int agent_id = request.hasParam(":id") ?
+  uint64_t bs_id = request.hasParam(":id") ?
       sched_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      sched_app->get_last_agent();
-  if (agent_id < 0) {
+      sched_app->get_last_bs();
+  if (bs_id == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find agent\" }", MIME(Application, Json));
+        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
     return;
   }
 
@@ -826,7 +826,7 @@ void flexran::north_api::rrm_calls::cell_reconfiguration(
   }
 
   std::string error_reason;
-  if (!sched_app->apply_cell_config_policy(agent_id, policy, error_reason)) {
+  if (!sched_app->apply_cell_config_policy(bs_id, policy, error_reason)) {
     response.send(Pistache::Http::Code::Bad_Request,
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;

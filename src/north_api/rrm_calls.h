@@ -56,6 +56,12 @@ namespace flexran {
       void change_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void change_ue_slice_assoc_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+      void instantiate_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void remove_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void associate_ue_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void remove_ue_list_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void remove_ue_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
       void cell_reconfiguration(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:

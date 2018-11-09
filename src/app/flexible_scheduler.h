@@ -43,7 +43,7 @@ namespace flexran {
       public:
 
 	flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false) {
+	  : periodic_component(rib, rm), code_pushed_(false), t_(0) {
 
 	  central_scheduling.store(false);
 	  
@@ -72,6 +72,16 @@ namespace flexran {
         uint64_t get_last_bs() const;
         bool parse_rnti_imsi(uint64_t bs_id, const std::string& rnti_imsi_s,
             flexran::rib::rnti_t& rnti) const;
+
+        static bool parse_imsi_list(const std::string& list,
+            std::vector<uint64_t>& imsis, std::string& error_reason);
+
+        int instantiate_vnetwork(uint64_t bps, std::string& error_reason);
+        bool remove_vnetwork(uint32_t slice_id, std::string& error_reason);
+        bool associate_ue_vnetwork(uint32_t slice_id, const std::string& policy,
+            std::string& error_reason);
+        int remove_ue_vnetwork(const std::string& policy, std::string& error_reason);
+        int remove_ue_vnetwork(uint32_t slice_id);
 
       private:
 
@@ -108,6 +118,8 @@ namespace flexran {
         static bool verify_cell_config_for_restart(const protocol::flex_cell_config& c,
             std::string& error_message);
 	
+        static int calculate_rbs_percentage(int bw, uint64_t bps);
+        bool is_free_common_slice_id(int slice_id) const;
 	      //::std::shared_ptr<enb_scheduling_info> get_scheduling_info(uint64_t bs_id);
 	
 	      //::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
@@ -118,6 +130,10 @@ namespace flexran {
 	const int schedule_ahead = 0;
 	bool code_pushed_;
 	int prev_val_, current_val;
+
+        /// association IMSI -> slice_id
+        std::map<uint64_t, uint32_t> ue_slice_;
+        int t_;
 	
       };
       

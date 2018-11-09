@@ -26,6 +26,7 @@
 #include <string>
 #include <streambuf>
 #include <fstream>
+#include <cctype>
 #include <map>
 
 #include <google/protobuf/util/json_util.h>
@@ -42,7 +43,40 @@
 
 int32_t flexran::app::scheduler::flexible_scheduler::tpc_accumulated = 0;
 
-void flexran::app::scheduler::flexible_scheduler::periodic_task() {
+void flexran::app::scheduler::flexible_scheduler::periodic_task()
+{
+  ++t_;
+  if (t_ < 999) return;
+  t_ = 0;
+
+  /* check all UEs in all BSs: if a UE in ue_slice_ is not in the slice it is
+   * supposed to be, we send a command */
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    for (const protocol::flex_ue_config& uec : bs->get_ue_configs().ue_config()) {
+      if (!uec.has_imsi()) continue;
+      if (!uec.has_dl_slice_id()) continue;
+      if (!uec.has_ul_slice_id()) continue;
+      const auto it = ue_slice_.find(uec.imsi());
+      if (it == ue_slice_.end()) continue;
+      if (!bs->has_dl_slice(it->second) || !bs->has_ul_slice(it->second)) {
+        LOG4CXX_ERROR(flog::app, "no such slice " << it->second
+            << " for BS " << bs_id);
+        continue;
+      }
+      if (uec.dl_slice_id() != it->second || uec.ul_slice_id() != it->second) {
+        /* TODO this could be done manually and would be faster */
+        const std::string p = "{\"ueConfig\":[{\"imsi\":"
+            + std::to_string(uec.imsi()) + ",\"dlSliceId\":"
+            + std::to_string(it->second) + ",\"ulSliceId\":"
+            + std::to_string(it->second) + "}]}";
+        std::string e;
+        if (!change_ue_slice_association(bs_id, p, e)) {
+          LOG4CXX_ERROR(flog::app, "error: " + e);
+        }
+      }
+    }
+  }
 
   //for (uint64_t : rib_.get_available_base_stations()) {
   //
@@ -72,6 +106,241 @@ void flexran::app::scheduler::flexible_scheduler::periodic_task() {
   //} else {
   //  return;
   //}
+}
+
+bool flexran::app::scheduler::flexible_scheduler::is_free_common_slice_id(int slice_id) const
+{
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs_info = rib_.get_bs(bs_id);
+    if (!bs_info) return false;
+    if (!bs_info->get_enb_config().cell_config(0).has_slice_config()) return false;
+    if (bs_info->has_dl_slice(slice_id)) return false;
+    if (bs_info->has_ul_slice(slice_id)) return false;
+  }
+  return true;
+}
+
+int flexran::app::scheduler::flexible_scheduler::calculate_rbs_percentage(int bw, uint64_t bps)
+{
+  double pct;
+  switch (bw) {
+  case 25: /* experience shows we reach (almost) 17Mbps */
+    if (bps > 17000000) return -1;
+    pct = bps * 100.0 / 17000000.0;
+    break;
+  case 50: /* experience shows we reach (almost) 35Mbps */
+    if (bps > 35000000) return -1;
+    pct = bps * 100.0 / 35000000.0;
+    break;
+  default:
+    return -1;
+  }
+  /* round up to the next full RB */
+  return std::ceil(pct * bw / 100.0) * 100 / bw;
+}
+
+int flexran::app::scheduler::flexible_scheduler::instantiate_vnetwork(
+    uint64_t bps, std::string& error_reason)
+{
+  /* first: find suitable slice ID for all BS */
+  int slice_id;
+  const int max_slice_id = 256;
+  for (slice_id = 1; slice_id < max_slice_id; ++slice_id)
+    if (is_free_common_slice_id(slice_id)) break;
+
+  if (slice_id >= max_slice_id) {
+    error_reason = "no free common slice ID found";
+    return -1;
+  }
+
+  std::map<int, int> bs_pct;
+  std::map<int, int> bs_first_rb;
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    /* calculate the necessary percentage of RBs */
+    const int bw = bs->get_enb_config().cell_config(0).dl_bandwidth();
+    const int pct = calculate_rbs_percentage(bw, bps);
+    if (pct <= 0) {
+      error_reason = "cannot calculate slice percentage for BS " + std::to_string(bs_id);
+      return -1;
+    }
+    /* check that slice 0 percentage > new slice percentage and has at least 3% */
+    const int sldl0pct = bs->get_enb_config().cell_config(0).slice_config().dl(0).percentage();
+    const int slul0pct = bs->get_enb_config().cell_config(0).slice_config().ul(0).percentage();
+    if (sldl0pct <= pct || slul0pct <= pct || (sldl0pct - pct) < 3 || (slul0pct - pct) < 3) {
+      error_reason = "BS " + std::to_string(bs_id) + " cannot provide the requested bitrate";
+      return -1;
+    }
+    /* calculate first_rb for UL, which is at end of slice 0 */
+    const int first_rb0 = bs->get_enb_config().cell_config(0).slice_config().ul(0).first_rb();
+    const int new_first_rb = first_rb0 + (slul0pct - pct) * bw / 100;
+    bs_pct.emplace(bs_id, pct);
+    bs_first_rb.emplace(bs_id, new_first_rb);
+  }
+
+  /* all BS can create such a slice, send a corresponding command to all */
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    const int sldl0pct = bs->get_enb_config().cell_config(0).slice_config().dl(0).percentage();
+    const int slul0pct = bs->get_enb_config().cell_config(0).slice_config().ul(0).percentage();
+    const std::string newsldl0pcts = std::to_string(sldl0pct - bs_pct.at(bs_id));
+    const std::string newslul0pcts = std::to_string(slul0pct - bs_pct.at(bs_id));
+    const std::string newpcts = std::to_string(bs_pct.at(bs_id));
+    const std::string newfrbs = std::to_string(bs_first_rb.at(bs_id));
+    /* This could be optimized by directly creating the protobuf structure */
+    const std::string p = "{\"dl\":[{id:0,percentage:" + newsldl0pcts
+        + "},{id:" + std::to_string(slice_id) + ",\"percentage\":" + newpcts
+        + "}],\"ul\":[{id:0,percentage:" + newslul0pcts + "},{id:" + std::to_string(slice_id)
+        + ",\"percentage\":" + newpcts + ",\"first_rb\":" + newfrbs + "}]}";
+    if (!apply_slice_config_policy(bs_id, p, error_reason))
+      return -1;
+  }
+  return slice_id;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::remove_vnetwork(
+    uint32_t slice_id, std::string& error_reason)
+{
+  /* verify that all connected BSs have this slice in UL&DL */
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    if (!bs->has_dl_slice(slice_id) || !bs->has_ul_slice(slice_id)) {
+      error_reason = "BS " + std::to_string(bs_id)
+          + " does not have slice " + std::to_string(slice_id);
+      return false;
+    }
+  }
+
+  /* send a command to all BS to remove this slice */
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    const std::string s = std::to_string(slice_id);
+    const std::string p = "{\"dl\":[{id:" + s
+        + ",percentage:0}],\"ul\":[{id:" + s + ",percentage:0}]}";
+    if (!remove_slice(bs_id, p, error_reason)) return false;
+  }
+
+  /* remove all IMSIs from the UE-slice association list for this slice */
+  remove_ue_vnetwork(slice_id);
+  return true;
+}
+
+
+bool flexran::app::scheduler::flexible_scheduler::parse_imsi_list(
+    const std::string& list, std::vector<uint64_t>& imsis, std::string& error_reason)
+{
+  /* parses a in the form: [imsi1,imsi2,imsi3] */
+  int i = 0;
+
+  try {
+    while (std::isspace(list.at(i))) ++i;
+    if (list.at(i) != '[') {
+      error_reason = "expected '[' at position " + std::to_string(i);
+      goto error;
+    }
+    ++i;
+    while (true) {
+      while (std::isspace(list.at(i))) ++i;
+      if (list.at(i) == ']') break;
+      try {
+        imsis.push_back(std::stoul(list.substr(i)));
+      } catch (const std::invalid_argument& e) {
+        error_reason = "could not convert number at position " + std::to_string(i);
+        goto error;
+      }
+      while (std::isspace(list.at(i))) ++i;
+      while (std::isdigit(list.at(i))) ++i;
+      while (std::isspace(list.at(i))) ++i;
+      if (list.at(i) == ']') break;
+      if (list.at(i) != ',') {
+        error_reason = "expected ',' at position " + std::to_string(i);
+        goto error;
+      }
+      ++i;
+    }
+  } catch (const std::out_of_range& e) {
+    error_reason = "unexpected list end";
+    goto error;
+  }
+
+  return true;
+error:
+  imsis.clear();
+  return false;
+}
+
+bool flexran::app::scheduler::flexible_scheduler::associate_ue_vnetwork(
+    uint32_t slice_id, const std::string& policy, std::string& error_reason)
+{
+  int num_slices = 0;
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    const auto slices = bs->get_enb_config().cell_config(0).slice_config();
+    for (const protocol::flex_dl_slice& dl : slices.dl()) {
+      if (dl.id() == slice_id) {
+        num_slices++;
+        break;
+      }
+    }
+    for (const protocol::flex_ul_slice& ul : slices.ul()) {
+      if (ul.id() == slice_id) {
+        num_slices++;
+        break;
+      }
+    }
+  }
+  if (num_slices == 0) {
+    error_reason = "no slices found";
+    return false;
+  }
+
+  std::vector<uint64_t> imsis;
+  if (!parse_imsi_list(policy, imsis, error_reason))
+    return false;
+  for (uint64_t imsi : imsis) {
+    ue_slice_.emplace(imsi, slice_id);
+    LOG4CXX_INFO(flog::app, "monitoring UE with IMSI " << imsi
+        << " to be in slice " << slice_id);
+  }
+  return true;
+}
+
+int flexran::app::scheduler::flexible_scheduler::remove_ue_vnetwork(
+    const std::string& p, std::string& error_reason)
+{
+  std::vector<uint64_t> imsis;
+  if (!parse_imsi_list(p, imsis, error_reason))
+    return -1;
+
+  int r = 0;
+  while (!imsis.empty()) {
+    const auto imsi_it = imsis.begin();
+    const auto it = ue_slice_.find(*imsi_it);
+    if (it != ue_slice_.end()) {
+      LOG4CXX_INFO(flog::app, "removing IMSI-slice association "
+          << it->first << " <> " << it->second);
+      ue_slice_.erase(it);
+      r++;
+    }
+    imsis.erase(imsi_it);
+  }
+  return r;
+}
+
+int flexran::app::scheduler::flexible_scheduler::remove_ue_vnetwork(
+    uint32_t slice_id)
+{
+  int r = 0;
+  for (auto it = ue_slice_.begin(); it != ue_slice_.end(); ) {
+    if (it->second == slice_id) {
+      LOG4CXX_INFO(flog::app, "removing IMSI-slice association "
+          << it->first << " <> " << it->second);
+      it = ue_slice_.erase(it); // returns the reference to the next element
+      r++;
+    } else {
+      it++;
+    }
+  }
+  return r;
 }
 
 bool flexran::app::scheduler::flexible_scheduler::apply_slice_config_policy(

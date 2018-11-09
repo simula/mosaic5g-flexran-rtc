@@ -490,6 +490,170 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this));
 
   /**
+   * @api {post} /install_vnetwork/:bps Create a virtual network
+   * @apiName InstallVNetwork
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam {Number} bps The desired bit rate every slice should fulfill
+   *
+   * @apiDescription This API endpoint installs a virtual network, i.e. a slice
+   * on every connected base station with a common slice ID and with a
+   * percentage of resources such that every slice can deliver up the given
+   * bitrate under the assumption of MCS 28 in DL and MCS 20 in UL. The
+   * end-point call will calculate a percentage, rounded up to a full RBG, and
+   * send the appropriate command to every connected base station. On success,
+   * the slice ID that is common to all BS will be returned. Please note that
+   * individual agents might refuse the creation of a slice and the presence of
+   * all slices has to be checked independently.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/install_vnetwork/2000000
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    { "slice_id": 8 }
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "BS 12345 cannot provide the requested bitrate" }
+   */
+  Pistache::Rest::Routes::Post(router, "/install_vnetwork/:bps",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::instantiate_vnetwork, this));
+
+  /**
+   * @api {post} /remove_vnetwork/:slice_id Create a virtual network
+   * @apiName RemoveVNetwork
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam {Number} slice_id The slice ID of the vnetwork
+   *
+   * @apiDescription This API endpoint remove a virtual network, i.e. a slice
+   * on every connected base station with a common slice ID. The end-point
+   * checks that every base station has such a slice and removes it from all
+   * of them. Note that the free space won't be filled by any other slice and
+   * has to be reconfigured manually. The controller will remove the UE-slice
+   * association list entries for this slice.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/remove_vnetwork/13
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "BS 12345 does not have slice 13" }
+   */
+  Pistache::Rest::Routes::Post(router, "/remove_vnetwork/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_vnetwork, this));
+
+  /**
+   * @api {post} /associate_ue_vnetwork/:slice_id Associate users to a slice
+   * @apiName AssociateUEVNetwork
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam (URL parameter) {Number} slice_id The slice/vnetwork that UEs
+   * shall be associated to.
+   *
+   * @apiParam (JSON parameter) {Number[]} json A simple JSON list of IMSIs as
+   * numbers.
+   *
+   * @apiDescription This API associates a list of IMSIs to a particular
+   * vnetwork/slice. Internally, it is checked that at least one base station
+   * has a slice with the given slice ID and can therefore be used without a
+   * prior call to (#SliceConfiguration:InstallVNetwork). In this case, the
+   * IMSIs are stored.  Whenever a UE whose IMSI is known (this might not
+   * always be the case, go to flight mode and exit to get it reliably) is not
+   * in the slice it was associated to, it will automatically be associated to
+   * this slice. The controller checks for this every second.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/associate_ue_vnetwork/1 --data-binary "@imsi_list.json"
+   *
+   * @apiParamExample {json} Request-Example:
+   *    [ 208950000000007, 208950000000107 ]
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "no slices found" }
+   */
+  Pistache::Rest::Routes::Post(router, "/associate_ue_vnetwork/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::associate_ue_vnetwork, this));
+
+  /**
+   * @api {post} /remove_ue_vnetwork/ Remove user-slice association by IMSI
+   * @apiName RemoveUEListVNetwork
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam (JSON parameter) {Number[]} json A simple JSON list of IMSIs as
+   * numbers.
+   *
+   * @apiDescription This API removes all UE-slice associations for a given
+   * list of IMSIs. It returns the number of removed UEs.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/remove_ue_vnetwork/ --data-binary "@imsi_list.json"
+   *
+   * @apiParamExample {json} Request-Example:
+   *    [ 208950000000007, 208950000000107 ]
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    { "removed_items": 2 }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "parser error" }
+   */
+  Pistache::Rest::Routes::Post(router, "/remove_ue_vnetwork/",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_ue_list_vnetwork, this));
+
+  /**
+   * @api {post} /remove_ue_vnetwork/:slice_id Remove user-slice association by slice
+   * @apiName RemoveUEVNetwork
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam (URL parameter) {Number} slice_id The slice/vnetwork whose
+   * UE-slice association shall be deleted.
+   *
+   * @apiDescription This API removes all UE IMSIs that are associated to a
+   * given slice ID. It returns the number of removed UEs. The request body is
+   * ignored.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/remove_ue_vnetwork/1
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    { "removed_items": 1 }
+   */
+  Pistache::Rest::Routes::Post(router, "/remove_ue_vnetwork/:slice_id",
+      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_ue_vnetwork, this));
+
+
+  /**
    * @api {post} /conf/enb/:id? Change the cell configuration (restart)
    * @apiName CellReconfiguration
    * @apiGroup CellConfigurationPolicy
@@ -781,6 +945,90 @@ void flexran::north_api::rrm_calls::change_ue_slice_assoc_short(
   }
 
   response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::rrm_calls::instantiate_vnetwork(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  const uint64_t bps = request.param(":bps").as<uint64_t>();
+  std::string error_reason;
+  const int slice_id = sched_app->instantiate_vnetwork(bps, error_reason);
+  if (slice_id < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok,
+      "{ \"slice_id\": " + std::to_string(slice_id) + " }", MIME(Application, Json));
+}
+
+void flexran::north_api::rrm_calls::remove_vnetwork(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  const uint32_t slice_id = request.param(":slice_id").as<uint32_t>();
+  std::string error_reason;
+  if (!sched_app->remove_vnetwork(slice_id, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::rrm_calls::associate_ue_vnetwork(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  const uint32_t slice_id = request.param(":slice_id").as<uint32_t>();
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!sched_app->associate_ue_vnetwork(slice_id, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::rrm_calls::remove_ue_list_vnetwork(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  const int removed = sched_app->remove_ue_vnetwork(policy, error_reason);
+  if (removed < 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok,
+      "{ \"removed_items\": " + std::to_string(removed) + " }");
+}
+
+void flexran::north_api::rrm_calls::remove_ue_vnetwork(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  const uint32_t slice_id = request.param(":slice_id").as<uint32_t>();
+  const int removed = sched_app->remove_ue_vnetwork(slice_id);
+  response.send(Pistache::Http::Code::Ok,
+      "{ \"removed_items\": " + std::to_string(removed) + " }");
 }
 
 void flexran::north_api::rrm_calls::yaml_compat(

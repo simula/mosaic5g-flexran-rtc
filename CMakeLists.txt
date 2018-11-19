@@ -346,7 +346,7 @@ target_link_libraries(check
   ${FLPT_MSG_LIB}
   ${Log4CXX_LIBRARIES}
   ${Boost_LIBRARIES}
-  #${CMAKE_THREAD_LIBS_INIT}
+  ${CMAKE_THREAD_LIBS_INIT}
   ${PROTOBUF_LIBRARY}
   Catch2::Catch
 )

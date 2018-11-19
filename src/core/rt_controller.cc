@@ -66,7 +66,9 @@
 
 #endif
 
+#ifdef REST_NORTHBOUND
 #include <pistache/endpoint.h>
+#endif
 
 #include <errno.h>
 #include <string.h>

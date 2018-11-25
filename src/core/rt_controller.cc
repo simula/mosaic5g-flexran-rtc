@@ -88,7 +88,9 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[]) {
 
   int cport = 2210;
+#ifdef REST_NORTHBOUND
   int north_port = 9999;
+#endif
   
   bool debug = false;
 
@@ -145,7 +147,9 @@ int main(int argc, char* argv[]) {
     }
     
     cport = opts["port"].as<int>(); 
+#ifdef REST_NORTHBOUND
     north_port = opts["nport"].as<int>();
+#endif
     
   } catch(std::exception& e) {
     std::cerr << "Error: Unrecognized parameter\n";

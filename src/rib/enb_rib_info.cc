@@ -403,7 +403,7 @@ bool flexran::rib::enb_rib_info::parse_rnti_imsi(const std::string& rnti_imsi_s,
     uint64_t imsi;
     try {
       imsi = std::stoll(rnti_imsi_s);
-    } catch (std::invalid_argument e) {
+    } catch (const std::invalid_argument& e) {
       return false;
     }
     return get_rnti(imsi, rnti);
@@ -412,7 +412,7 @@ bool flexran::rib::enb_rib_info::parse_rnti_imsi(const std::string& rnti_imsi_s,
   // assume it is an RNTI
   try {
     rnti = std::stoi(rnti_imsi_s);
-  } catch (std::invalid_argument e) {
+  } catch (const std::invalid_argument& e) {
     return false;
   }
   return ue_mac_info_.find(rnti) != ue_mac_info_.end();

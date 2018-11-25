@@ -309,7 +309,7 @@ uint64_t flexran::rib::Rib::parse_enb_agent_id(const std::string& enb_agent_id_s
       enb_id = std::stoll(enb_agent_id_s, 0, 16);
     else
       enb_id = std::stoll(enb_agent_id_s);
-  } catch (std::invalid_argument e) {
+  } catch (const std::invalid_argument& e) {
     return 0;
   }
 

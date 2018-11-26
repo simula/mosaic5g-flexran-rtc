@@ -25,11 +25,10 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
-#include <boost/thread/barrier.hpp>
-
 #include "rt_task.h"
 #include "rib.h"
 #include "requests_manager.h"
+#include "flexran_log.h"
 
 namespace flexran {
 
@@ -44,20 +43,19 @@ namespace flexran {
       : rt_task(pol, priority, runtime, deadline, period),
         rib_(rib), req_manager_(rm) {}
 
-      //! the barrier is for synchronization purposes. The task manager uses
-      //  this to inform apps when they can run.
-      void set_app_sync_barrier(std::shared_ptr<boost::barrier> barrier) { app_sync_barrier_ = barrier; }
-      //! this method is for synchronization purposes. The task manager uses
-      //  this to inform apps that they should finish after the the next call
-      //  to app_sync_barrier_.
+      //! this method is for synchronization purposes. It can be used to inform
+      //  apps that they should finish after the the next call to run_app()
       void inform_exit() { _exit_app = true; }
 
-      virtual void run_app() = 0;
+      //! this method can be overridden in a subclass to implement how this
+      //  function should be run in its own thread. In this case, the inherited
+      //  rt_task method execute_task() would trigger this function together
+      //  with the right scheduling policy has as set in the constructor.
+      virtual void run_app() { LOG4CXX_ERROR(flog::app, "run_app() not implemented"); }
 
     protected:
       const rib::Rib& rib_;
       const core::requests_manager& req_manager_;
-      std::shared_ptr<boost::barrier> app_sync_barrier_;
       bool _exit_app = false;
   
     private:

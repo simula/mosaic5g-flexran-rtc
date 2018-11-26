@@ -25,8 +25,6 @@
 #ifndef PERIODIC_COMPONENT_H_
 #define PERIODIC_COMPONENT_H_
 
-#include <boost/thread/barrier.hpp>
-
 #include "component.h"
 
 namespace flexran {
@@ -45,7 +43,7 @@ namespace flexran {
         sched_time deadline, sched_time period)
       : component(rib, rm, pol, priority, runtime, deadline, period) {}
 
-      void run_app();
+      void run_app() {}
       virtual void periodic_task() = 0;
       
     };

@@ -30,6 +30,7 @@
 #include "rib.h"
 #include "flexran.pb.h"
 #include "rt_task.h"
+#include "subscription.h"
 #include <chrono>
 
 namespace flexran {
@@ -40,8 +41,10 @@ namespace flexran {
 
     public:
     rib_updater(Rib& storage, flexran::network::async_xface& xface,
-        flexran::core::requests_manager& netman, int n_msg_check = 350)
-      : rib_(storage), net_xface_(xface), req_manager_(netman), messages_to_check_(n_msg_check) {}
+        flexran::core::requests_manager& netman,
+        flexran::event::subscription& ev, int n_msg_check = 350)
+      : rib_(storage), net_xface_(xface), req_manager_(netman),
+        event_sub_(ev), messages_to_check_(n_msg_check) {}
       
       unsigned int run();
       
@@ -97,6 +100,8 @@ namespace flexran {
       flexran::network::async_xface& net_xface_;
       // TX to base station, possibly inferring the right agent
       flexran::core::requests_manager& req_manager_;
+      // Event subscription system informing apps
+      flexran::event::subscription& event_sub_;
       
       // Max number of messages to check during a single update period
       std::atomic<int> messages_to_check_;

@@ -40,6 +40,7 @@
 #include "rib_updater.h"
 #include "rib.h"
 #include "task_manager.h"
+#include "subscription.h"
 #include "stats_manager.h"
 //#include "remote_scheduler.h"
 //#include "remote_scheduler_delegation.h"
@@ -180,11 +181,14 @@ int main(int argc, char* argv[]) {
   // Create the requests manager
   flexran::core::requests_manager rm(rib, net_xface);
 
+  // Create the event subsystem
+  flexran::event::subscription ev;
+
   // Create the rib update manager
-  flexran::rib::rib_updater r_updater(rib, net_xface, rm);
+  flexran::rib::rib_updater r_updater(rib, net_xface, rm, ev);
 
   // Create the task manager
-  flexran::core::task_manager tm(r_updater);
+  flexran::core::task_manager tm(r_updater, ev);
 
   // Register any applications that we might want to execute in the controller
   // Stats manager

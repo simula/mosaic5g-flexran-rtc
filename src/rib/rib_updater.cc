@@ -197,6 +197,7 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
   if (rib_.new_eNB_config_entry(agent->bs_id)) {
     // new BS is complete -> ask for configuration
     trigger_bs_config(agent->bs_id);
+    event_sub_.bs_add_(agent->bs_id);
     LOG4CXX_INFO(flog::rib, "New BS " << agent->bs_id
         << ", creating RIB entry");
   }
@@ -327,16 +328,20 @@ void flexran::rib::rib_updater::handle_ue_state_change(int agent_id,
 
   LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": UE state changed");
   bs->update_UE_config(ue_state_change_msg);
-
-  protocol::flexran_message out_message;
-  out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-  protocol::flex_header *header(new protocol::flex_header);
-  header->set_type(protocol::FLPT_GET_LC_CONFIG_REQUEST);
-  header->set_xid(2);
-  protocol::flex_lc_config_request *lc_config_request_msg(new protocol::flex_lc_config_request);
-  lc_config_request_msg->set_allocated_header(header);
-  out_message.set_allocated_lc_config_request_msg(lc_config_request_msg);
-  req_manager_.send_message(bs->get_id(), out_message);
+  switch (ue_state_change_msg.type()) {
+  case protocol::FLUESC_ACTIVATED:
+    event_sub_.ue_connect_(bs->get_id(), ue_state_change_msg.config().rnti());
+    trigger_bs_config(bs->get_id());
+    break;
+  case protocol::FLUESC_UPDATED:
+    event_sub_.ue_update_(bs->get_id(), ue_state_change_msg.config().rnti());
+    break;
+  case protocol::FLUESC_DEACTIVATED:
+    event_sub_.ue_disconnect_(bs->get_id(), ue_state_change_msg.config().rnti());
+    break;
+  default:
+    break;
+  }
 }
 
 void flexran::rib::rib_updater::handle_disconnect(int agent_id,
@@ -346,8 +351,10 @@ void flexran::rib::rib_updater::handle_disconnect(int agent_id,
   uint64_t bs_id = rib_.get_bs_id(agent_id);
   if (bs_id > 0) { // existing base station
     LOG4CXX_INFO(flog::rib, "Agent " << agent_id << " of BS " << bs_id << " disconnected");
-    if (rib_.remove_eNB_config_entry(agent_id))
+    if (rib_.remove_eNB_config_entry(agent_id)) {
       LOG4CXX_INFO(flog::rib, "BS " << bs_id << " is offline");
+      event_sub_.bs_remove_(bs_id);
+    }
   } else if (rib_.agent_is_pending(agent_id)) { // pending base station
     LOG4CXX_INFO(flog::rib, "Pending agent " << agent_id << " disconnected");
     rib_.remove_pending_agent(agent_id);

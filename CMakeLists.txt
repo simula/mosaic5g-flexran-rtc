@@ -133,7 +133,7 @@ include_directories (${FLPT_CC_DIR})
 
 set(Boost_USE_STATIC_LIBS OFF)
 
-find_package(Boost 1.54.0 REQUIRED COMPONENTS system thread program_options)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS system program_options)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
@@ -222,7 +222,6 @@ set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
 include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
-  ${RT_CONTROLLER_APP_DIR}/periodic_component.cc
   ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc

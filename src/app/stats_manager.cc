@@ -30,63 +30,70 @@
 
 #include "flexran_log.h"
 
-void flexran::app::stats::stats_manager::periodic_task() {
+flexran::app::stats::stats_manager::stats_manager(const flexran::rib::Rib& rib,
+    const flexran::core::requests_manager& rm, flexran::event::subscription &s)
+  : component(rib, rm, s)
+{
+  event_sub_.subscribe_bs_add(
+      boost::bind(&flexran::app::stats::stats_manager::bs_add, this, _1));
+  // Other possibility:
+  //auto f = [this](uint64_t bs_id) { this->bs_add(bs_id); };
+  //sub.subscribe_bs_add(boost::bind<void>(f, _1));
+  event_sub_.subscribe_bs_remove(
+      boost::bind(&flexran::app::stats::stats_manager::bs_remove, this, _1));
+}
 
-  std::set<uint64_t> current_bss = rib_.get_available_base_stations();
-  for (uint64_t bs_id : current_bss) {
-    auto it = bs_list_.find(bs_id);
-    if (it == bs_list_.end()) {
-      const int periodicity = 100;
-      bs_list_.insert(bs_id);
-      // Make a new stats request for the newly added agents
-      protocol::flex_header *header(new protocol::flex_header);
-      header->set_type(protocol::FLPT_STATS_REQUEST);
-      header->set_version(0);
-      // We need to store the xid for keeping context info
-      header->set_xid(0);
-      
-      protocol::flex_complete_stats_request *complete_stats_request(new protocol::flex_complete_stats_request);
-      complete_stats_request->set_report_frequency(protocol::FLSRF_PERIODICAL);
-      complete_stats_request->set_sf(periodicity);
-      int ue_flags = 0;
-      ue_flags |= protocol::FLUST_PHR;
-      ue_flags |= protocol::FLUST_DL_CQI;
-      ue_flags |= protocol::FLUST_BSR;
-      ue_flags |= protocol::FLUST_RLC_BS;
-      ue_flags |= protocol::FLUST_MAC_CE_BS;
-      ue_flags |= protocol::FLUST_UL_CQI;
-      ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
-      ue_flags |= protocol::FLUST_PDCP_STATS;
-      ue_flags |= protocol::FLUST_MAC_STATS;
+void flexran::app::stats::stats_manager::bs_add(uint64_t bs_id)
+{
+  const int periodicity = 100;
 
-      
-      complete_stats_request->set_ue_report_flags(ue_flags);
-      int cell_flags = 0;
-      cell_flags |= protocol::FLCST_NOISE_INTERFERENCE;
-      complete_stats_request->set_cell_report_flags(cell_flags);
-      protocol::flex_stats_request *stats_request_msg(new protocol::flex_stats_request);
-      stats_request_msg->set_allocated_header(header);
-      stats_request_msg->set_type(protocol::FLST_COMPLETE_STATS);
-      stats_request_msg->set_allocated_complete_stats_request(complete_stats_request);
-      protocol::flexran_message msg;
-      msg.set_msg_dir(protocol::INITIATING_MESSAGE);
-      msg.set_allocated_stats_request_msg(stats_request_msg);
-      LOG4CXX_INFO(flog::app, "Sending " << periodicity
-          << "ms periodical full stats request to BS " << bs_id);
-      req_manager_.send_message(bs_id, msg);
-    }
-  }
-  if (bs_list_.size() > current_bss.size()) {
-    for (std::set<uint64_t>::iterator it = bs_list_.begin(); it != bs_list_.end();) {
-      /* if the current BS cannot be found in the list of BSs, delete it */
-      if (current_bss.find(*it) == current_bss.end()) {
-        LOG4CXX_INFO(flog::rib, "removing BS " << *it);
-        it = bs_list_.erase(it); // important, retain iterator past removed one
-      } else {
-        it++;
-      }
-    }
-  }
+  bs_list_.insert(bs_id);
+  LOG4CXX_INFO(flog::app, "" << __func__ << ": BS " << bs_id << " added, "
+      << bs_list_.size() << " entries");
+
+  // Make a new stats request for the newly added agents
+  protocol::flex_header *header(new protocol::flex_header);
+  header->set_type(protocol::FLPT_STATS_REQUEST);
+  header->set_version(0);
+  // We need to store the xid for keeping context info
+  header->set_xid(0);
+
+  protocol::flex_complete_stats_request *complete_stats_request(new protocol::flex_complete_stats_request);
+  complete_stats_request->set_report_frequency(protocol::FLSRF_PERIODICAL);
+  complete_stats_request->set_sf(periodicity);
+  int ue_flags = 0;
+  ue_flags |= protocol::FLUST_PHR;
+  ue_flags |= protocol::FLUST_DL_CQI;
+  ue_flags |= protocol::FLUST_BSR;
+  ue_flags |= protocol::FLUST_RLC_BS;
+  ue_flags |= protocol::FLUST_MAC_CE_BS;
+  ue_flags |= protocol::FLUST_UL_CQI;
+  ue_flags |= protocol::FLUST_RRC_MEASUREMENTS;
+  ue_flags |= protocol::FLUST_PDCP_STATS;
+  ue_flags |= protocol::FLUST_MAC_STATS;
+
+  complete_stats_request->set_ue_report_flags(ue_flags);
+  int cell_flags = 0;
+  cell_flags |= protocol::FLCST_NOISE_INTERFERENCE;
+  complete_stats_request->set_cell_report_flags(cell_flags);
+  protocol::flex_stats_request *stats_request_msg(new protocol::flex_stats_request);
+  stats_request_msg->set_allocated_header(header);
+  stats_request_msg->set_type(protocol::FLST_COMPLETE_STATS);
+  stats_request_msg->set_allocated_complete_stats_request(complete_stats_request);
+  protocol::flexran_message msg;
+  msg.set_msg_dir(protocol::INITIATING_MESSAGE);
+  msg.set_allocated_stats_request_msg(stats_request_msg);
+  LOG4CXX_INFO(flog::app, "Sending " << periodicity
+      << "ms periodical full stats request to BS " << bs_id);
+  req_manager_.send_message(bs_id, msg);
+}
+
+void flexran::app::stats::stats_manager::bs_remove(uint64_t bs_id)
+{
+  auto it = std::find(bs_list_.begin(), bs_list_.end(), bs_id);
+  if (it == bs_list_.end()) return; /* not found */
+
+  bs_list_.erase(it);
 }
 
 std::string flexran::app::stats::stats_manager::all_stats_to_string() const

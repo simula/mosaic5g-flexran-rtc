@@ -201,6 +201,20 @@ add_library(RT_CONTROLLER_RIB_LIB
   ${RIB_SRC}
 )
 
+# Event component
+
+set(RT_CONTROLLER_EVENT_DIR ${RT_CONTROLLER_DIR}/event)
+
+include_directories(${RT_CONTROLLER_EVENT_DIR})
+
+set(EVENT_SRC
+  ${RT_CONTROLLER_EVENT_DIR}/subscription.cc
+)
+
+add_library(RT_CONTROLLER_EVENT_LIB
+  ${EVENT_SRC}
+)
+
 # App component
 
 set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
@@ -285,6 +299,7 @@ target_link_libraries(rt_controller
   RT_CONTROLLER_APP_LIB
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
+  RT_CONTROLLER_EVENT_LIB
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_NETWORK_LIB
   ${FLPT_MSG_LIB}

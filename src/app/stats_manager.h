@@ -30,6 +30,7 @@
 
 #include "component.h"
 #include "rib_common.h"
+#include "subscription.h"
 
 namespace flexran {
 
@@ -42,10 +43,10 @@ namespace flexran {
       public:
 	
       stats_manager(const rib::Rib& rib, const core::requests_manager& rm,
-          event::subscription& sub)
-      : component(rib, rm, sub) {}
-	
-      void periodic_task();
+          event::subscription& sub);
+
+      void bs_add(uint64_t bs_id);
+      void bs_remove(uint64_t bs_id);
 
       std::string all_stats_to_string() const;
       std::string all_stats_to_json_string() const;

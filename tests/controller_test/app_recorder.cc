@@ -11,7 +11,7 @@ using Fd = google::protobuf::FieldDescriptor;
 
 #include "catch.hpp"
 #include "recorder.h"
-namespace flog = flexran::app::log;
+namespace alog = flexran::app::log;
 
 void fill_message(Me &m, std::mt19937_64& mt);
 
@@ -31,8 +31,8 @@ TEST_CASE("test binary serialization and deserialization", "[recorder]")
   const unsigned n = dist8(mt) % 10 + 1;
   const uint64_t ms_start = dist64(mt);
   const std::string f = "/tmp/flexran.test.app_recorder.dat";
-  flog::job_info info{ms_start, ms_start + n, f, flog::job_type::all};
-  std::vector<std::map<uint64_t, flog::bs_dump>> v;
+  alog::job_info info{ms_start, ms_start + n, f, alog::job_type::all};
+  std::vector<std::map<uint64_t, alog::bs_dump>> v;
   for (unsigned i = 0; i < n; ++i) {
     protocol::flex_enb_config_reply a;
     fill_message(a, mt);
@@ -49,9 +49,9 @@ TEST_CASE("test binary serialization and deserialization", "[recorder]")
       fill_message(d, mt);
       harq.push_back(std::make_pair(d, a));
     }
-    std::map<uint64_t, flog::bs_dump> m;
+    std::map<uint64_t, alog::bs_dump> m;
     const uint64_t bs_id = dist64(mt);
-    m.insert(std::make_pair(bs_id, flog::bs_dump{a, b, c, harq}));
+    m.insert(std::make_pair(bs_id, alog::bs_dump{a, b, c, harq}));
     v.push_back(m);
   }
 
@@ -61,8 +61,8 @@ TEST_CASE("test binary serialization and deserialization", "[recorder]")
   //google::protobuf::util::MessageToJsonString(v.at(0).begin()->second.enb_config, &s, opt);
   //std::cout << s << "\n";
 
-  flog::recorder::write_binary(info, v);
-  std::vector<std::map<uint64_t, flog::bs_dump>> vr = flog::recorder::read_binary(info.filename);
+  alog::recorder::write_binary(info, v);
+  std::vector<std::map<uint64_t, alog::bs_dump>> vr = alog::recorder::read_binary(info.filename);
   REQUIRE(v.size() == vr.size());
   REQUIRE(v == vr);
 }

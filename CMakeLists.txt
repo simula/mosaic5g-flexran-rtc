@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.5)
 
 project (rt_controller C CXX)
 
@@ -164,11 +164,10 @@ endif()
 #  endif()
 #endif()
 
+
 # Network component
 set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
-
 include_directories(${RT_CONTROLLER_NETWORK_DIR})
-
 set(NETWORK_SRC
   ${RT_CONTROLLER_NETWORK_DIR}/async_xface.cc
   ${RT_CONTROLLER_NETWORK_DIR}/connection_manager.cc
@@ -176,17 +175,14 @@ set(NETWORK_SRC
   ${RT_CONTROLLER_NETWORK_DIR}/protocol_message.cc
   ${RT_CONTROLLER_NETWORK_DIR}/tagged_message.cc
 )
-  
 add_library(RT_CONTROLLER_NETWORK_LIB
   ${NETWORK_SRC}
 )
 
+
 # RIB component
-
 set (RT_CONTROLLER_RIB_DIR ${RT_CONTROLLER_DIR}/rib)
-
 include_directories(${RT_CONTROLLER_RIB_DIR})
-
 set(RIB_SRC
   ${RT_CONTROLLER_RIB_DIR}/rib_updater.cc
   ${RT_CONTROLLER_RIB_DIR}/rib.cc
@@ -196,31 +192,30 @@ set(RIB_SRC
   ${RT_CONTROLLER_RIB_DIR}/cell_mac_rib_info.cc
   ${RT_CONTROLLER_RIB_DIR}/agent_info.cc
 )
-
 add_library(RT_CONTROLLER_RIB_LIB
   ${RIB_SRC}
 )
+target_link_libraries(RT_CONTROLLER_RIB_LIB
+  RT_CONTROLLER_CORE_LIB
+  RT_CONTROLLER_NETWORK_LIB
+  RT_CONTROLLER_EVENT_LIB
+)
+
 
 # Event component
-
 set(RT_CONTROLLER_EVENT_DIR ${RT_CONTROLLER_DIR}/event)
-
 include_directories(${RT_CONTROLLER_EVENT_DIR})
-
 set(EVENT_SRC
   ${RT_CONTROLLER_EVENT_DIR}/subscription.cc
 )
-
 add_library(RT_CONTROLLER_EVENT_LIB
   ${EVENT_SRC}
 )
 
+
 # App component
-
 set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
-
 include_directories(${RT_CONTROLLER_APP_DIR})
-
 set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
   ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
@@ -238,26 +233,25 @@ set(APP_SRC
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
 #  ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc
 )
-
 #if(NEO4J_SUPPORT)
 #  set(APP_SRC
 #    ${APP_SRC}
 #    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
 #  )
 #endif(NEO4J_SUPPORT)
-
-add_library(RT_CONTROLLER_APP_LIB
-  ${APP_SRC}
+add_library(RT_CONTROLLER_APP_LIB ${APP_SRC})
+target_link_libraries(RT_CONTROLLER_APP_LIB
+  RT_CONTROLLER_CORE_LIB
+  RT_CONTROLLER_EVENT_LIB
+  RT_CONTROLLER_NETWORK_LIB
+  RT_CONTROLLER_RIB_LIB
 )
 
-if(REST_NORTHBOUND)
 
 # North_API component
-
+if(REST_NORTHBOUND)
 set (RT_CONTROLLER_NORTH_API_DIR ${RT_CONTROLLER_DIR}/north_api)
-
 include_directories(${RT_CONTROLLER_NORTH_API_DIR})
-
 set(NORTH_API_SRC
   ${RT_CONTROLLER_NORTH_API_DIR}/call_manager.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/rrm_calls.cc
@@ -265,41 +259,37 @@ set(NORTH_API_SRC
   ${RT_CONTROLLER_NORTH_API_DIR}/rrc_triggering_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/recorder_calls.cc
 )
-
 add_library(RT_CONTROLLER_NORTH_API_LIB
   ${NORTH_API_SRC}
 )
 
 endif()
 
+
 # Core controller
-
 set (RT_CONTROLLER_CORE_DIR ${RT_CONTROLLER_DIR}/core)
-
 include_directories(${RT_CONTROLLER_CORE_DIR})
-
 set (RT_CONTROLLER_CORE_SRC
     ${RT_CONTROLLER_CORE_DIR}/rt_wrapper.cc
     ${RT_CONTROLLER_CORE_DIR}/task_manager.cc
     ${RT_CONTROLLER_CORE_DIR}/rt_task.cc
     ${RT_CONTROLLER_CORE_DIR}/requests_manager.cc
 )	
-
 add_library(RT_CONTROLLER_CORE_LIB
   ${RT_CONTROLLER_CORE_SRC}
 )	
+target_link_libraries(RT_CONTROLLER_CORE_LIB
+  RT_CONTROLLER_NETWORK_LIB
+  RT_CONTROLLER_EVENT_LIB
+)
+
 
 add_executable(rt_controller ${RT_CONTROLLER_CORE_DIR}/rt_controller.cc)
-
-# Important: RT_CONTROLLER_CORE_LIB is mentioned twice because of a circular
-# dependency of RIB and CORE (RIB uses request_manager, CORE uses rib_updater).
-# Please do not remove, it doesn't do any harm (or find a better way)
 target_link_libraries(rt_controller
   RT_CONTROLLER_APP_LIB
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
   RT_CONTROLLER_EVENT_LIB
-  RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_NETWORK_LIB
   ${FLPT_MSG_LIB}
   ${Log4CXX_LIBRARIES}
@@ -307,6 +297,16 @@ target_link_libraries(rt_controller
   ${CMAKE_THREAD_LIBS_INIT}
   ${PROTOBUF_LIBRARY}
 )
+if(REST_NORTHBOUND)
+target_link_libraries(rt_controller
+  RT_CONTROLLER_NORTH_API_LIB
+  ${PISTACHE_LIB}
+)
+endif()
+#if(NEO4J_SUPPORT)
+#  target_link_libraries(rt_controller neo4j-client)
+#endif()
+
 
 add_executable(parse-bd tools/parse-bd.cc)
 target_link_libraries(parse-bd
@@ -319,18 +319,6 @@ target_link_libraries(parse-bd
   ${PROTOBUF_LIBRARY}
 )
 
-if(REST_NORTHBOUND)
-
-target_link_libraries(rt_controller
-  RT_CONTROLLER_NORTH_API_LIB
-  ${PISTACHE_LIB}
-)
-
-endif()
-
-#if(NEO4J_SUPPORT)
-#  target_link_libraries(rt_controller neo4j-client)
-#endif()
 
 # Tests
 set(RT_CONTROLLER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/controller_test)

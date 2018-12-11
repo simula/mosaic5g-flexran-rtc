@@ -262,7 +262,9 @@ set(NORTH_API_SRC
 add_library(RT_CONTROLLER_NORTH_API_LIB
   ${NORTH_API_SRC}
 )
-
+target_link_libraries(RT_CONTROLLER_NORTH_API_LIB
+  RT_CONTROLLER_APP_LIB
+)
 endif()
 
 

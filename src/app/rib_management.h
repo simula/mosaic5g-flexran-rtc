@@ -25,7 +25,7 @@
 #ifndef RIB_MANAGEMENT_H_
 #define RIB_MANAGEMENT_H_
 
-#include "periodic_component.h"
+#include "component.h"
 #include "rib_common.h"
 
 namespace flexran {
@@ -34,13 +34,12 @@ namespace flexran {
 
     namespace management {
 
-      class rib_management : public periodic_component {
+      class rib_management : public component {
 
       public:
 
         rib_management(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm),
-            ms_counter_(1) {}
+          : component(rib, rm), ms_counter_(1) {}
 
         void periodic_task();
 

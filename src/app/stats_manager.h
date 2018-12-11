@@ -28,7 +28,7 @@
 
 #include <set>
 
-#include "periodic_component.h"
+#include "component.h"
 #include "rib_common.h"
 
 namespace flexran {
@@ -37,12 +37,12 @@ namespace flexran {
 
     namespace stats {
 
-      class stats_manager : public periodic_component {
+      class stats_manager : public component {
 	
       public:
 	
       stats_manager(flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-      : periodic_component(rib, rm) {}
+      : component(rib, rm) {}
 	
       void periodic_task();
 

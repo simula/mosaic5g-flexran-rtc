@@ -28,7 +28,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 
-#include "periodic_component.h"
+#include "component.h"
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 

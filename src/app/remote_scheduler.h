@@ -27,7 +27,7 @@
 
 #include <map>
 
-#include "periodic_component.h"
+#include "component.h"
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 
@@ -37,12 +37,12 @@ namespace flexran {
 
     namespace scheduler {
 
-      class remote_scheduler : public periodic_component {
+      class remote_scheduler : public component {
   
       public:
 	
       remote_scheduler(rib::Rib& rib, const core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
+        : component(rib, rm) {}
 	
 	void periodic_task();
 	

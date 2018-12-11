@@ -25,7 +25,7 @@
 #ifndef FLEXIBLE_SCHEDULER_H_
 #define FLEXIBLE_SCHEDULER_H_
 
-#include "periodic_component.h"
+#include "component.h"
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 #include "rib_common.h"
@@ -38,16 +38,16 @@ namespace flexran {
 
     namespace scheduler {
 
-      class flexible_scheduler : public periodic_component {
+      class flexible_scheduler : public component {
 
       public:
 
-	flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false), t_(0) {
+        flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
+          : component(rib, rm), code_pushed_(false), t_(0)
+        {
+          central_scheduling.store(false);
+        }
 
-	  central_scheduling.store(false);
-	  
-	}
 
 	void periodic_task();
 

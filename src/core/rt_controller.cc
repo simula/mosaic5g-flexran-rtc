@@ -192,46 +192,46 @@ int main(int argc, char* argv[]) {
 
   // Register any applications that we might want to execute in the controller
   // Stats manager
-  std::shared_ptr<flexran::app::component> stats_app(new flexran::app::stats::stats_manager(rib, rm));
+  std::shared_ptr<flexran::app::component> stats_app(new flexran::app::stats::stats_manager(rib, rm, ev));
   tm.register_app(stats_app);
 
   // Flexible scheduler
-  std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm));
+  std::shared_ptr<flexran::app::component> flex_sched(new flexran::app::scheduler::flexible_scheduler(rib, rm, ev));
   tm.register_app(flex_sched);
 
   // RRC measurements
-  //std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm));
+  //std::shared_ptr<flexran::app::component> rrc_trigger(new flexran::app::rrc::rrc_triggering(rib, rm, ev));
   //tm.register_app(rrc_trigger);
 
   // Manage Rib info (close abandoned connections...)
-  std::shared_ptr<flexran::app::component> rib_management(new flexran::app::management::rib_management(rib, rm));
+  std::shared_ptr<flexran::app::component> rib_management(new flexran::app::management::rib_management(rib, rm, ev));
   tm.register_app(rib_management);
 
   // Write statistics in JSON or binary form to file
-  std::shared_ptr<flexran::app::component> recorder(new flexran::app::log::recorder(rib, rm));
+  std::shared_ptr<flexran::app::component> recorder(new flexran::app::log::recorder(rib, rm, ev));
   tm.register_app(recorder);
-  
+
   /* More examples of developed applications are available in the commented section.
      WARNING: Some of them might still contain bugs or might be from previous versions of the controller. */
   
   // Remote scheduler
-  //std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler(rib, rm));
+  //std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler(rib, rm, ev));
   //tm.register_app(remote_sched);
 
   // eICIC remote scheduler
-  //std::shared_ptr<flexran::app::component> remote_sched_eicic(new flexran::app::scheduler::remote_scheduler_eicic(rib, rm));
+  //std::shared_ptr<flexran::app::component> remote_sched_eicic(new flexran::app::scheduler::remote_scheduler_eicic(rib, rm, ev));
   //tm.register_app(remote_sched_eicic);
 
   // Remote scheduler with delegation (TEST purposes)
-  // std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler_delegation(rib, rm));
+  // std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler_delegation(rib, rm, ev));
   // tm.register_app(remote_sched);
 
   // Delegation manager (TEST purposes)
-  //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
+  //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm, ev));
   //tm.register_app(delegation_manager);
 
 //#ifdef NEO4J_SUPPORT
-  //std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+  //std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm, ev));
   //tm.register_app(n4j_client);
 //#endif
 

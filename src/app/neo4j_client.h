@@ -50,8 +50,9 @@ namespace flexran {
 	
       public:	
 	
-    neo4j_client(rib::Rib& rib, const core::requests_manager& rm)
-      : component(rib, rm) {}
+        neo4j_client(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+          : component(rib, rm, sub) {}
 
 	void update_graph();
 	

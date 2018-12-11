@@ -38,8 +38,9 @@ namespace flexran {
 
       public:
 
-        rib_management(rib::Rib& rib, const core::requests_manager& rm)
-          : component(rib, rm), ms_counter_(1) {}
+        rib_management(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+          : component(rib, rm, sub), ms_counter_(1) {}
 
         void periodic_task();
 

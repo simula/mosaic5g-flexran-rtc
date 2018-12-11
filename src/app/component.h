@@ -29,6 +29,7 @@
 #include "rib.h"
 #include "requests_manager.h"
 #include "flexran_log.h"
+#include "subscription.h"
 
 namespace flexran {
 
@@ -37,11 +38,12 @@ namespace flexran {
     class component : public core::rt::rt_task {
     public:
 
-    component(rib::Rib& rib, const core::requests_manager&rm,
-        Policy pol = Policy::RR, sched_priority priority = 20,
-        sched_time runtime = 0, sched_time deadline = 0, sched_time period = 0)
+    component(rib::Rib& rib, const core::requests_manager& rm,
+        event::subscription& sub, Policy pol = Policy::RR,
+        sched_priority priority = 20, sched_time runtime = 0,
+        sched_time deadline = 0, sched_time period = 0)
       : rt_task(pol, priority, runtime, deadline, period),
-        rib_(rib), req_manager_(rm) {}
+        rib_(rib), req_manager_(rm), event_sub_(sub) {}
 
       //! this method is for synchronization purposes. It can be used to inform
       //  apps that they should finish after the the next call to run_app()
@@ -56,6 +58,7 @@ namespace flexran {
     protected:
       const rib::Rib& rib_;
       const core::requests_manager& req_manager_;
+      event::subscription& event_sub_;
       bool _exit_app = false;
   
     private:

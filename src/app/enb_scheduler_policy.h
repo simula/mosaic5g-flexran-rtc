@@ -42,8 +42,9 @@ namespace flexran {
 
       public:
 
-        enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm)
-          : component(rib, rm), code_pushed_(false) {
+        enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+          : component(rib, rm, sub), code_pushed_(false) {
 	  
 	  // false: the scheduler is local at the agent/eNB.
 	  central_scheduling.store(false);

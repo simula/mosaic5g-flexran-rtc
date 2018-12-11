@@ -38,8 +38,9 @@ namespace flexran {
 	
       public:
 
-        delegation_manager(rib::Rib& rib, const core::requests_manager& rm)
-          : component(rib, rm), delegation_steps_{false} {}
+        delegation_manager(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+          : component(rib, rm, sub), delegation_steps_{false} {}
 
 	void periodic_task();
 

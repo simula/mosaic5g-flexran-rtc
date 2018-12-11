@@ -41,8 +41,9 @@ namespace flexran {
 	
       public:
 	
-      remote_scheduler_delegation(rib::Rib& rib, const core::requests_manager& rm)
-        : component(rib, rm), delegation_enabled_(false) {}
+      remote_scheduler_delegation(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+        : component(rib, rm, sub), delegation_enabled_(false) {}
 	
 	void periodic_task();
 	

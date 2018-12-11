@@ -84,8 +84,9 @@ namespace flexran {
 
       public:
 
-        recorder(rib::Rib& rib, const core::requests_manager& rm)
-          : component(rib, rm),
+        recorder(rib::Rib& rib, const core::requests_manager& rm,
+            event::subscription& sub)
+          : component(rib, rm, sub),
             ms_counter_(0),
             current_job_(nullptr)
         {}

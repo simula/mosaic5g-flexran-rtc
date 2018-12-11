@@ -25,7 +25,7 @@
 #ifndef DELEGATION_MANAGER_H_
 #define DELEGATION_MANAGER_H_
 
-#include "periodic_component.h"
+#include "component.h"
 #include "rib_common.h"
 
 namespace flexran {
@@ -34,12 +34,12 @@ namespace flexran {
 
     namespace management {
 
-      class delegation_manager : public periodic_component {
+      class delegation_manager : public component {
 	
       public:
 
-	delegation_manager(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), delegation_steps_{false} {}
+        delegation_manager(rib::Rib& rib, const core::requests_manager& rm)
+          : component(rib, rm), delegation_steps_{false} {}
 
 	void periodic_task();
 

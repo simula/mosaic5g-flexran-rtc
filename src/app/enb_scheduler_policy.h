@@ -25,7 +25,7 @@
 #ifndef ENB_SCHEDULER_POLICY_H_
 #define ENB_SCHEDULER_POLICY_H_
 
-#include "periodic_component.h"
+#include "component.h"
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 #include "rib_common.h"
@@ -38,12 +38,12 @@ namespace flexran {
 
     namespace scheduler {
 
-      class enb_scheduler_policy : public periodic_component {
+      class enb_scheduler_policy : public component {
 
       public:
 
-	enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm), code_pushed_(false) {
+        enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm)
+          : component(rib, rm), code_pushed_(false) {
 	  
 	  // false: the scheduler is local at the agent/eNB.
 	  central_scheduling.store(false);

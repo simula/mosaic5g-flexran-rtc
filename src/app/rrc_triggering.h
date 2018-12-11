@@ -25,7 +25,7 @@
 #ifndef RRC_TRIGGERING_H_
 #define RRC_TRIGGERING_H_
 
-#include "periodic_component.h"
+#include "component.h"
 // #include "enb_scheduling_info.h"
 // #include "ue_scheduling_info.h"
 #include "rib_common.h"
@@ -38,12 +38,12 @@ namespace flexran {
 
     namespace rrc {
 
-      class rrc_triggering : public periodic_component {
+      class rrc_triggering : public component {
 
       public:
 
-	rrc_triggering(rib::Rib& rib, const core::requests_manager& rm)
-	  : periodic_component(rib, rm) {
+        rrc_triggering(rib::Rib& rib, const core::requests_manager& rm)
+          : component(rib, rm) {
 	    
 	}
 

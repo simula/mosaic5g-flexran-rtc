@@ -30,7 +30,7 @@
 #include <vector>
 #include <map>
 
-#include "periodic_component.h"
+#include "component.h"
 #include "rib_common.h"
 #include "ue_mac_rib_info.h"
 
@@ -80,14 +80,14 @@ namespace flexran {
         job_type type;
       };
 
-      class recorder : public periodic_component {
+      class recorder : public component {
 
       public:
 
         recorder(rib::Rib& rib, const core::requests_manager& rm)
-        : periodic_component(rib, rm),
-          ms_counter_(0),
-          current_job_(nullptr)
+          : component(rib, rm),
+            ms_counter_(0),
+            current_job_(nullptr)
         {}
 
         void periodic_task();

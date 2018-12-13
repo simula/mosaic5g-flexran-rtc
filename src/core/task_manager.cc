@@ -122,7 +122,7 @@ void flexran::core::task_manager::manage_rt_tasks()
       if (rounds == 0) {
         g_doprof = false;
         rounds = 10000;
-        std::thread t(flexran::core::task_manager::profiler_wb_thread, std::move(ss), apps_.size());
+        std::thread t(flexran::core::task_manager::profiler_wb_thread, std::move(ss), event.task_tick_.num_slots());
         t.detach();
         LOG4CXX_WARN(flog::core, "profiling done");
         r_updater_.print_prof_results(std::chrono::steady_clock::now() - start);
@@ -132,11 +132,6 @@ void flexran::core::task_manager::manage_rt_tasks()
     t++;
     wait_for_cycle();
   }
-}
-
-void flexran::core::task_manager::register_app(const std::shared_ptr<flexran::app::component>& app)
-{
-  apps_.emplace_back(app);
 }
 
 

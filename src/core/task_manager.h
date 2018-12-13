@@ -48,8 +48,6 @@ namespace flexran {
 
       void manage_rt_tasks();
 
-      void register_app(const std::shared_ptr<flexran::app::component>& app);
-      
     private:
       
       void run();
@@ -62,8 +60,6 @@ namespace flexran {
       
       flexran::rib::rib_updater& r_updater_;
       flexran::event::subscription& event_sub_;
-      
-      std::vector<std::shared_ptr<flexran::app::component>> apps_;
 
       int sfd;
 

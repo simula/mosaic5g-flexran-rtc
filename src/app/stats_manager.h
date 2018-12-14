@@ -41,7 +41,7 @@ namespace flexran {
 	
       public:
 	
-      stats_manager(rib::Rib& rib, const core::requests_manager& rm,
+      stats_manager(const rib::Rib& rib, const core::requests_manager& rm,
           event::subscription& sub)
       : component(rib, rm, sub) {}
 	

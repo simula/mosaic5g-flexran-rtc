@@ -42,7 +42,7 @@ namespace flexran {
 
       public:
 
-        rrc_triggering(rib::Rib& rib, const core::requests_manager& rm,
+        rrc_triggering(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
           : component(rib, rm, sub) {
 	    

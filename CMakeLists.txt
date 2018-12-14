@@ -329,6 +329,7 @@ include_directories(${RT_CONTROLLER_TEST_DIR})
 set (RT_CONTROLLER_TEST_SRC
     ${RT_CONTROLLER_TEST_DIR}/test.cc
     ${RT_CONTROLLER_TEST_DIR}/agent_capabilities.cc
+    ${RT_CONTROLLER_TEST_DIR}/app_recorder.cc
     ${RT_CONTROLLER_TEST_DIR}/enb_rib_info.cc
     ${RT_CONTROLLER_TEST_DIR}/rib.cc
 )

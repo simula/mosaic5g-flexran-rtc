@@ -42,7 +42,7 @@ namespace flexran {
 
       public:
 
-        enb_scheduler_policy(rib::Rib& rib, const core::requests_manager& rm,
+        enb_scheduler_policy(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
           : component(rib, rm, sub), code_pushed_(false) {
 	  

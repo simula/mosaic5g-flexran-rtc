@@ -38,7 +38,7 @@ namespace flexran {
 	
       public:
 
-        delegation_manager(rib::Rib& rib, const core::requests_manager& rm,
+        delegation_manager(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
           : component(rib, rm, sub), delegation_steps_{false} {}
 

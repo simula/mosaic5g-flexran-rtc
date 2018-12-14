@@ -41,7 +41,7 @@ namespace flexran {
   
       public:
 	
-      remote_scheduler(rib::Rib& rib, const core::requests_manager& rm,
+      remote_scheduler(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
         : component(rib, rm, sub) {}
 	

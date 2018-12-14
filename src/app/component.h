@@ -38,7 +38,7 @@ namespace flexran {
     class component : public core::rt::rt_task {
     public:
 
-    component(rib::Rib& rib, const core::requests_manager& rm,
+    component(const rib::Rib& rib, const core::requests_manager& rm,
         event::subscription& sub, Policy pol = Policy::RR,
         sched_priority priority = 20, sched_time runtime = 0,
         sched_time deadline = 0, sched_time period = 0)

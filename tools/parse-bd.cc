@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   }
 
   std::string input = argv[1];
-  std::vector<std::map<int, flexran::app::log::agent_dump>> v;
+  std::vector<std::map<uint64_t, flexran::app::log::bs_dump>> v;
   v = flexran::app::log::recorder::read_binary(input);
   LOG4CXX_INFO(flog::app, "read " << v.size() << " data sets");
 

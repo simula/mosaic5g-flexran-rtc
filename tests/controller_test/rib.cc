@@ -3,6 +3,7 @@
 #include "rib.h"
 #include "agent_info.h"
 #include <vector>
+#include <chrono>
 
 using cap = protocol::flex_bs_capability;
 
@@ -17,7 +18,8 @@ flexran::rib::agent_capabilities create_caps(const std::vector<cap>& cs)
 std::shared_ptr<flexran::rib::agent_info> make_agent(
     int agent_id, uint64_t bs_id, const std::vector<cap>& cs)
 {
-  return std::make_shared<flexran::rib::agent_info>(agent_id, bs_id, create_caps(cs));
+  return std::make_shared<flexran::rib::agent_info>(
+    agent_id, bs_id, create_caps(cs), std::chrono::microseconds(0));
 }
 
 TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")

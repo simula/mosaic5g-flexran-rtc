@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <atomic>
+#include <chrono>
 
 namespace flexran {
   namespace rib {
@@ -57,10 +58,12 @@ namespace flexran {
 
     class agent_info {
     public:
-      agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap)
+      agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap,
+          const std::chrono::microseconds& us)
         : agent_id(agent_id),
           bs_id(bs_id),
           capabilities(cap),
+          rtt(us),
           rx_packets(0),
           rx_bytes(0)
       { }
@@ -70,6 +73,7 @@ namespace flexran {
       const int agent_id;
       const uint64_t bs_id;
       const agent_capabilities capabilities;
+      std::chrono::microseconds rtt;
       std::atomic<uint64_t> rx_packets;
       std::atomic<uint64_t> rx_bytes;
     };

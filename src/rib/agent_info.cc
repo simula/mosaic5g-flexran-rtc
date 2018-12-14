@@ -109,6 +109,7 @@ std::string flexran::rib::agent_info::to_json() const
   s += "\"agent_id\":" + std::to_string(agent_id);
   s += ",\"bs_id\":" + std::to_string(bs_id);
   s += ",\"capabilities\":" + capabilities.to_json();
+  s += ",\"rtt_us\":" + std::to_string(rtt.count());
   s += "}";
   return s;
 }
@@ -119,5 +120,6 @@ std::string flexran::rib::agent_info::to_string() const
   s += "agent ID " + std::to_string(agent_id);
   s += " for BS " + std::to_string(bs_id);
   s += ", capabilities: " + capabilities.to_string();
+  s += ", rtt (us): " + std::to_string(rtt.count());
   return s;
 }

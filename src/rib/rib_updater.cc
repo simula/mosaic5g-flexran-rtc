@@ -23,6 +23,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 
 #include "rib_updater.h"
 #include "tagged_message.h"
@@ -37,6 +38,8 @@
 #include <iostream>
 extern std::atomic_bool g_doprof;
 #endif
+
+#include <chrono>
 
 unsigned int flexran::rib::rib_updater::run()
 {
@@ -100,6 +103,9 @@ void flexran::rib::rib_updater::handle_new_connection(int agent_id)
   protocol::flexran_message out_message;
   out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   out_message.set_allocated_hello_msg(hello_msg);
+
+  rtt_start_.emplace(agent_id, std::chrono::high_resolution_clock::now());
+
   net_xface_.send_msg(out_message, agent_id);
 }
 
@@ -156,6 +162,15 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
     const protocol::flex_hello& hello_msg,
     protocol::flexran_direction dir)
 {
+  // determine simple RTT time: take time first
+  const auto now = std::chrono::high_resolution_clock::now();
+  std::chrono::microseconds us(0);
+  const auto it = rtt_start_.find(agent_id);
+  if (it != rtt_start_.end()) {
+    us = std::chrono::duration_cast<std::chrono::microseconds>(now - it->second);
+    rtt_start_.erase(it);
+  }
+
   // copy message to support old agents which do not have BS ID and/or
   // capabilities, so here we fill it and then add the agent
   protocol::flex_hello hello_copy = hello_msg;
@@ -184,7 +199,7 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
   }
 
   std::shared_ptr<agent_info> agent = std::make_shared<agent_info>(
-      agent_id, hello_copy.bs_id(), hello_copy.capabilities());
+      agent_id, hello_copy.bs_id(), hello_copy.capabilities(), us);
   LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": hello BS "
       << agent->bs_id << ", capabilities " << agent->capabilities.to_string());
   

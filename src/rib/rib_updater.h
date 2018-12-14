@@ -106,6 +106,9 @@ namespace flexran {
       // Max number of messages to check during a single update period
       std::atomic<int> messages_to_check_;
       static constexpr const uint64_t BS_ID_OFFSET = 10000;
+
+      // RTT measurements: between connection and hello_reply
+      std::map<int, std::chrono::system_clock::time_point> rtt_start_;
       
     };
 

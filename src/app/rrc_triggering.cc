@@ -35,13 +35,13 @@
 
 void flexran::app::rrc::rrc_triggering::periodic_task() {
 
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+  //::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
   /*TODO for Handover*/
 }
 
 
-void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::string freq_measure) {
+void flexran::app::rrc::rrc_triggering::reconfigure_agent(uint64_t bs_id, std::string freq_measure) {
   
   protocol::flexran_message config_message;
   // Create control delegation message header
@@ -57,18 +57,16 @@ void flexran::app::rrc::rrc_triggering::reconfigure_agent(int agent_id, std::str
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_rrc_triggering(agent_rrc_triggering);
-  req_manager_.send_message(agent_id, config_message);
+  req_manager_.send_message(bs_id, config_message);
 }
 
 
 void flexran::app::rrc::rrc_triggering::enable_rrc_triggering(std::string freq_measure) {
   
 
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-  
-  for (auto& agent_id : agent_ids) {
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
 
-      reconfigure_agent(agent_id, freq_measure);
+      reconfigure_agent(bs_id, freq_measure);
   
   }
 }

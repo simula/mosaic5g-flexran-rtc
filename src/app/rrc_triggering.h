@@ -49,9 +49,9 @@ namespace flexran {
 
 	void periodic_task();
 
-	// void push_code(int agent_id, std::string function_name, std::string lib_name);
+	// void push_code(uint64_t bs_id, std::string function_name, std::string lib_name);
 
-	void reconfigure_agent(int agent_id, std::string freq_measure);
+	void reconfigure_agent(uint64_t bs_id, std::string freq_measure);
 
 	void enable_rrc_triggering(std::string freq_measure);
 	

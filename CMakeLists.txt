@@ -42,11 +42,11 @@ add_definitions(-DREST_NORTHBOUND)
 endif()
 
 # Enable Neo4j app
-option(NEO4J_SUPPORT "Enable graphing application" OFF)
-
-if(NEO4J_SUPPORT)
-add_definitions(-DNEO4J_SUPPORT)
-endif()
+#option(NEO4J_SUPPORT "Enable graphing application" OFF)
+#
+#if(NEO4J_SUPPORT)
+#add_definitions(-DNEO4J_SUPPORT)
+#endif()
 
 # Add Profiling support
 option(PROFILE "Enable profiling of task_manager" OFF)
@@ -139,11 +139,6 @@ if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
 endif(Boost_FOUND)
 
-
-
-
-
-
 # Pistache support
 if(REST_NORTHBOUND)
   find_package(Pistache REQUIRED)
@@ -157,17 +152,17 @@ if(REST_NORTHBOUND)
 endif()
 
 # Neo4j support
-if(NEO4J_SUPPORT)
-  # there is no find_package yet, but only /usr/include/neo4j_client.h
-  set(NEO4J_INCLUDE "/usr/include/neo4j-client.h")
-  if(EXISTS ${NEO4J_INCLUDE})
-    message("--${NEO4J_INCLUDE} FOUND")
-  else()
-    message(FATAL_ERROR " --${NEO4J_INCLUDE} NOT FOUND. There is no find_package(),
-    and it is not in /usr/include. If you are sure it is installed, consider
-    changing the cmake file (search for 'NEO4J_SUPPORT')")
-  endif()
-endif()
+#if(NEO4J_SUPPORT)
+#  # there is no find_package yet, but only /usr/include/neo4j_client.h
+#  set(NEO4J_INCLUDE "/usr/include/neo4j-client.h")
+#  if(EXISTS ${NEO4J_INCLUDE})
+#    message("--${NEO4J_INCLUDE} FOUND")
+#  else()
+#    message(FATAL_ERROR " --${NEO4J_INCLUDE} NOT FOUND. There is no find_package(),
+#    and it is not in /usr/include. If you are sure it is installed, consider
+#    changing the cmake file (search for 'NEO4J_SUPPORT')")
+#  endif()
+#endif()
 
 # Network component
 set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
@@ -214,29 +209,29 @@ include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/periodic_component.cc
- ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
-  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
-  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
-  ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
-  ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
-#  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
-  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
-  ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc	
-  ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc	
+  ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
+  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
+  ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc
   ${RT_CONTROLLER_APP_DIR}/rib_management.cc
   ${RT_CONTROLLER_APP_DIR}/recorder.cc
   ${RT_CONTROLLER_APP_DIR}/band_check.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
+#  ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
+#  ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
+#  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
+#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
+#  ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc
 )
 
-if(NEO4J_SUPPORT)
-  set(APP_SRC
-    ${APP_SRC}
-    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
-  )
-endif(NEO4J_SUPPORT)
+#if(NEO4J_SUPPORT)
+#  set(APP_SRC
+#    ${APP_SRC}
+#    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
+#  )
+#endif(NEO4J_SUPPORT)
 
 add_library(RT_CONTROLLER_APP_LIB
   ${APP_SRC}
@@ -319,9 +314,9 @@ target_link_libraries(rt_controller
 
 endif()
 
-if(NEO4J_SUPPORT)
-  target_link_libraries(rt_controller neo4j-client)
-endif()
+#if(NEO4J_SUPPORT)
+#  target_link_libraries(rt_controller neo4j-client)
+#endif()
 
 # Tests
 set(RT_CONTROLLER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/controller_test)

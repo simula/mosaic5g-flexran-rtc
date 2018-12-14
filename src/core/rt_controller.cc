@@ -41,19 +41,19 @@
 #include "rib.h"
 #include "task_manager.h"
 #include "stats_manager.h"
-#include "remote_scheduler.h"
-#include "remote_scheduler_delegation.h"
-#include "remote_scheduler_eicic.h"
+//#include "remote_scheduler.h"
+//#include "remote_scheduler_delegation.h"
+//#include "remote_scheduler_eicic.h"
 #include "flexible_scheduler.h"
 #include "rrc_triggering.h"
-#include "delegation_manager.h"
+//#include "delegation_manager.h"
 #include "requests_manager.h"
 #include "rib_management.h"
 #include "recorder.h"
 
-#ifdef NEO4J_SUPPORT
-#include "neo4j_client.h"
-#endif
+//#ifdef NEO4J_SUPPORT
+//#include "neo4j_client.h"
+//#endif
 
 // Fort RESTful northbound API
 #ifdef REST_NORTHBOUND
@@ -164,8 +164,6 @@ int main(int argc, char* argv[]) {
   LOG4CXX_WARN(flog::core, "Compiled with profiling support");
 #endif
     
-  std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
-
   LOG4CXX_INFO(flog::core, "Listening on port " << cport << " for incoming agent connections");
   flexran::network::async_xface net_xface(cport);
   
@@ -216,15 +214,15 @@ int main(int argc, char* argv[]) {
   // Remote scheduler with delegation (TEST purposes)
   // std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler_delegation(rib, rm));
   // tm.register_app(remote_sched);
-  
+
   // Delegation manager (TEST purposes)
   //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
 
-#ifdef NEO4J_SUPPORT
-  std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
-  tm.register_app(n4j_client);
-#endif
+//#ifdef NEO4J_SUPPORT
+  //std::shared_ptr<flexran::app::component> n4j_client(new flexran::app::management::neo4j_client(rib, rm));
+  //tm.register_app(n4j_client);
+//#endif
 
   // the following threads will not handle any signal
   sigfillset(&sigmask);

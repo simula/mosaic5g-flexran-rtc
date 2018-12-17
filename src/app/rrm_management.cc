@@ -37,40 +37,11 @@ flexran::app::management::rrm_management::rrm_management(rib::Rib& rib,
     const core::requests_manager& rm, event::subscription& sub)
   : component(rib, rm, sub)
 {
-  // event sub registration
+  event_sub_.subscribe_ue_connect(
+    boost::bind(&flexran::app::management::rrm_management::ue_add_update, this, _1, _2));
+  event_sub_.subscribe_ue_update(
+    boost::bind(&flexran::app::management::rrm_management::ue_add_update, this, _1, _2));
 }
-
-//void flexran::app::management::rrm_management::periodic_task()
-//{
-//  /* check all UEs in all BSs: if a UE in ue_slice_ is not in the slice it is
-//   * supposed to be, we send a command */
-//  for (uint64_t bs_id : rib_.get_available_base_stations()) {
-//    std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
-//    for (const protocol::flex_ue_config& uec : bs->get_ue_configs().ue_config()) {
-//      if (!uec.has_imsi()) continue;
-//      if (!uec.has_dl_slice_id()) continue;
-//      if (!uec.has_ul_slice_id()) continue;
-//      const auto it = ue_slice_.find(uec.imsi());
-//      if (it == ue_slice_.end()) continue;
-//      if (!bs->has_dl_slice(it->second) || !bs->has_ul_slice(it->second)) {
-//        LOG4CXX_ERROR(flog::app, "no such slice " << it->second
-//            << " for BS " << bs_id);
-//        continue;
-//      }
-//      if (uec.dl_slice_id() != it->second || uec.ul_slice_id() != it->second) {
-//        /* TODO this could be done manually and would be faster */
-//        const std::string p = "{\"ueConfig\":[{\"imsi\":"
-//            + std::to_string(uec.imsi()) + ",\"dlSliceId\":"
-//            + std::to_string(it->second) + ",\"ulSliceId\":"
-//            + std::to_string(it->second) + "}]}";
-//        std::string e;
-//        if (!change_ue_slice_association(bs_id, p, e)) {
-//          LOG4CXX_ERROR(flog::app, "error: " + e);
-//        }
-//      }
-//    }
-//  }
-//}
 
 bool flexran::app::management::rrm_management::is_free_common_slice_id(int slice_id) const
 {
@@ -305,6 +276,46 @@ int flexran::app::management::rrm_management::remove_ue_vnetwork(
     }
   }
   return r;
+}
+
+void flexran::app::management::rrm_management::ue_add_update(uint64_t bs_id,
+    flexran::rib::rnti_t rnti)
+{
+  /* check given UE: if it is in ue_slice_ but not in the slice it is supposed
+   * to be, we change its association */
+  std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+  if (!bs) return;
+
+  /* find UE and verify it has IMSI & slice IDs */
+  const auto ue_it = std::find_if(
+      bs->get_ue_configs().ue_config().begin(),
+      bs->get_ue_configs().ue_config().end(),
+      [rnti] (const protocol::flex_ue_config& c) { return c.rnti() == rnti; }
+  );
+  if (ue_it == bs->get_ue_configs().ue_config().end()) return;
+  if (!ue_it->has_imsi()) return;
+  if (!ue_it->has_dl_slice_id()) return;
+  if (!ue_it->has_ul_slice_id()) return;
+
+  const auto it = ue_slice_.find(ue_it->imsi());
+  if (it == ue_slice_.end()) return;
+  if (!bs->has_dl_slice(it->second) || !bs->has_ul_slice(it->second)) {
+    LOG4CXX_ERROR(flog::app, "no such slice " << it->second
+        << " for BS " << bs_id);
+      return;
+  }
+  /* if current and desired slice IDs don't match, change it */
+  if (ue_it->dl_slice_id() != it->second || ue_it->ul_slice_id() != it->second) {
+    /* TODO this could be done manually and would be faster */
+    const std::string p = "{\"ueConfig\":[{\"imsi\":"
+        + std::to_string(ue_it->imsi()) + ",\"dlSliceId\":"
+        + std::to_string(it->second) + ",\"ulSliceId\":"
+        + std::to_string(it->second) + "}]}";
+    std::string e;
+    if (!change_ue_slice_association(bs_id, p, e)) {
+      LOG4CXX_ERROR(flog::app, "error: " + e);
+    }
+  }
 }
 
 void flexran::app::management::rrm_management::reconfigure_agent_string(

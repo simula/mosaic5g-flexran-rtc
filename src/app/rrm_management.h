@@ -66,6 +66,7 @@ namespace flexran {
             std::string& error_reason);
         int remove_ue_vnetwork(const std::string& policy, std::string& error_reason);
         int remove_ue_vnetwork(uint32_t slice_id);
+        void ue_add_update(uint64_t bs_id, flexran::rib::rnti_t rnti);
 
         void reconfigure_agent_string(uint64_t bs_id, std::string policy);
 

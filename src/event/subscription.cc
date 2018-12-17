@@ -87,9 +87,8 @@ flexran::event::subscription::subscribe_ue_disconnect_extended(const ue_cb::exte
 
 bs2::connection
 flexran::event::subscription::subscribe_task_tick(const task_cb::slot_type& cb,
-    uint64_t period, uint64_t offset)
+    uint64_t period, uint64_t start)
 {
-  const uint64_t start = offset + last_tick_;
   auto f = [period,start,cb] (uint64_t t)
            {
              if (t >= start && (t - start) % period == 0) cb(t);
@@ -99,9 +98,8 @@ flexran::event::subscription::subscribe_task_tick(const task_cb::slot_type& cb,
 
 bs2::connection
 flexran::event::subscription::subscribe_task_tick_extended(const task_cb::extended_slot_type& cb,
-    uint64_t period, uint64_t offset)
+    uint64_t period, uint64_t start)
 {
-  const uint64_t start = offset + last_tick_;
   auto f = [period,start,cb] (const bs2::connection& c, uint64_t t)
            {
              if (t >= start && (t - start) % period == 0) cb(c, t);

@@ -39,13 +39,10 @@ namespace flexran {
       public:
 
         rib_management(const rib::Rib& rib, const core::requests_manager& rm,
-            event::subscription& sub)
-          : component(rib, rm, sub), ms_counter_(1) {}
-
-        void periodic_task();
+            event::subscription& sub);
+        void tick(uint64_t ms);
 
       private:
-        int ms_counter_;
         std::set<uint64_t> inactive_bs_;
 
         void send_enb_config_request(uint64_t bs_id);

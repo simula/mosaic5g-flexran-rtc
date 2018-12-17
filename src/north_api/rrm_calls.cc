@@ -494,7 +494,11 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @apiName InstallVNetwork
    * @apiGroup SliceConfiguration
    *
-   * @apiParam {Number} bps The desired bit rate every slice should fulfill
+   * @apiParam (URL parameter) {Number} bps The desired bit rate every slice
+   * should fulfill
+   *
+   * @apiParam (JSON parameter) {Number[]} json A simple JSON list of IMSIs as
+   * numbers.
    *
    * @apiDescription This API endpoint installs a virtual network, i.e. a slice
    * on every connected base station with a common slice ID and with a
@@ -504,7 +508,8 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * send the appropriate command to every connected base station. On success,
    * the slice ID that is common to all BS will be returned. Please note that
    * individual agents might refuse the creation of a slice and the presence of
-   * all slices has to be checked independently.
+   * all slices has to be checked independently. The optional list given in the
+   * POST body associates a list of IMSIs to the created vnetwork/slice.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -959,8 +964,16 @@ void flexran::north_api::rrm_calls::instantiate_vnetwork(
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
   }
-  response.send(Pistache::Http::Code::Ok,
-      "{ \"slice_id\": " + std::to_string(slice_id) + " }", MIME(Application, Json));
+  std::string return_message = "{ \"slice_id\": " + std::to_string(slice_id);
+
+  std::string policy = request.body();
+  if (policy.length() != 0) {
+    std::string error_reason;
+    if (!sched_app->associate_ue_vnetwork(slice_id, policy, error_reason))
+      return_message += ", error\": \"" + error_reason + "\"";
+  }
+
+  response.send(Pistache::Http::Code::Ok, return_message + " }", MIME(Application, Json));
 }
 
 void flexran::north_api::rrm_calls::remove_vnetwork(

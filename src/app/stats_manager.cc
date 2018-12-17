@@ -48,8 +48,6 @@ void flexran::app::stats::stats_manager::bs_add(uint64_t bs_id)
   const int periodicity = 100;
 
   bs_list_.insert(bs_id);
-  LOG4CXX_INFO(flog::app, "" << __func__ << ": BS " << bs_id << " added, "
-      << bs_list_.size() << " entries");
 
   // Make a new stats request for the newly added agents
   protocol::flex_header *header(new protocol::flex_header);

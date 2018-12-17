@@ -69,9 +69,9 @@ namespace flexran {
       bs2::connection subscribe_ue_disconnect_extended(const ue_cb::extended_slot_type& cb);
 
       bs2::connection subscribe_task_tick(const task_cb::slot_type& cb,
-          uint64_t period, uint64_t offset = 0);
+          uint64_t period, uint64_t start = 0);
       bs2::connection subscribe_task_tick_extended(const task_cb::extended_slot_type& cb,
-          uint64_t period, uint64_t offset = 0);
+          uint64_t period, uint64_t start = 0);
       
     private:
       bs_cb bs_add_;

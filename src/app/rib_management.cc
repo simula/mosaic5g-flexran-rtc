@@ -22,17 +22,22 @@
  *  \email   robert.schmidt@eurecom.fr
  */
 
+#include "rt_controller_common.h"
 #include "rib_management.h"
 #include "enb_rib_info.h"
 #include "flexran_log.h"
 
-void flexran::app::management::rib_management::periodic_task()
+flexran::app::management::rib_management::rib_management(const flexran::rib::Rib& rib,
+    const flexran::core::requests_manager& rm, flexran::event::subscription& sub)
+  : component(rib, rm, sub)
 {
-  // only execute every second
-  ms_counter_++;
-  ms_counter_ %= 1000;
-  if (ms_counter_ != 0) return;
+  event_sub_.subscribe_task_tick(
+      boost::bind(&flexran::app::management::rib_management::tick, this, _1), 1000);
+}
 
+void flexran::app::management::rib_management::tick(uint64_t ms)
+{
+  _unused(ms);
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
   for (uint64_t bs_id: rib_.get_available_base_stations()) {
     send_enb_config_request(bs_id);

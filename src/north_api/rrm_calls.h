@@ -16,7 +16,7 @@
  */
 
 /*! \file    rrm_calls.h
- *  \brief   NB API for flexible_scheduler/RRM policies
+ *  \brief   NB API for RRM policies
  *  \authors Xenofon Foukas, Robert Schmidt
  *  \company Eurecom
  *  \email   x.foukas@sms.ed.ac.uk, robert.schmidt@eurecom.fr
@@ -28,7 +28,7 @@
 #include <pistache/http.h>
 
 #include "app_calls.h"
-#include "flexible_scheduler.h"
+#include "rrm_management.h"
 
 namespace flexran {
 
@@ -38,13 +38,13 @@ namespace flexran {
 
     public:
 
-      rrm_calls(std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched)
-	: sched_app(flex_sched)
+      rrm_calls(std::shared_ptr<flexran::app::management::rrm_management> rrm)
+        : rrm_app(rrm)
       { }
       
       void register_calls(Pistache::Rest::Router& router);
 
-      void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      //void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void yaml_compat(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void apply_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
@@ -66,7 +66,7 @@ namespace flexran {
 
     private:
 
-      std::shared_ptr<flexran::app::scheduler::flexible_scheduler> sched_app;
+      std::shared_ptr<flexran::app::management::rrm_management> rrm_app;
 
     };
   }

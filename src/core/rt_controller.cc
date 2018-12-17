@@ -42,10 +42,11 @@
 #include "task_manager.h"
 #include "subscription.h"
 #include "stats_manager.h"
+#include "rrm_management.h"
 //#include "remote_scheduler.h"
 //#include "remote_scheduler_delegation.h"
 //#include "remote_scheduler_eicic.h"
-#include "flexible_scheduler.h"
+//#include "flexible_scheduler.h"
 #include "rrc_triggering.h"
 //#include "delegation_manager.h"
 #include "requests_manager.h"
@@ -192,7 +193,7 @@ int main(int argc, char* argv[]) {
 
   // Register any applications that we might want to execute in the controller
   auto stats_app = std::make_shared<flexran::app::stats::stats_manager>(rib, rm, ev);
-  auto flex_sched = std::make_shared<flexran::app::scheduler::flexible_scheduler>(rib, rm, ev);
+  auto rrm_management = std::make_shared<flexran::app::management::rrm_management>(rib, rm, ev);
   auto rrc_trigger = std::make_shared<flexran::app::rrc::rrc_triggering>(rib, rm, ev);
   auto rib_management = std::make_shared<flexran::app::management::rib_management>(rib, rm, ev);
   auto recorder = std::make_shared<flexran::app::log::recorder>(rib, rm, ev);
@@ -235,7 +236,7 @@ int main(int argc, char* argv[]) {
   //flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
 
   // Register API calls for the developed applications
-  flexran::north_api::rrm_calls rrm_calls(std::dynamic_pointer_cast<flexran::app::scheduler::flexible_scheduler>(flex_sched));
+  flexran::north_api::rrm_calls rrm_calls(rrm_management);
 
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
 

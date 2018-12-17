@@ -218,11 +218,12 @@ set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
 include_directories(${RT_CONTROLLER_APP_DIR})
 set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
-  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
   ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc
   ${RT_CONTROLLER_APP_DIR}/rib_management.cc
   ${RT_CONTROLLER_APP_DIR}/recorder.cc
+  ${RT_CONTROLLER_APP_DIR}/rrm_management.cc
   ${RT_CONTROLLER_APP_DIR}/band_check.cc
+#  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
 #  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
@@ -333,7 +334,7 @@ include_directories(${RT_CONTROLLER_TEST_DIR})
 set (RT_CONTROLLER_TEST_SRC
     ${RT_CONTROLLER_TEST_DIR}/test.cc
     ${RT_CONTROLLER_TEST_DIR}/agent_capabilities.cc
-    ${RT_CONTROLLER_TEST_DIR}/app_flexible_scheduler.cc
+    ${RT_CONTROLLER_TEST_DIR}/app_rrm_management.cc
     ${RT_CONTROLLER_TEST_DIR}/app_recorder.cc
     ${RT_CONTROLLER_TEST_DIR}/enb_rib_info.cc
     ${RT_CONTROLLER_TEST_DIR}/rib.cc

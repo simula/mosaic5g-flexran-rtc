@@ -87,11 +87,10 @@ namespace flexran {
         recorder(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
           : component(rib, rm, sub),
-            ms_counter_(0),
             current_job_(nullptr)
         {}
 
-        void periodic_task();
+        void tick(const bs2::connection& conn, uint64_t ms);
         bool start_meas(uint64_t duration, const std::string& type, std::string& id);
         bool get_job_info(const std::string& id, job_info& info);
 
@@ -113,8 +112,6 @@ namespace flexran {
         static std::vector<std::map<uint64_t, bs_dump>> read_binary(std::string filename);
 
       private:
-        uint64_t ms_counter_;
-
         /* list of finished jobs that can be accessed via the NB REST API */
         std::vector<job_info> finished_jobs_;
 

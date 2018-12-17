@@ -63,12 +63,8 @@ bool flexran::app::log::recorder::start_meas(uint64_t duration,
     const std::string& type, std::string& id)
 {
   /* in case we are currently in a measurement, do not handle */
-  if (current_job_
-      && ms_counter_ >= current_job_->ms_start - 2
-      && ms_counter_ <  current_job_->ms_end) {
-    LOG4CXX_DEBUG(flog::app, "recorder: job already running");
-    return false;
-  }
+  if (current_job_)
+    LOG4CXX_DEBUG(flog::app, "recorder: job already running, starting next immediately after");
 
   job_type jt;
   if      (type == "all")   jt = job_type::all;
@@ -93,7 +89,7 @@ bool flexran::app::log::recorder::start_meas(uint64_t duration,
 
   /* ID corresponds to record start date, but first check if we can have the
    * corresponding file */
-  uint64_t start = ms_counter_ + 2;
+  const uint64_t start = current_job_ ? current_job_->ms_end : event_sub_.last_tick() + 2;
   id = std::to_string(start);
   std::string filename = "/tmp/record." + id + ".json";
   if (jt == job_type::bin)
@@ -120,6 +116,9 @@ bool flexran::app::log::recorder::start_meas(uint64_t duration,
       << min.count() << "min@" << std::put_time(std::localtime(&now), "%T")
       << ", file " << filename << ", type " << type << ")");
 
+  event_sub_.subscribe_task_tick_extended(
+      boost::bind(&flexran::app::log::recorder::tick, this, _1, _2), 1, start);
+
   return true;
 }
 
@@ -134,14 +133,13 @@ bool flexran::app::log::recorder::get_job_info(const std::string& id, job_info& 
   return true;
 }
 
-void flexran::app::log::recorder::periodic_task()
+void flexran::app::log::recorder::tick(const bs2::connection& conn, uint64_t ms)
 {
-  ms_counter_++;
-
-  if (!current_job_
-      || ms_counter_ <  current_job_->ms_start
-      || ms_counter_ >= current_job_->ms_end)
+  if (!current_job_) {
+    LOG4CXX_ERROR(flog::app, "no current job available");
+    conn.disconnect();
     return;
+  }
 
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   std::map<uint64_t, flexran::app::log::bs_dump> m;
@@ -150,12 +148,14 @@ void flexran::app::log::recorder::periodic_task()
   }
   dump_->push_back(m);
   std::chrono::duration<float, std::micro> dur = std::chrono::steady_clock::now() - start;
-  LOG4CXX_TRACE(flog::app, "write_json_chunk() at " << ms_counter_ << ", duration " << dur.count() << "us");
+  LOG4CXX_TRACE(flog::app, "write_json_chunk() at " << ms
+      << "ms, duration " << dur.count() << "us");
 
-  if (ms_counter_ == current_job_->ms_end - 1) {
+  if (ms == current_job_->ms_end - 1) {
     std::thread writer(&flexran::app::log::recorder::writer_method, this,
         std::move(current_job_), std::move(dump_));
     writer.detach();
+    conn.disconnect();
     current_job_.reset();
   }
 }

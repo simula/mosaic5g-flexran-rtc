@@ -26,8 +26,6 @@
 #define RRC_TRIGGERING_H_
 
 #include "component.h"
-// #include "enb_scheduling_info.h"
-// #include "ue_scheduling_info.h"
 #include "rib_common.h"
 
 #include <atomic>
@@ -44,27 +42,13 @@ namespace flexran {
 
         rrc_triggering(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
-          : component(rib, rm, sub) {
-	    
-	}
+          : component(rib, rm, sub) { }
 
-	void periodic_task();
-
-	// void push_code(uint64_t bs_id, std::string function_name, std::string lib_name);
-
-	void reconfigure_agent(uint64_t bs_id, std::string freq_measure);
-
-	void enable_rrc_triggering(std::string freq_measure);
-	
-
-	
+        void reconfigure_agent(uint64_t bs_id, std::string freq_measure);
+        void enable_rrc_triggering(std::string freq_measure);
       };
-      
     }
-    
   }
-
 }
-
 
 #endif /* RRC_TRIGGERING_H_ */

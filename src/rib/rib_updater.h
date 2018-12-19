@@ -30,6 +30,7 @@
 #include "rib.h"
 #include "flexran.pb.h"
 #include "rt_task.h"
+#include <chrono>
 
 namespace flexran {
 
@@ -45,6 +46,10 @@ namespace flexran {
       unsigned int run();
       
       unsigned int update_rib();
+
+#ifdef PROFILE
+      void print_prof_results(std::chrono::duration<double> d);
+#endif
 
     private:
       

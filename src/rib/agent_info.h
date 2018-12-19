@@ -28,6 +28,7 @@
 #include "flexran.pb.h"
 #include <vector>
 #include <string>
+#include <atomic>
 
 namespace flexran {
   namespace rib {
@@ -59,7 +60,9 @@ namespace flexran {
       agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap)
         : agent_id(agent_id),
           bs_id(bs_id),
-          capabilities(cap)
+          capabilities(cap),
+          rx_packets(0),
+          rx_bytes(0)
       { }
       std::string to_json() const;
       std::string to_string() const;
@@ -67,6 +70,8 @@ namespace flexran {
       const int agent_id;
       const uint64_t bs_id;
       const agent_capabilities capabilities;
+      std::atomic<uint64_t> rx_packets;
+      std::atomic<uint64_t> rx_bytes;
     };
   }
 }

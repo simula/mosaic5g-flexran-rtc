@@ -33,10 +33,32 @@
 
 #include "flexran_log.h"
 
+#ifdef PROFILE
+#include <iostream>
+extern std::atomic_bool g_doprof;
+#endif
+
 unsigned int flexran::rib::rib_updater::run()
 {
   return update_rib();
 }
+
+#ifdef PROFILE
+void flexran::rib::rib_updater::print_prof_results(std::chrono::duration<double> d)
+{
+  double us = std::chrono::duration_cast<std::chrono::microseconds>(d).count();
+  std::cout << "*** Agent throughput profiling results during "
+      << us << "us ***\n";
+  for (auto a : rib_.get_agents()) {
+    std::cout << "agent " << a.second->agent_id << " BS " << a.second->bs_id
+        << " rx packets " << a.second->rx_packets
+        << " rx_bytes " << a.second->rx_bytes
+        << " ~Mbps " << static_cast<double>(a.second->rx_bytes) / us << std::endl;
+    a.second->rx_bytes = 0;
+    a.second->rx_packets = 0;
+  }
+}
+#endif
 
 unsigned int flexran::rib::rib_updater::update_rib()
 {
@@ -48,6 +70,13 @@ unsigned int flexran::rib::rib_updater::update_rib()
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
       handle_new_connection(tm->getTag());
     } else {
+#ifdef PROFILE
+      if (g_doprof) {
+        std::shared_ptr<agent_info> a = rib_.get_agent(tm->getTag());
+        a->rx_packets++;
+        a->rx_bytes += tm->getSize();
+      }
+#endif
       dispatch_message(tm);
     }
     rem_msgs--;

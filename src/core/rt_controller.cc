@@ -78,6 +78,7 @@ std::atomic_bool g_exit_controller{false};
 
 #ifdef PROFILE
 std::atomic_bool g_doprof{false};
+std::chrono::time_point<std::chrono::steady_clock> start;
 #endif
 
 namespace po = boost::program_options;
@@ -291,9 +292,11 @@ int main(int argc, char* argv[]) {
     }
 #ifdef PROFILE
     if (sig == SIGUSR2) {
-      if (!g_doprof)
+      if (!g_doprof) {
+        LOG4CXX_INFO(flog::core, "start profiling");
         g_doprof = true;
-      else
+        start = std::chrono::steady_clock::now();
+      } else
         LOG4CXX_ERROR(flog::core, "profiler already running");
     }
 #endif

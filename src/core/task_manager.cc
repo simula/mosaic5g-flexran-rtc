@@ -46,6 +46,7 @@ extern std::atomic_bool g_exit_controller;
 #endif
 
 extern std::atomic_bool g_doprof;
+extern std::chrono::time_point<std::chrono::steady_clock> start;
 #endif
 
 flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
@@ -85,7 +86,7 @@ void flexran::core::task_manager::manage_rt_tasks() {
   std::chrono::duration<float, std::micro> rib_dur, app_dur, inter_dur;
 
   std::unique_ptr<std::stringstream> ss(nullptr);
-  int rounds = 30000;
+  int rounds = 10000;
   unsigned int processed;
 #endif
 
@@ -127,10 +128,11 @@ void flexran::core::task_manager::manage_rt_tasks() {
       rounds--;
       if (rounds == 0) {
         g_doprof = false;
-        rounds = 30000;
+        rounds = 10000;
         std::thread t(flexran::core::task_manager::profiler_wb_thread, std::move(ss), apps_.size());
         t.detach();
         LOG4CXX_WARN(flog::core, "profiling done");
+        r_updater_.print_prof_results(std::chrono::steady_clock::now() - start);
       }
     }
 #endif

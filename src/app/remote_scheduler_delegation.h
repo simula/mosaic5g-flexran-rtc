@@ -50,9 +50,9 @@ namespace flexran {
 	
       private:
 	
-	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
+        ::std::shared_ptr<enb_scheduling_info> get_scheduling_info(uint64_t bs_id);
 	
-	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
+        ::std::map<uint64_t, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
 	
 	::std::atomic<bool> delegation_enabled_;
 	

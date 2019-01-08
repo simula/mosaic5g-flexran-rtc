@@ -38,8 +38,8 @@ namespace flexran {
 
       void update_cell_stats_report(const protocol::flex_cell_stats_report& stats_report);
 
-      protocol::flex_cell_stats_report& get_cell_stats_report() {
-	return cell_stats_report_;
+      const protocol::flex_cell_stats_report& get_cell_stats_report() const {
+        return cell_stats_report_;
       }
   
     private:

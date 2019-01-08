@@ -50,9 +50,9 @@ namespace flexran {
 	
       private:
 	
-	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
+        std::shared_ptr<enb_scheduling_info> get_scheduling_info(uint64_t bs_id);
 	
-	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
+        std::map<uint64_t, std::shared_ptr<enb_scheduling_info>> scheduling_info_;
 	
 	// Set these values internally for now
 	
@@ -60,7 +60,7 @@ namespace flexran {
 	
 	int abs_[10] = {0, 1, 0, 1, 0, 0, 0, 1, 0, 1};
 
-	const int macro_agent_id_ = 0;
+        const uint64_t macro_bs_id_ = 0;
 
       };
 

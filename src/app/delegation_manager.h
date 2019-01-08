@@ -43,9 +43,9 @@ namespace flexran {
 
 	void periodic_task();
 
-	void push_code(int agent_id, std::string function_name, std::string lib_name);
+        void push_code(uint64_t bs_id, std::string function_name, std::string lib_name);
 
-	void reconfigure_agent(int agent_id, std::string policy_name);
+        void reconfigure_agent(uint64_t bs_id, std::string policy_name);
 	
       private:
 	bool delegation_steps_[6];

@@ -31,60 +31,59 @@
 // Example app for using control delegation
 void flexran::app::management::delegation_manager::periodic_task() {
   
-
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-
-  for (const auto& agent_id : agent_ids) {
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
     
-    ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    rib::subframe_t current_subframe = agent_config->get_current_subframe();
-    rib::frame_t current_frame = agent_config->get_current_frame();
+    ::std::shared_ptr<rib::enb_rib_info> bs_config = rib_.get_bs(bs_id);
+    rib::subframe_t current_subframe = bs_config->get_current_subframe();
+    rib::frame_t current_frame = bs_config->get_current_frame();
 
     int time = (current_frame * 10) + current_subframe;
 
     if (time == 2000) {
       if (delegation_steps_[0] == false) {
 	//Push remote scheduler code
-	push_code(agent_id, "schedule_ue_spec_remote", "../tests/delegation_control/libremote_sched.so");
+	push_code(bs_id, "schedule_ue_spec_remote", "../tests/delegation_control/libremote_sched.so");
 	delegation_steps_[0] = true;
       }
     } else if (time == 2500) {
        if (delegation_steps_[1] == false) {
 	 // Push local scheduler code
-	 push_code(agent_id, "schedule_ue_spec_default", "../tests/delegation_control/libdefault_sched.so"); 
+	 push_code(bs_id, "schedule_ue_spec_default", "../tests/delegation_control/libdefault_sched.so");
 	 delegation_steps_[1] = true;
       }
 
     } else if (time == 4000) {
        if (delegation_steps_[2] == false) {
 	 // Load remote scheduler and change its default parameters
-	 reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy.yaml");
+	 reconfigure_agent(bs_id, "../tests/delegation_control/remote_policy.yaml");
 	delegation_steps_[2] = true;
       }
       
     } else if (time == 6000) {
        if (delegation_steps_[3] == false) {
 	 // Change remote scheduler parameters
-	 reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy2.yaml");
+	 reconfigure_agent(bs_id, "../tests/delegation_control/remote_policy2.yaml");
 	 delegation_steps_[3] = true;
       }
     } else if (time == 8000) {
        if (delegation_steps_[4] == false) {
 	 // Load local scheduler
-	 reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
+	 reconfigure_agent(bs_id, "../tests/delegation_control/local_policy.yaml");
 	 delegation_steps_[4] = true;
        } 
     } else if (time == 10000) {
        if (delegation_steps_[5] == false) {
 	 // Change local scheduler parameters
-	 reconfigure_agent(agent_id, "../tests/delegation_control/local_policy2.yaml");
+	 reconfigure_agent(bs_id, "../tests/delegation_control/local_policy2.yaml");
 	 delegation_steps_[5] = true;
        }
     }    
   }
 }
 
-void flexran::app::management::delegation_manager::reconfigure_agent(int agent_id, std::string policy_name) {
+void flexran::app::management::delegation_manager::reconfigure_agent(
+    uint64_t bs_id, std::string policy_name)
+{
   std::ifstream policy_file(policy_name);
   std::string str_policy;
 
@@ -109,10 +108,12 @@ void flexran::app::management::delegation_manager::reconfigure_agent(int agent_i
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
-  req_manager_.send_message(agent_id, config_message);
+  req_manager_.send_message(bs_id, config_message);
 }
 
-void flexran::app::management::delegation_manager::push_code(int agent_id, std::string function_name, std::string lib_name) {
+void flexran::app::management::delegation_manager::push_code(
+    uint64_t bs_id, std::string function_name, std::string lib_name)
+{
   protocol::flexran_message d_message;
   // Create control delegation message header
   protocol::flex_header *delegation_header(new protocol::flex_header);
@@ -137,5 +138,5 @@ void flexran::app::management::delegation_manager::push_code(int agent_id, std::
   // Create and send the flexran message
   d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   d_message.set_allocated_control_delegation_msg(control_delegation_msg);
-  req_manager_.send_message(agent_id, d_message);
+  req_manager_.send_message(bs_id, d_message);
 }

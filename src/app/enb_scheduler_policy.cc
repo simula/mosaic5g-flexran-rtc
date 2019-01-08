@@ -40,12 +40,10 @@ int32_t flexran::app::scheduler::enb_scheduler_policy::tpc_accumulated = 0;
 
 void flexran::app::scheduler::enb_scheduler_policy::periodic_task() {
 
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
 
-  for (auto& agent_id : agent_ids) {
-
-    // push the code for the first time to the agent to make them available for future use. 
-    // this code will reside in the cache of agent, and will be activated upon the controller command
+    // push the code for the first time to the BS to make them available for future use.
+    // this code will reside in the cache of BS, and will be activated upon the controller command
     if (!code_pushed_) {
       std::string path = "";
       std::string remote_sched = "";
@@ -60,8 +58,8 @@ void flexran::app::scheduler::enb_scheduler_policy::periodic_task() {
       remote_sched = path + "libremote_sched.so";
       default_sched = path + "libdefault_sched.so";
       
-      push_code(agent_id, "flexran_schedule_ue_spec_remote", remote_sched);
-      push_code(agent_id, "flexran_schedule_ue_spec_default", default_sched); 
+      push_code(bs_id, "flexran_schedule_ue_spec_remote", remote_sched);
+      push_code(bs_id, "flexran_schedule_ue_spec_default", default_sched);
       
       code_pushed_ = true;
     }
@@ -78,7 +76,9 @@ void flexran::app::scheduler::enb_scheduler_policy::periodic_task() {
 }
 
 
-void flexran::app::scheduler::enb_scheduler_policy::reconfigure_agent(int agent_id, std::string policy_name) {
+void flexran::app::scheduler::enb_scheduler_policy::reconfigure_agent(
+    uint64_t bs_id, std::string policy_name)
+{
   // policyname is a yaml file that
   std::ifstream policy_file(policy_name);
   std::string str_policy;
@@ -104,10 +104,12 @@ void flexran::app::scheduler::enb_scheduler_policy::reconfigure_agent(int agent_
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
-  req_manager_.send_message(agent_id, config_message);
+  req_manager_.send_message(bs_id, config_message);
 }
 
-void flexran::app::scheduler::enb_scheduler_policy::push_code(int agent_id, std::string function_name, std::string lib_name) {
+void flexran::app::scheduler::enb_scheduler_policy::push_code(
+    uint64_t bs_id, std::string function_name, std::string lib_name)
+{
   protocol::flexran_message d_message;
   // Create control delegation message header
   protocol::flex_header *delegation_header(new protocol::flex_header);
@@ -132,7 +134,7 @@ void flexran::app::scheduler::enb_scheduler_policy::push_code(int agent_id, std:
   // Create and send the progran message
   d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   d_message.set_allocated_control_delegation_msg(control_delegation_msg);
-  req_manager_.send_message(agent_id, d_message);
+  req_manager_.send_message(bs_id, d_message);
 }
 
 // this fucntion will be called by the rest API as this is already registered as a valide URI 
@@ -150,14 +152,12 @@ void flexran::app::scheduler::enb_scheduler_policy::apply_policy(std::string pol
 
   // check if the policy file exist.
 
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-  
   // this might be different 
-  for (auto& agent_id : agent_ids) {
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
     
     LOG4CXX_INFO(flog::app, "reconfigure the agent: applying the policy file: " << policy_file);
     
-    reconfigure_agent(agent_id, policy_file);
+    reconfigure_agent(bs_id, policy_file);
     
   }
 }
@@ -167,11 +167,10 @@ void flexran::app::scheduler::enb_scheduler_policy::set_policy(int rb_share) {
   
 
   _unused(rb_share);
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
   // this might be different 
-  for (auto& agent_id : agent_ids) {
-    _unused(agent_id); 
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    _unused(bs_id);
     LOG4CXX_INFO(flog::app, "Set the policy with the following RB share (TBD)");
   }
 }
@@ -196,30 +195,28 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
   
   bool ue_has_transmission = false;
   
-  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-  
-  for (auto& agent_id : agent_ids) {
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
     
     protocol::flexran_message out_message;
     
-    ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
-    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    std::shared_ptr<rib::enb_rib_info> bs_config = rib_.get_bs(bs_id);
+    const protocol::flex_enb_config_reply& enb_config = bs_config->get_enb_config();
+    const protocol::flex_ue_config_reply& ue_configs = bs_config->get_ue_configs();
+    const protocol::flex_lc_config_reply& lc_configs = bs_config->get_lc_configs();
 
-    rib::frame_t current_frame = agent_config->get_current_frame();
-    rib::subframe_t current_subframe = agent_config->get_current_subframe();
+    rib::frame_t current_frame = bs_config->get_current_frame();
+    rib::subframe_t current_subframe = bs_config->get_current_subframe();
 
     // Check if scheduling context for this eNB is already present and if not create it
-    ::std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
+    ::std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(bs_id);
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
       LOG4CXX_INFO(flog::app, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
-			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
+			      ::std::shared_ptr<enb_scheduling_info>>(bs_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
-      enb_sched_info = get_scheduling_info(agent_id);
+      enb_sched_info = get_scheduling_info(bs_id);
     }
 
     // Check if we have already run the scheduler for this particular time slot and if yes go to next eNB
@@ -273,7 +270,8 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
-      remote_scheduler_helper::run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_frame, target_subframe);
+      remote_scheduler_helper::run_dlsch_scheduler_preprocessor(cell_config,
+          ue_configs, lc_configs, bs_config, enb_sched_info, target_frame, target_subframe);
     }
 
     // Go through the cells and schedule the UEs of this cell
@@ -287,7 +285,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	if (ue_config.pcell_carrier_index() == cell_id) {
 
 	  // Get the MAC stats for this UE
-	  ::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info = bs_config->get_ue_mac_info(ue_config.rnti());
 	  
 	  // Get the scheduling info
 	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
@@ -302,7 +300,7 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	    continue;
 	  }
 
-	  protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+	  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 
 	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
 	    if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
@@ -433,11 +431,12 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 	    // Loop through the UE logical channels
 	    for (int j = 1; j < mac_report.rlc_report_size() + 1; j++) {
 	      header_len += 3;
-	      protocol::flex_rlc_bsr *rlc_report = mac_report.mutable_rlc_report(j-1);
+	      const protocol::flex_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len - sdu_length_total > 0) {
-		if (rlc_report->tx_queue_size() > 0) {
-		  data_to_request = ::std::min(dci_tbs - ta_len - header_len - sdu_length_total, rlc_report->tx_queue_size());
+		if (rlc_report.tx_queue_size() > 0) {
+		  data_to_request = ::std::min(dci_tbs - ta_len - header_len - sdu_length_total,
+          rlc_report.tx_queue_size());
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
 		    header_len_last = 2;
@@ -451,11 +450,13 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 		  protocol::flex_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
 		  protocol::flex_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
 		  protocol::flex_rlc_pdu_tb *tb2 = rlc_pdu->add_rlc_pdu_tb();
-		  tb1->set_logical_channel_id(rlc_report->lc_id());
-		  tb2->set_logical_channel_id(rlc_report->lc_id());
+		  tb1->set_logical_channel_id(rlc_report.lc_id());
+		  tb2->set_logical_channel_id(rlc_report.lc_id());
 		  tb1->set_size(data_to_request);
 		  tb2->set_size(data_to_request);
-		  rlc_report->set_tx_queue_size(rlc_report->tx_queue_size() - data_to_request);
+      // TODO: RIB is read only, so we cannot set the TX queue size. This
+      // should be updated in the BS
+		  //rlc_report->set_tx_queue_size(rlc_report->tx_queue_size() - data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total += data_to_request;
 		} else {
@@ -555,8 +556,8 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
 
 	      // do PUCCH power control
 	      // This is the normalized RX power
-	      rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
-	      protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
+	      const rib::cell_mac_rib_info& cell_rib_info = bs_config->get_cell_mac_rib_info(cell_id);
+	      const protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
 	      bool rx_power_needs_update = false;
@@ -663,14 +664,16 @@ void flexran::app::scheduler::enb_scheduler_policy::run_central_scheduler() {
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
       LOG4CXX_DEBUG(flog::app, "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round");
-    req_manager_.send_message(agent_id, out_message);
+    req_manager_.send_message(bs_id, out_message);
     }
   }
 }
 
 std::shared_ptr<flexran::app::scheduler::enb_scheduling_info>
-flexran::app::scheduler::enb_scheduler_policy::get_scheduling_info(int agent_id) {
-  auto it = scheduling_info_.find(agent_id);
+flexran::app::scheduler::enb_scheduler_policy::get_scheduling_info(
+    uint64_t bs_id)
+{
+  auto it = scheduling_info_.find(bs_id);
   if (it != scheduling_info_.end()) {
     return it->second;
   }

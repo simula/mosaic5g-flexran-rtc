@@ -24,6 +24,7 @@
 
  
 #include "neo4j_client.h"  
+#include "rt_controller_common.h"
 
 
 
@@ -49,12 +50,10 @@ if (y == 0){
 }
 
 
-::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
 
-for (auto& agent_id : agent_ids) {
-
-   ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-   protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+   std::shared_ptr<rib::enb_rib_info> bs_config = rib_.get_bs(bs_id);
+   const protocol::flex_ue_config_reply& ue_configs = bs_config->get_ue_configs();
 
 
 
@@ -83,6 +82,7 @@ for (auto& agent_id : agent_ids) {
     }
 
      neo4j_value_t value = neo4j_result_field(result, 0);
+     _unused(value);
      // char buf[128]; // Test purpose
     // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
@@ -101,7 +101,8 @@ for (auto& agent_id : agent_ids) {
    neo4j_result_stream_t *results =
             neo4j_run(connection, "MATCH (n)-[rel:CONN]->(r) WHERE n.name='EnodeB' AND r.name='UE' DELETE rel", neo4j_null);
 
-    neo4j_run(connection, "MATCH (n:Person) WHERE n.name='UE' DELETE n", neo4j_null);
+    neo4j_result_stream_t *r = neo4j_run(connection, "MATCH (n:Person) WHERE n.name='UE' DELETE n", neo4j_null);
+    _unused(r);
     
     neo4j_result_t *result = neo4j_fetch_next(results);
     if (results == NULL)
@@ -111,6 +112,7 @@ for (auto& agent_id : agent_ids) {
     }
 
      neo4j_value_t value = neo4j_result_field(result, 0);
+     _unused(value);
      // char buf[128]; // Test purpose
     // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
@@ -171,6 +173,7 @@ void flexran::app::management::neo4j_client::create_neo4j_graph(){
     }
 
     neo4j_value_t value = neo4j_result_field(result, 0);
+    _unused(value);
     // char buf[128];
     // printf("%s\n", neo4j_tostring(value, buf, sizeof(buf)));
 
@@ -217,7 +220,7 @@ void flexran::app::management::neo4j_client::update_graph() {
 
 void flexran::app::management::neo4j_client::update_node(rib::subframe_t subframe){
 
-
+  _unused(subframe);
 
   /*TODO*/
 }

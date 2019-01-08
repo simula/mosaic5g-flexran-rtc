@@ -79,12 +79,12 @@ namespace flexran {
      //! Access is only safe when the RIB is not active, i.e. within apps
      const protocol::flex_ue_stats_report& get_mac_stats_report() const { return mac_stats_report_; }
      
-     uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) {
+     uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) const {
        return harq_stats_[cell_id][harq_pid][0];
      }
      
      //! Access is only safe when the RIB is not active, i.e. within apps
-     array3d<uint8_t, MAX_NUM_CC, MAX_NUM_HARQ, MAX_NUM_TB>& get_all_harq_stats() {
+     const array3d<uint8_t, MAX_NUM_CC, MAX_NUM_HARQ, MAX_NUM_TB>& get_all_harq_stats() const {
        return harq_stats_;
      }
 

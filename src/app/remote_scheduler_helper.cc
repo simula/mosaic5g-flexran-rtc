@@ -316,7 +316,7 @@ void flexran::app::scheduler::remote_scheduler_helper::assign_rbs_required(::std
   
   //Compute the mcs of the UE for this cell
   int mcs = 0;
-  protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
   for (int i = 0; i < mac_report.dl_cqi_report().csi_report_size(); i++) {
     if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(i).serv_cell_index()) {
       mcs = rib::cqi_to_mcs[mac_report.dl_cqi_report().csi_report(i).p10csi().wb_cqi()];
@@ -405,7 +405,7 @@ const std::shared_ptr<std::vector<int>> flexran::app::scheduler::remote_schedule
       ue_list[i].harq_round = round;
 
       // Check MAC-related stats (cqi, rlc etc)
-      protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+      const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 
       // Fill in the cqi
       for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {

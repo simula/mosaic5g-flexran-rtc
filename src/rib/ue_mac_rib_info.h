@@ -77,7 +77,7 @@ namespace flexran {
                                              const std::array<std::string, 8>& harq);
 
      //! Access is only safe when the RIB is not active, i.e. within apps
-     protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
+     const protocol::flex_ue_stats_report& get_mac_stats_report() const { return mac_stats_report_; }
      
      uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) {
        return harq_stats_[cell_id][harq_pid][0];

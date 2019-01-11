@@ -48,6 +48,15 @@ endif()
 #add_definitions(-DNEO4J_SUPPORT)
 #endif()
 
+# Enable Elastic Search app
+option(ELASTIC_SEARCH_SUPPORT "Enable Elastic Search application" ON)
+add_definitions(-DCURL_STATICLIB)
+
+
+if(ELASTIC_SEARCH_SUPPORT)
+add_definitions(-DELASTIC_SEARCH_SUPPORT)
+endif()
+
 # Add Profiling support
 option(PROFILE "Enable profiling of task_manager" OFF)
 
@@ -164,6 +173,15 @@ endif()
 #  endif()
 #endif()
 
+if(ELASTIC_SEARCH_SUPPORT)
+  find_package(CURL REQUIRED)
+  if(CURL_FOUND)
+    message(STATUS "CURL found")
+    include_directories(${CURL_INCLUDE_DIRS})
+    link_directories(${CURL_LIBRARY_DIRS})
+  endif()
+endif()
+
 
 # Network component
 set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
@@ -240,6 +258,12 @@ set(APP_SRC
 #    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
 #  )
 #endif(NEO4J_SUPPORT)
+if(ELASTIC_SEARCH_SUPPORT)
+  set(APP_SRC
+    ${APP_SRC}
+    ${RT_CONTROLLER_APP_DIR}/elastic_search.cc
+    )
+endif()
 add_library(RT_CONTROLLER_APP_LIB ${APP_SRC})
 target_link_libraries(RT_CONTROLLER_APP_LIB
   RT_CONTROLLER_CORE_LIB
@@ -309,6 +333,9 @@ endif()
 #if(NEO4J_SUPPORT)
 #  target_link_libraries(rt_controller neo4j-client)
 #endif()
+if(ELASTIC_SEARCH_SUPPORT)
+  target_link_libraries(rt_controller ${CURL_LIBRARIES})
+endif()
 
 
 add_executable(parse-bd tools/parse-bd.cc)

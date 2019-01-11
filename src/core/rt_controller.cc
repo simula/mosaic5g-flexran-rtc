@@ -57,6 +57,10 @@
 //#include "neo4j_client.h"
 //#endif
 
+#ifdef ELASTIC_SEARCH_SUPPORT
+#include "elastic_search.h"
+#endif
+
 // Fort RESTful northbound API
 #ifdef REST_NORTHBOUND
 
@@ -207,6 +211,10 @@ int main(int argc, char* argv[]) {
 //#ifdef NEO4J_SUPPORT
   //auto n4j_client = std::make_shared<flexran::app::management::neo4j_client>(rib, rm, ev);
 //#endif
+
+#ifdef ELASTIC_SEARCH_SUPPORT
+  auto elastic = std::make_shared<flexran::app::log::elastic_search>(rib, rm, ev);
+#endif
 
   // the following threads will not handle any signal
   sigfillset(&sigmask);

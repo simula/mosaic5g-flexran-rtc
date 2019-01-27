@@ -862,10 +862,6 @@ bool flexran::app::management::rrm_management::verify_cell_config_for_restart(
     error_message = "setting phy_cell_id not supported";
     return false;
   }
-  if (c.has_cell_id()) {
-    error_message = "setting cell_id not supported";
-    return false;
-  }
   if (c.has_pusch_hopping_offset()) {
     error_message = "setting pusch_hopping_offset not supported";
     return false;
@@ -1001,6 +997,10 @@ bool flexran::app::management::rrm_management::verify_cell_config_for_restart(
   }
   if (c.dl_bandwidth() != c.ul_bandwidth()) {
     error_message = "dl_bandwidth and ul_bandwidth must be the same (6, 15, 25, 50, 100)";
+    return false;
+  }
+  if (c.plmn_id_size() > 0) {
+    error_message = "setting PLMNs not supported";
     return false;
   }
   if (!check_eutra_bandwidth(c.dl_bandwidth(), error_message))

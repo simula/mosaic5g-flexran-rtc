@@ -8,32 +8,32 @@ TEST_CASE("test update_eNB_config", "[enb_rib_info]")
   // The following tests that the protobuf messages are correctly merged in the
   // RIB.  This is because parts of messages come from different agents.
 
-  const int cell_id1 = 10;
-  const int cell_id2 = 20;
+  const int phy_cell_id1 = 10;
+  const int phy_cell_id2 = 20;
   const int eutra_band = 7;
 
   flexran::rib::enb_rib_info rib_info(1, {}); // no agents (doesn't matter)
 
   protocol::flex_enb_config_reply c1;
-  c1.add_cell_config()->set_cell_id(cell_id1);
+  c1.add_cell_config()->set_phy_cell_id(phy_cell_id1);
   rib_info.update_eNB_config(c1);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).has_cell_id() == true);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).cell_id() == cell_id1);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).has_phy_cell_id() == true);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).phy_cell_id() == phy_cell_id1);
   REQUIRE (rib_info.get_enb_config().cell_config(0).has_eutra_band() == false);
 
   protocol::flex_enb_config_reply c2;
   c2.add_cell_config()->set_eutra_band(eutra_band);
   rib_info.update_eNB_config(c2);
   REQUIRE (rib_info.get_enb_config().cell_config_size() == 1);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).has_cell_id() == true);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).cell_id() == cell_id1);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).has_phy_cell_id() == true);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).phy_cell_id() == phy_cell_id1);
   REQUIRE (rib_info.get_enb_config().cell_config(0).has_eutra_band() == true);
   REQUIRE (rib_info.get_enb_config().cell_config(0).eutra_band() == eutra_band);
 
-  c1.mutable_cell_config(0)->set_cell_id(cell_id2);
+  c1.mutable_cell_config(0)->set_phy_cell_id(phy_cell_id2);
   rib_info.update_eNB_config(c1);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).has_cell_id() == true);
-  REQUIRE (rib_info.get_enb_config().cell_config(0).cell_id() == cell_id2);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).has_phy_cell_id() == true);
+  REQUIRE (rib_info.get_enb_config().cell_config(0).phy_cell_id() == phy_cell_id2);
   REQUIRE (rib_info.get_enb_config().cell_config(0).has_eutra_band() == true);
   REQUIRE (rib_info.get_enb_config().cell_config(0).eutra_band() == eutra_band);
 }

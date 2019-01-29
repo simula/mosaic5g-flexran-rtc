@@ -478,12 +478,12 @@ void flexran::rib::enb_rib_info::clear_repeated_if_present(
   const google::protobuf::Descriptor *desc_dst = dst->GetDescriptor();
   const google::protobuf::Reflection *refl_dst = dst->GetReflection();
   for (int i = 0; i < desc_src->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field_src = desc_src->FindFieldByNumber(i);
+    const google::protobuf::FieldDescriptor *field_src = desc_src->field(i);
     if (!field_src) continue;
     if (!field_src->is_repeated()) continue;
     if (refl_src->FieldSize(src, field_src) == 0) continue;
 
-    const google::protobuf::FieldDescriptor *field_dst = desc_dst->FindFieldByNumber(i);
+    const google::protobuf::FieldDescriptor *field_dst = desc_dst->field(i);
     if (!field_dst) continue;
     if (!field_dst->is_repeated()) continue;
     refl_dst->ClearField(dst, field_dst);

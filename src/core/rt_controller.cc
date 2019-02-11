@@ -69,6 +69,9 @@
 #include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
 #include "recorder_calls.h"
+#ifdef ELASTIC_SEARCH_SUPPORT
+#include "elastic_calls.h"
+#endif
 
 #endif
 
@@ -249,6 +252,10 @@ int main(int argc, char* argv[]) {
   flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
 
   flexran::north_api::recorder_calls recorder_calls(std::dynamic_pointer_cast<flexran::app::log::recorder>(recorder));
+#ifdef ELASTIC_SEARCH_SUPPORT
+  flexran::north_api::elastic_calls elastic_calls(elastic);
+  north_api.register_calls(elastic_calls);
+#endif
   
   //north_api.register_calls(rrc_calls);
   north_api.register_calls(rrm_calls);

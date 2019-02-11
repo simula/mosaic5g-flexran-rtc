@@ -279,6 +279,7 @@ set (RT_CONTROLLER_NORTH_API_DIR ${RT_CONTROLLER_DIR}/north_api)
 include_directories(${RT_CONTROLLER_NORTH_API_DIR})
 set(NORTH_API_SRC
   ${RT_CONTROLLER_NORTH_API_DIR}/call_manager.cc
+  ${RT_CONTROLLER_NORTH_API_DIR}/elastic_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/rrm_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/stats_manager_calls.cc
   ${RT_CONTROLLER_NORTH_API_DIR}/rrc_triggering_calls.cc

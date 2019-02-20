@@ -34,29 +34,34 @@
 void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Router& router)
 {
   /**
-   * @api {post} /record/[:type/[:duration]]  Start a record job for realtime RAN statistics
-   * @apiName postRecordJob
-   * @apiGroup Stats
-   * @apiParam {string} type The type specifies the output format. Available types
-   *                         are : all (default), enb, stats, bin (binary)
-   * @apiParam {number} duration Duration of record in milliseconds, must be a
-   *                         positive value. Default value is 1000.
+   * @api {post} /record/[:type/[:duration]]  Record RAN state
+   * @apiName postJob
+   * @apiGroup Recorder
+   * @apiParam {String} type The type specifies the output format. Available
+   * types are : all (default), enb, stats, bin (binary)
+   * @apiParam {Number{1-}} duration=1000 Duration of record in milliseconds,
+   * must be a positive value.
+   *
    * @apiDescription This API requests FlexRAN RTC to record the RAN stats of
-   *                 given type for a given duration. Both type and duration
-   *                 parameters are optional. There is only one job at a time
-   *                 possible. Even if the all type is the default, the bin
-   *                 type provides the highest flexibility as the different
-   *                 other representations can be reproduced using the parse-bd
-   *                 utility.
+   * given type for a given duration. Both type and duration parameters are
+   * optional. There is only one job at a time possible. Even if the all type
+   * is the default, the bin type provides the highest flexibility as the
+   * different all other representations (all, enb, stats) can be reproduced
+   * using the `parse-bd` utility. Note that the file written by the recorder
+   * will be located in the `/tmp/` folder and could be directly copied from
+   * there.
+   *
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage commands:
    *     curl -X POST http://127.0.0.1:9999/record
    *     curl -X POST http://127.0.0.1:9999/record/stats
    *     curl -X POST http://127.0.0.1:9999/record/enb/1
+   * @apiSuccess id An identifier through which the recorded data can be
+   * recovered.
    * @apiSuccessExample Example success response:
    *     HTTP/1.1 200 OK
-   *     { "id" : val }
+   *     { "id" : 123456 }
    * @apiError Conflict A 409 Server State conflict error: Either there is a
    *                    job running or the type or duration were not
    *                    understood.
@@ -69,17 +74,18 @@ void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Router& 
 
 
   /**
-   * @api {get} /record/:id  Get the recorded realtime RAN statistic by ID.
-   * @apiName getRecordJob
-   * @apiGroup Stats
+   * @api {get} /record/:id  Download the recorded RAN state
+   * @apiName recoverJob
+   * @apiGroup Recorder
    * @apiParam {Number} id Identifier of the previously recorded RAN stats,
    *                       obtained by a successful POST.
+   *
    * @apiDescription This API returns the recorded data corresponding to a
-   *                 record job and according to the type and duration. In the
-   *                 case of the binary type, this call returns a binary
-   *                 representation that can be parsed with the parse-bd
-   *                 utility located in the same location as the rt_controller
-   *                 binary.
+   * record job and according to the previously requested type and duration. In
+   * the case of the binary type, this call returns a binary representation
+   * that can be parsed with the `parse-bd` utility located in `build/`. For
+   * more information, execute it without any parameters (`build/parse-bd`).
+   *
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage:

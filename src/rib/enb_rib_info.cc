@@ -91,30 +91,25 @@ void flexran::rib::enb_rib_info::update_UE_config(
   // one, leaving two flex_ue_configs instead of one unified), therefore we
   // do this independently for every flex_ue_config. In the following, we
   // also suppose that it is safe to replace(!) repeated fields within a
-  // flex_ue_config, eg. mbsfn_subframe_config_rfperiod. Furthermore, we
-  // suppose that the order in ue_config_ and ue_config_update is the same
-  // (because a flex_ue_state_change notified already).
+  // flex_ue_config, eg. mbsfn_subframe_config_rfperiod.
 
 
   if (ue_config_.ue_config_size() != ue_config_update.ue_config_size()) {
     LOG4CXX_WARN(flog::rib, __func__ << "(): "
-        << "flex_ue_config_reply update has differing number of UEs ("
-        << ue_config_update.ue_config_size() << ") than ue_config_ ("
-        << ue_config_.ue_config_size() << "); "
-        << "expected flex_ue_state_change first, refusing update");
-    return;
+        << "number of UEs (" << ue_config_update.ue_config_size()
+        << ") in update different than internal state ("
+        << ue_config_.ue_config_size() << ")");
   }
 
   ue_config_mutex_.lock();
-  for (int i = 0; i < ue_config_.ue_config_size(); ++i) {
-    protocol::flex_ue_config *dst = ue_config_.mutable_ue_config(i);
-    const protocol::flex_ue_config& src = ue_config_update.ue_config(i);
-    if (dst->rnti() != src.rnti()) {
-      LOG4CXX_WARN(flog::rib, __func__ << "(): unexpected RNTI "
-          << src.rnti() << " in ue_config_update, expected RNTI "
-          << dst->rnti());
+  for (const protocol::flex_ue_config& src : ue_config_update.ue_config()) {
+    const rnti_t rnti = src.rnti();
+    auto it = std::find_if(ue_config_.mutable_ue_config()->begin(),
+                           ue_config_.mutable_ue_config()->end(),
+        [rnti](protocol::flex_ue_config& c) { return c.rnti() == rnti; });
+    if (it == ue_config_.mutable_ue_config()->end()) // this one does not exist
       continue;
-    }
+    protocol::flex_ue_config *dst = &(*it);
     clear_repeated_if_present(dst, src);
     dst->MergeFrom(src);
   }

@@ -204,7 +204,7 @@ TEST_CASE("test update_UE_config for various scenarios of ue_state_change and ue
         REQUIRE (rib_info.get_ue_configs().ue_config(1).dl_slice_id() == dl_sid);
       }
 
-      SECTION("ue_config_reply with UEs in wrong order (by RNTI) is ignored") {
+      SECTION("ue_config_reply with UEs in wrong order (by RNTI) is applied") {
         protocol::flex_ue_config_reply cr2;
         cr2.add_ue_config()->set_rnti(rnti2);
         cr2.mutable_ue_config(0)->set_dl_slice_id(dl_sid);
@@ -216,11 +216,13 @@ TEST_CASE("test update_UE_config for various scenarios of ue_state_change and ue
         REQUIRE (rib_info.get_ue_configs().ue_config(0).rnti() == rnti1);
         REQUIRE (rib_info.get_ue_configs().ue_config(0).has_imsi() == true);
         REQUIRE (rib_info.get_ue_configs().ue_config(0).imsi() == imsi);
-        REQUIRE (rib_info.get_ue_configs().ue_config(0).has_ul_slice_id() == false);
+        REQUIRE (rib_info.get_ue_configs().ue_config(0).has_ul_slice_id() == true);
+        REQUIRE (rib_info.get_ue_configs().ue_config(0).ul_slice_id() == ul_sid);
         REQUIRE (rib_info.get_ue_configs().ue_config(1).has_rnti() == true);
         REQUIRE (rib_info.get_ue_configs().ue_config(1).rnti() == rnti2);
         REQUIRE (rib_info.get_ue_configs().ue_config(1).has_imsi() == false);
-        REQUIRE (rib_info.get_ue_configs().ue_config(1).has_dl_slice_id() == false);
+        REQUIRE (rib_info.get_ue_configs().ue_config(1).has_dl_slice_id() == true);
+        REQUIRE (rib_info.get_ue_configs().ue_config(1).dl_slice_id() == dl_sid);
       }
 
       SECTION("state change \"update\" with wrong rnti does nothing") {

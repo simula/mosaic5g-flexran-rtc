@@ -123,7 +123,9 @@ int flexran::app::management::rrm_management::instantiate_vnetwork(
     const std::string newpcts = std::to_string(bs_pct.at(bs_id));
     const std::string newfrbs = std::to_string(bs_first_rb.at(bs_id));
     /* This could be optimized by directly creating the protobuf structure */
-    const std::string p = "{\"dl\":[{id:0,percentage:" + newsldl0pcts
+    const std::string p = "{\"intrasliceShareActive\":false,"
+          "\"intersliceShareActive\":false,"
+          "\"dl\":[{id:0,percentage:" + newsldl0pcts
         + "},{id:" + std::to_string(slice_id) + ",\"percentage\":" + newpcts
         + "}],\"ul\":[{id:0,percentage:" + newslul0pcts + "},{id:" + std::to_string(slice_id)
         + ",\"percentage\":" + newpcts + ",\"first_rb\":" + newfrbs + "}]}";

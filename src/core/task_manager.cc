@@ -122,7 +122,7 @@ void flexran::core::task_manager::manage_rt_tasks()
       if (rounds == 0) {
         g_doprof = false;
         rounds = 10000;
-        std::thread t(flexran::core::task_manager::profiler_wb_thread, std::move(ss), event.task_tick_.num_slots());
+        std::thread t(flexran::core::task_manager::profiler_wb_thread, std::move(ss), event_sub_.task_tick_.num_slots());
         t.detach();
         LOG4CXX_WARN(flog::core, "profiling done");
         r_updater_.print_prof_results(std::chrono::steady_clock::now() - start);

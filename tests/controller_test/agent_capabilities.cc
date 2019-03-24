@@ -46,16 +46,17 @@ TEST_CASE("agent_capabilities with completeness", "[agent_capabilities]")
   hello_msg2.add_capabilities(protocol::flex_bs_capability::HIMAC);
   hello_msg2.add_capabilities(protocol::flex_bs_capability::SDAP);
   hello_msg2.add_capabilities(protocol::flex_bs_capability::RRC);
+  hello_msg2.add_capabilities(protocol::flex_bs_capability::S1AP);
   flexran::rib::agent_capabilities caps2(hello_msg2.capabilities());
-  REQUIRE(caps2.to_string() == "[HIPHY,HIMAC,SDAP,RRC]");
+  REQUIRE(caps2.to_string() == "[HIPHY,HIMAC,SDAP,RRC,S1AP]");
 
   REQUIRE(caps1.orthogonal(caps2) == true);
   REQUIRE(caps2.orthogonal(caps1) == true);
   caps2.merge_in(caps1);
 
   REQUIRE(caps2.is_complete() == true);
-  REQUIRE(caps2.to_string() == "[LOPHY,HIPHY,LOMAC,HIMAC,RLC,PDCP,SDAP,RRC]");
-  REQUIRE(caps2.size() == 8);
+  REQUIRE(caps2.to_string() == "[LOPHY,HIPHY,LOMAC,HIMAC,RLC,PDCP,SDAP,RRC,S1AP]");
+  REQUIRE(caps2.size() == 9);
 }
 
 TEST_CASE("agent_capabilities sorting order does not matter", "[agent_capabilities]")

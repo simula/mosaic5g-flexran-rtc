@@ -60,7 +60,7 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
 
   SECTION ("Adding second agent and complete base station") {
     int agent_two = 1;
-    auto aj = make_agent(agent_two, bs_one, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP}, {});
+    auto aj = make_agent(agent_two, bs_one, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP, cap::S1AP}, {});
     REQUIRE (rib.add_pending_agent(aj) == true);
     REQUIRE (rib.get_num_pending_agents() == 2);
     REQUIRE (rib.new_eNB_config_entry(bs_one) == true);
@@ -115,7 +115,7 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
   SECTION ("adding agent of other base station makes no new base station") {
     uint64_t bs_two = 0xf0000;
     int agent_two = 3;
-    auto ak = make_agent(agent_two, bs_two, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP}, {});
+    auto ak = make_agent(agent_two, bs_two, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP, cap::S1AP}, {});
     REQUIRE (rib.add_pending_agent(ak) == true);
     REQUIRE (rib.new_eNB_config_entry(bs_one) == false);
     REQUIRE (rib.new_eNB_config_entry(bs_two) == false);
@@ -147,7 +147,7 @@ TEST_CASE("RIB with two BS", "[rib]")
   flexran::rib::Rib rib;
   const std::vector<protocol::flex_bs_capability> all_caps =
       {cap::LOPHY, cap::HIPHY, cap::LOMAC, cap::HIMAC,
-       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP};
+       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP, cap::S1AP};
   const uint64_t bs1 = 0xe0000;
   const int agent1 = 0;
   const uint64_t bs2 = 0xf0000;
@@ -210,7 +210,7 @@ TEST_CASE("Refuse BS with the same ID")
   flexran::rib::Rib rib;
   const std::vector<protocol::flex_bs_capability> all_caps =
       {cap::LOPHY, cap::HIPHY, cap::LOMAC, cap::HIMAC,
-       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP};
+       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP, cap::S1AP};
   const uint64_t bs1 = 0xe0000;
   const int agent1 = 0;
   const int agent2 = 2;

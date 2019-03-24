@@ -49,8 +49,9 @@ void flexran::rib::agent_capabilities::merge_in(
 
 bool flexran::rib::agent_capabilities::is_complete() const
 {
-  // all eight bits are set for LOPHY, HIPHY, LOMAC, HIMAC, RLC, PDCP, SDAP, RRC
-  return to_u32(caps_) == 0xFF;
+  // all eight bits are set for LOPHY, HIPHY, LOMAC, HIMAC, RLC, PDCP, SDAP, RRC,
+  // and possibly S1AP (to support older versions)
+  return (to_u32(caps_) & 0xFF) == 0xFF;
 }
 
 std::string flexran::rib::agent_capabilities::to_string() const

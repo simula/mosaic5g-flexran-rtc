@@ -75,6 +75,7 @@ enum flex_bs_capability {
     PDCP  = 5;
     SDAP  = 6;
     RRC   = 7;
+    S1AP  = 8;
 }
 
 enum flex_bs_split {
@@ -157,6 +158,7 @@ message flex_enb_config_reply {
 	optional uint64 eNB_id = 2;		// Unique id to distinguish the eNB
 	repeated flex_cell_config cell_config = 3;
         optional uint32 device_spec = 4;
+        optional flex_s1ap_config s1ap = 5;
 }
 
 message flex_ue_config_request {

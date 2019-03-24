@@ -508,7 +508,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
       Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::instantiate_vnetwork, this));
 
   /**
-   * @api {post} /remove_vnetwork/:slice_id Create a virtual network
+   * @api {post} /remove_vnetwork/:slice_id Remove a virtual network
    * @apiName RemoveVNetwork
    * @apiGroup SliceConfiguration
    *

@@ -95,7 +95,7 @@ void flexran::rib::enb_rib_info::update_UE_config(
 
 
   if (ue_config_.ue_config_size() != ue_config_update.ue_config_size()) {
-    LOG4CXX_WARN(flog::rib, __func__ << "(): "
+    LOG4CXX_WARN(flog::rib, __func__ << "(): BS " << bs_id_ << ": "
         << "number of UEs (" << ue_config_update.ue_config_size()
         << ") in update different than internal state ("
         << ue_config_.ue_config_size() << ")");

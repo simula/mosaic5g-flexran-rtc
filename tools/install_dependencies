@@ -3,24 +3,13 @@
 function install_pistache {
     echo "Installing pistache"
     git clone https://github.com/oktal/pistache.git
-    git submodule update --init
-    cd pistache
+    cd pistache || exit
     mkdir build
     cd build
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
     make
     sudo make install
-    cd - 
-}
-
-function install_log4cxx {
-    echo "Installing log4cxx"
-    wget https://aur.archlinux.org/cgit/aur.git/snapshot/log4cxx.tar.gz
-    tar vxzf log4cxx.tar.gz
-    cd log4cxx
-    makepkg -Acs
-    sudo pacman -U --noconfirm log4cxx*.pkg.tar.xz
-    cd ..
+    cd -
 }
 
 function install_neo4j {
@@ -31,76 +20,42 @@ function install_neo4j {
 
 
 function install_protobuf {
-
-    echo "Installing protobuf from git repository"
-    git clone https://github.com/google/protobuf.git
-    cd protobuf
-    ./autogen.sh
-    ./configure 
-    echo "Compiling protobuf"
-    make -j`nproc`
+    echo "Installing protobuf"
+    wget https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz
+    tar -xzvf protobuf-cpp-3.3.0.tar.gz
+    cd protobuf-3.3.0/ || exit
+    ./configure
+    make -j$(nproc)
     sudo make install
     sudo ldconfig
     cd -
 }
 
-
-function pre_install_packages(){
-    sudo apt-get update -y
-    sudo apt-get install gawk -y
-    sudo apt-get install build-essential g++ -y
-    sudo apt-get install git -y
-    sudo apt-get install cmake -y
-}
-
-function post_install_packages(){
-    echo "Installing required packages"
-    sudo apt-get install libboost-all-dev -y
-    sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
-    sudo apt-get install autoconf automake libtool curl make g++ unzip -y
-    install_protobuf
-    install_pistache
-    install_neo4j
-    install_flexran_apidoc
-}
-
-
-function install_flexran_apidoc(){
-    sudo apt install nodejs-legacy -y
-    sudo apt install npm -y
-    sudo npm install apidoc -g
-}
-
 function main() {
+  os_version=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+  if [[ $os_version != *"Ubuntu"* ]]; then
+    echo "This script is only for Ubuntu Linux, see the README for a list of"
+    echo "required packages"
+    exit 1
+  fi
 
-    pre_install_packages
-    #Check if running in Ubuntu or Arch Linux
-    os_version=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
-    ubuntu_distrib=$(lsb_release -si)$(lsb_release -sr)
-    
-    
-    if [[ $os_version == *"Arch Linux"* ]]; then
-	
-	echo "Detected Arch Linux"
-	echo "Installing required packages"
-	sudo pacman -Syu
-	sudo pacman --noconfirm -S base-devel cmake protobuf boost boost-libs git
-	sudo pacman --noconfirm -S apr-util libxml2 autoconf automake gzip libtool patch sed zip 
-	install_pistache
-	install_log4cxx
-        install_neo4j
-    elif [[ $os_version == *"Ubuntu"* ]]; then
-	
-	if [[ $ubuntu_distrib == *"16"* ]]; then 
-	    echo "Detected $ubuntu_distrib"
-	else 
-	    echo "FlexRAN may not properly work in $ubuntu_distrib"
-	    echo "Try Ubuntu 16.04"
-	fi 
-	post_install_packages
+  # update the system
+  sudo apt-get update -y
+  # install some basic things needed to compile
+  sudo apt-get install build-essential g++ git cmake autoconf \
+                       automake libtool curl make g++ -y
 
-    fi
-    
+  # install our Boost dependencies
+  sudo apt-get install libboost-system-dev libboost-program-options-dev  -y
+  # install our LOG4CXX dependencies
+  sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
+  # install our libcurl dependency
+  sudo apt-get install libcurl4-openssl-dev -y
+  # install protobuf
+  install_protobuf
+
+  install_pistache
+  #install_neo4j # the Neo4j FlexRAN app is not actively maintained anymore
 }
 
 main "$@"

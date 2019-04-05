@@ -2,7 +2,7 @@
 
 source flexran_rtc_env
 
-if [ -f $FLEXRAN_RTC_EXEC/rt_controller ]; then
+if [ -f "$FLEXRAN_RTC_EXEC/rt_controller" ]; then
 
     SUDO='sudo -E'
     SUPERUSER=$SUDO
@@ -20,25 +20,25 @@ if [ -f $FLEXRAN_RTC_EXEC/rt_controller ]; then
 	esac
     done
 
-    if [ -z $AGENT_PORT ]; then
+    if [ -z "$AGENT_PORT" ]; then
 	echo "Using default agent port (2210)"
     else
-	exe_arguments="$exe_arguments -p $AGENT_PORT"
+        exe_arguments=(${exe_arguments[@]} -p $AGENT_PORT)
     fi
 
-    if [ -z $REST_PORT ]; then
+    if [ -z "$REST_PORT" ]; then
 	echo "Using default REST port (9999)"
     else
-	exe_arguments="$exe_arguments -n $REST_PORT"
+        exe_arguments=(${exe_arguments[@]} -n $REST_PORT)
     fi
 
-    if [ -z $DEBUG ]; then
+    if [ -z "$DEBUG" ]; then
 	echo " "
     else
-	exe_arguments="$exe_arguments -d"
+        exe_arguments=(${exe_arguments[@]} -d)
     fi
     
-    exec $SUPERUSER $BIN_FILE $exe_arguments
+    exec $SUPERUSER "$BIN_FILE" "${exe_arguments[@]}"
     
 else
     echo "Binary rt_controller not found"

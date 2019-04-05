@@ -2,13 +2,12 @@
 
 source ./flexran_rtc_env
 
-COMMAND="cmake"
-ARGS=""
+ARGS=()
 
-unset $NO_REST
-unset $NO_REALTIME
-unset $YES_NEO4J
-unset $NO_APIDOCS
+unset "$NO_REST"
+unset "$NO_REALTIME"
+unset "$YES_NEO4J"
+unset "$NO_APIDOCS"
 
 rm -f "$FLEXRAN_RTC_HOME/CMakeCache.txt"
 
@@ -48,14 +47,14 @@ if [ -z $NO_REALTIME ]; then
     echo "Compiling with real-time support"
 else
     echo "Compiling without real-time support"
-    ARGS="$ARGS -DLOWLATENCY=OFF"
+    ARGS=("${ARGS[@]}" "-DLOWLATENCY=OFF")
 fi
 
 if [ -z $NO_REST ]; then
     echo "Compiling with REST API enabled"
 else
     echo "Compiling without REST API"
-    ARGS="$ARGS -DREST_NORTHBOUND=OFF"
+    ARGS=("${ARGS[@]}" "-DREST_NORTHBOUND=OFF")
 fi
 
 if [ -z $NO_APIDOCS ]; then
@@ -69,7 +68,7 @@ if [ -z $YES_NEO4J ]; then
     echo "Compiling without Neo4J support"
 else
     echo "Compiling with Neo4J support"
-    ARGS="$ARGS -DNEO4J_SUPPORT=ON"
+    ARGS=("${ARGS[@]}" "-DNEO4J_SUPPORT=ON")
 fi
 
-cmake $ARGS . && make -j $(nproc)
+cmake "${ARGS[@]}" . && make -j "$(nproc)"

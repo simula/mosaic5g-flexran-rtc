@@ -1,2 +1,5 @@
-export FLEXRAN_RTC_HOME=$(pwd)
-export FLEXRAN_RTC_EXEC=$(pwd)/build
+#!/bin/bash
+FLEXRAN_RTC_HOME=$(pwd)
+export FLEXRAN_RTC_HOME
+FLEXRAN_RTC_EXEC=$(pwd)/build
+export FLEXRAN_RTC_EXEC

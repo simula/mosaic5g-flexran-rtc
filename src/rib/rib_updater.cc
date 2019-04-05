@@ -187,6 +187,13 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
       agent_id, hello_copy.bs_id(), hello_copy.capabilities());
   LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": hello BS "
       << agent->bs_id << ", capabilities " << agent->capabilities.to_string());
+
+  if (rib_.get_bs(agent->bs_id) != nullptr) {
+    LOG4CXX_ERROR(flog::rib, "BS with ID " << agent->bs_id
+        << " already exists, aborting connection");
+    net_xface_.release_connection(agent_id);
+    return;
+  }
   
   if (!rib_.add_pending_agent(agent)) {
     LOG4CXX_ERROR(flog::rib, "Could not add agent " << agent_id

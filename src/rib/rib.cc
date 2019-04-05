@@ -73,6 +73,9 @@ void flexran::rib::Rib::remove_pending_agents(uint64_t bs_id)
 
 bool flexran::rib::Rib::new_eNB_config_entry(uint64_t bs_id)
 {
+  /* ignore if such a BS already exists */
+  if (get_bs(bs_id) != nullptr) return false;
+
   std::set<std::shared_ptr<agent_info>> agents;
   /* get all agents matching bs_id */
   std::for_each(pending_agents_.begin(), pending_agents_.end(),

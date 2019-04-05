@@ -189,3 +189,24 @@ TEST_CASE("RIB with two BS", "[rib]")
   REQUIRE(cell_config2.has_eutra_band() == true);
   REQUIRE(cell_config2.eutra_band() == eutra_band2);
 }
+
+TEST_CASE("Refuse BS with the same ID")
+{
+  flexran::rib::Rib rib;
+  const std::vector<protocol::flex_bs_capability> all_caps =
+      {cap::LOPHY, cap::HIPHY, cap::LOMAC, cap::HIMAC,
+       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP};
+  const uint64_t bs1 = 0xe0000;
+  const int agent1 = 0;
+  const int agent2 = 2;
+
+  // add BS1 and verify
+  const auto a1 = make_agent(agent1, bs1, all_caps);
+  REQUIRE(rib.add_pending_agent(a1) == true);
+  REQUIRE(rib.new_eNB_config_entry(bs1) == true);
+
+  // add BS2 with the same ID, must be refused
+  const auto a2 = make_agent(agent2, bs1, all_caps);
+  REQUIRE(rib.add_pending_agent(a2) == true);
+  REQUIRE(rib.new_eNB_config_entry(bs1) == false);
+}

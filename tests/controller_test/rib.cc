@@ -126,3 +126,66 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
     }
   }
 }
+
+TEST_CASE("RIB with two BS", "[rib]")
+{
+  flexran::rib::Rib rib;
+  const std::vector<protocol::flex_bs_capability> all_caps =
+      {cap::LOPHY, cap::HIPHY, cap::LOMAC, cap::HIMAC,
+       cap::RLC, cap::RRC, cap::SDAP, cap::PDCP};
+  const uint64_t bs1 = 0xe0000;
+  const int agent1 = 0;
+  const uint64_t bs2 = 0xf0000;
+  const int agent2 = 2;
+
+  // add BS1 and verify
+  const auto a1 = make_agent(agent1, bs1, all_caps);
+  REQUIRE(rib.add_pending_agent(a1) == true);
+  REQUIRE(rib.new_eNB_config_entry(bs1) == true);
+  REQUIRE(rib.get_available_base_stations().size() == 1);
+  REQUIRE(rib.get_num_pending_agents() == 0);
+  REQUIRE(rib.get_bs_from_agent(agent1) != nullptr);
+
+  // add BS1's PHY cell configuration and verify it is set
+  const int phy_cell_id1 = 10;
+  protocol::flex_enb_config_reply c1;
+  c1.add_cell_config()->set_phy_cell_id(phy_cell_id1);
+  auto enb_rib1 = rib.get_bs_from_agent(agent1);
+  enb_rib1->update_eNB_config(c1);
+  REQUIRE(enb_rib1->get_enb_config().cell_config(0).has_phy_cell_id() == true);
+  REQUIRE(enb_rib1->get_enb_config().cell_config(0).phy_cell_id() == phy_cell_id1);
+
+  // add BS2 and verify we have two BS with different enb_rib_infos
+  const auto a2 = make_agent(agent2, bs2, all_caps);
+  REQUIRE(rib.add_pending_agent(a2) == true);
+  REQUIRE(rib.new_eNB_config_entry(bs2) == true);
+  REQUIRE(rib.get_available_base_stations().size() == 2);
+  REQUIRE(rib.get_num_pending_agents() == 0);
+  REQUIRE(rib.get_bs_from_agent(agent2) != nullptr);
+  REQUIRE(rib.get_bs_from_agent(agent1) != rib.get_bs_from_agent(agent2));
+
+  // add BS2's EUTRA band and verify it is set
+  const int eutra_band2 = 7;
+  protocol::flex_enb_config_reply c2;
+  c2.add_cell_config()->set_eutra_band(eutra_band2);
+  auto enb_rib2 = rib.get_bs_from_agent(agent2);
+  enb_rib2->update_eNB_config(c2);
+  REQUIRE(enb_rib2->get_enb_config().cell_config(0).has_eutra_band() == true);
+  REQUIRE(enb_rib2->get_enb_config().cell_config(0).eutra_band() == eutra_band2);
+
+  // check that they are still different
+  enb_rib1 = rib.get_bs_from_agent(agent1);
+  enb_rib2 = rib.get_bs_from_agent(agent2);
+  REQUIRE(enb_rib1 != enb_rib2);
+
+  //  and verify that BS1 has phy cell and no eutra
+  //                  BS2 has no phy cell and eutra
+  const auto cell_config1 = enb_rib1->get_enb_config().cell_config(0);
+  const auto cell_config2 = enb_rib2->get_enb_config().cell_config(0);
+  REQUIRE(cell_config1.has_phy_cell_id() == true);
+  REQUIRE(cell_config1.phy_cell_id() == phy_cell_id1);
+  REQUIRE(cell_config1.has_eutra_band() == false);
+  REQUIRE(cell_config2.has_phy_cell_id() == false);
+  REQUIRE(cell_config2.has_eutra_band() == true);
+  REQUIRE(cell_config2.eutra_band() == eutra_band2);
+}

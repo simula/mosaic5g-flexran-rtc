@@ -326,7 +326,6 @@ void flexran::rib::rib_updater::handle_ue_state_change(int agent_id,
     return;
   }
 
-  LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": UE state changed");
   bs->update_UE_config(ue_state_change_msg);
   switch (ue_state_change_msg.type()) {
   case protocol::FLUESC_ACTIVATED:

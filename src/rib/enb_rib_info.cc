@@ -132,7 +132,7 @@ void flexran::rib::enb_rib_info::update_UE_config(
 
   switch (ue_state_change.type()) {
   case protocol::FLUESC_ACTIVATED:
-    LOG4CXX_WARN(flog::rib, "UE RNTI " << rnti << " activated");
+    LOG4CXX_INFO(flog::rib, "BS " << bs_id_ << ": UE RNTI " << rnti << " activated");
     /* create new entry if not present, otherwise just update */
     if (it == ue_config_.mutable_ue_config()->end()) {
       protocol::flex_ue_config *c = ue_config_.add_ue_config();
@@ -145,7 +145,7 @@ void flexran::rib::enb_rib_info::update_UE_config(
     }
     break;
   case protocol::FLUESC_DEACTIVATED:
-    LOG4CXX_WARN(flog::rib, "UE RNTI " << rnti << " deactivated");
+    LOG4CXX_INFO(flog::rib, "BS " << bs_id_ << ": UE RNTI " << rnti << " deactivated");
     if (it != ue_config_.mutable_ue_config()->end()) {
       ue_config_.mutable_ue_config()->erase(it);
       ue_mac_info_.erase(rnti);
@@ -157,7 +157,7 @@ void flexran::rib::enb_rib_info::update_UE_config(
     }
     break;
   case protocol::FLUESC_UPDATED:
-    LOG4CXX_INFO(flog::rib, "UE RNTI " << rnti << " updated");
+    LOG4CXX_INFO(flog::rib, "BS " << bs_id_ << ": UE RNTI " << rnti << " updated");
     if (it != ue_config_.mutable_ue_config()->end()) {
       clear_repeated_if_present(&(*it), ue_state_change.config());
       it->MergeFrom(ue_state_change.config());

@@ -43,6 +43,11 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
     REQUIRE (rib.get_num_pending_agents() == 0);
   }
 
+  SECTION ("Second agent with the same ID and overlapping capabilities is forbidden") {
+    auto aj = make_agent(3, bs_one, {cap::LOPHY});
+    REQUIRE (rib.add_pending_agent(aj) == false);
+  }
+
   SECTION ("Adding second agent and complete base station") {
     int agent_two = 1;
     auto aj = make_agent(agent_two, bs_one, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP});

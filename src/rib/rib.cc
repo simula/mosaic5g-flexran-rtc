@@ -37,6 +37,15 @@ bool flexran::rib::Rib::add_pending_agent(std::shared_ptr<agent_info> ai)
     return false;
   if (ai->capabilities.size() < 1)
     return false;
+  for (auto p: pending_agents_) {
+    /* check that there is no existing pending agent with the same ID and
+     * overlapping capabilities */
+    if (p->bs_id == ai->bs_id
+        && !p->capabilities.orthogonal(ai->capabilities)) {
+      return false;
+    }
+  }
+
   pending_agents_.emplace(ai);
   return true;
 }

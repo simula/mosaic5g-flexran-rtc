@@ -111,6 +111,8 @@ void flexran::rib::enb_rib_info::update_UE_config(
       continue;
     protocol::flex_ue_config *dst = &(*it);
     clear_repeated_if_present(dst, src);
+    if (src.has_info())
+      clear_repeated_if_present(dst->mutable_info(), src.info());
     dst->MergeFrom(src);
   }
   ue_config_mutex_.unlock();

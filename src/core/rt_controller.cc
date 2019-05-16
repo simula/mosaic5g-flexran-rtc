@@ -235,32 +235,23 @@ int main(int argc, char* argv[]) {
   std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);
 
 #ifdef REST_NORTHBOUND
-  
-  // Initialize the northbound API
-
   // Set the port and the IP to listen for REST calls and initialize the call manager
   Pistache::Port port(north_port);
   Pistache::Address addr(Pistache::Ipv4::any(), port);
   flexran::north_api::manager::call_manager north_api(addr);
 
-  // REgister Rrc Triggering Application
-  //flexran::north_api::rrc_triggering_calls rrc_calls(std::dynamic_pointer_cast<flexran::app::rrc::rrc_triggering>(rrc_trigger));  
-
-  // Register API calls for the developed applications
   flexran::north_api::rrm_calls rrm_calls(rrm_management);
-
-  flexran::north_api::stats_manager_calls stats_calls(std::dynamic_pointer_cast<flexran::app::stats::stats_manager>(stats_app));
-
-  flexran::north_api::recorder_calls recorder_calls(std::dynamic_pointer_cast<flexran::app::log::recorder>(recorder));
+  north_api.register_calls(rrm_calls);
+  flexran::north_api::stats_manager_calls stats_calls(stats_app);
+  north_api.register_calls(stats_calls);
+  flexran::north_api::recorder_calls recorder_calls(recorder);
+  north_api.register_calls(recorder_calls);
+  flexran::north_api::rrc_triggering_calls rrc_calls(rrc_trigger);
+  north_api.register_calls(rrc_calls);
 #ifdef ELASTIC_SEARCH_SUPPORT
   flexran::north_api::elastic_calls elastic_calls(elastic);
   north_api.register_calls(elastic_calls);
 #endif
-  
-  //north_api.register_calls(rrc_calls);
-  north_api.register_calls(rrm_calls);
-  north_api.register_calls(stats_calls);
-  north_api.register_calls(recorder_calls);
 
   // Start the call manager threaded. Once task_manager_thread and
   // networkThread return, north_api will be shut down too

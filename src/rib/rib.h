@@ -81,6 +81,7 @@ namespace flexran {
 
       uint64_t get_bs_id(int agent_id) const;
       uint64_t parse_enb_agent_id(const std::string& enb_agent_id_s) const;
+      uint64_t parse_bs_id(const std::string& bs_id_s) const;
       static std::string format_statistics_to_json(
           std::chrono::time_point<std::chrono::system_clock> t,
           const std::string& configurations, const std::string& mac_stats);

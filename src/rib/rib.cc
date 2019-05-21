@@ -361,3 +361,22 @@ uint64_t flexran::rib::Rib::parse_enb_agent_id(const std::string& enb_agent_id_s
   if (!get_bs(enb_id)) return 0;
   return enb_id;
 }
+
+uint64_t flexran::rib::Rib::parse_bs_id(const std::string& bs_id_s) const
+{
+  /* -> return last eNB_config entry */
+  if (bs_id_s == "-1") {
+    return eNB_configs_.empty() ? 0 : std::prev(eNB_configs_.end())->first;
+  }
+  uint64_t enb_id;
+  try {
+    if (bs_id_s.substr(0, 2) == "0x")
+      enb_id = std::stoll(bs_id_s, 0, 16);
+    else
+      enb_id = std::stoll(bs_id_s);
+  } catch (const std::invalid_argument& e) {
+    return 0;
+  }
+  if (!get_bs(enb_id)) return 0;
+  return enb_id;
+}

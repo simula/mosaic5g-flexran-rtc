@@ -27,7 +27,7 @@
 
 #include "stats_manager_calls.h"
 
-void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Router& router)
+void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Description& desc)
 {
   /**
    * @api {get} /stats_manager/:type? Get RAN statistics (human-readable)
@@ -58,8 +58,11 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *    HTTP/1.1 400 BadRequest
    *    invalid statistics type
    */
-  Pistache::Rest::Routes::Get(router, "/stats_manager/:type?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
+  desc.route(desc.get("/stats_manager/:type?"),
+                  "Get human-readable RAN config")
+      .bind(&flexran::north_api::stats_manager_calls::obtain_stats, this);
+
+  auto stats = desc.path("/stats");
 
   /**
    * @api {get} /stats/:type? Get RAN statistics in JSON
@@ -387,8 +390,9 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *     HTTP/1.1 400 BadRequest
    *     { "error": "invalid statistics type" }
    */
-  Pistache::Rest::Routes::Get(router, "/stats/:type?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this));
+  stats.route(desc.get("/:type?"),
+              "Get JSON RAN config for type")
+       .bind(&flexran::north_api::stats_manager_calls::obtain_json_stats, this);
 
   /**
    * @api {get} /stats/enb/:id/:type? Get RAN statistics in JSON for one eNB
@@ -427,8 +431,9 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *     HTTP/1.1 400 BadRequest
    *     { "error": "invalid ID" }
    */
-  Pistache::Rest::Routes::Get(router, "/stats/enb/:id/:type?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_enb, this));
+  stats.route(desc.get("/enb/:id/:type?"),
+              "Get JSON RAN config for BS and type")
+       .bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_enb, this);
 
   /**
    * @api {get} /stats/ue/:id/:type? Get UE statistics in JSON
@@ -457,8 +462,9 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *     HTTP/1.1 400 BadRequest
    *     { "error": "invalid ID" }
    */
-  Pistache::Rest::Routes::Get(router, "/stats/ue/:id_ue",
-      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_ue, this));
+  stats.route(desc.get("/ue/:id_ue"),
+              "Gets UE statistics for a given UE")
+       .bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_ue, this);
 
   /**
    * @api {get} /stats/enb/:id_enb/ue/:id_ue Get UE statistics in JSON, delimited to a given eNB
@@ -487,8 +493,9 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Rou
    *     HTTP/1.1 400 BadRequest
    *     { "error": "invalid ID (eNB and/or UE)" }
    */
-  Pistache::Rest::Routes::Get(router, "/stats/enb/:id_enb/ue/:id_ue",
-      Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_ue, this));
+  stats.route(desc.get("/enb/:id_enb/ue/:id_ue"),
+              "Get UE statistics for a UE on a BS")
+       .bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_ue, this);
 }
 
 void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)

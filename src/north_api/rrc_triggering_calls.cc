@@ -26,9 +26,12 @@
 
 #include "rrc_triggering_calls.h"
 
-void flexran::north_api::rrc_triggering_calls::register_calls(Pistache::Rest::Router& router) {
+void flexran::north_api::rrc_triggering_calls::register_calls(Pistache::Rest::Description& desc)
+{
+  auto rrc_trigger = desc.path("/rrc_trigger");
 
-  Pistache::Rest::Routes::Post(router, "/rrc_trigger/:trigger_type", Pistache::Rest::Routes::bind(&flexran::north_api::rrc_triggering_calls::change_rrc, this));  
+  rrc_trigger.route(desc.post("/:trigger_type"), "Trigger RRC measurements")
+             .bind(&flexran::north_api::rrc_triggering_calls::change_rrc, this);
 }
 
 void flexran::north_api::rrc_triggering_calls::change_rrc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {

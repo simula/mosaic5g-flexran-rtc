@@ -26,6 +26,7 @@
 #define _RECORDER_CALLS_H_
 
 #include <pistache/http.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 #include "recorder.h"
@@ -42,7 +43,7 @@ namespace flexran {
 	: json_app(json)
       {}
 
-      void register_calls(Pistache::Rest::Router& router);
+      void register_calls(Pistache::Rest::Description& desc);
 
       void start_meas(const Pistache::Rest::Request& request,
           Pistache::Http::ResponseWriter response);

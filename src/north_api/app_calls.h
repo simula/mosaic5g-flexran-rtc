@@ -41,7 +41,7 @@ namespace flexran {
 
     public:
 
-      virtual void register_calls(Pistache::Rest::Router& router) = 0;
+      virtual void register_calls(Pistache::Rest::Description& desc) = 0;
       static constexpr const size_t AGENT_ID_LENGTH_LIMIT = 3;
       static constexpr const size_t RNTI_ID_LENGTH_LIMIT  = 6;
 

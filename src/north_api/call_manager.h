@@ -27,7 +27,7 @@
 
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
-#include <pistache/router.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 
@@ -41,9 +41,7 @@ namespace flexran {
 
       public:
 
-      call_manager(Pistache::Address addr)
-	: httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
-	  { }
+        call_manager(Pistache::Address addr);
 
 	void init(size_t thr = 1);
 
@@ -56,10 +54,11 @@ namespace flexran {
       private:
 
 	void setup_routes();
+        void list_api(const Pistache::Rest::Request& request,
+                      Pistache::Http::ResponseWriter response);
 	
 	std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
-	
-	Pistache::Rest::Router router_;
+        Pistache::Rest::Description desc_;
       };
       
     }

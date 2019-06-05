@@ -31,8 +31,10 @@
 
 #include "recorder_calls.h"
 
-void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Router& router)
+void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Description& desc)
 {
+  auto recorder = desc.path("/record");
+
   /**
    * @api {post} /record/[:type/[:duration]]  Record RAN state
    * @apiName postJob
@@ -69,8 +71,9 @@ void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Router& 
    *    HTTP/1.1 409 Conflict
    *    { "error": "Can not handle request at the moment" }
    */
-  Pistache::Rest::Routes::Post(router, "/record/:type?/:duration?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::recorder_calls::start_meas, this));
+  recorder.route(desc.post("/:type?/:duration?"),
+                 "Record RAN state for a given type and duration")
+          .bind(&flexran::north_api::recorder_calls::start_meas, this);
 
 
   /**
@@ -348,9 +351,9 @@ void flexran::north_api::recorder_calls::register_calls(Pistache::Rest::Router& 
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Invalid ID (no such job)" }
    */
-  Pistache::Rest::Routes::Get(router, "/record/:id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::recorder_calls::obtain_json_stats,
-        this));
+  recorder.route(desc.get("/:id"),
+                 "Return the recorded data corresponding to a record job")
+          .bind(&flexran::north_api::recorder_calls::obtain_json_stats, this);
 }
 
 void flexran::north_api::recorder_calls::start_meas(const Pistache::Rest::Request& request,

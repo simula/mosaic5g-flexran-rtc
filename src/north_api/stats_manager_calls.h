@@ -27,6 +27,7 @@
 
 #include <string>
 #include <pistache/http.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 #include "stats_manager.h"
@@ -43,7 +44,7 @@ namespace flexran {
       : stats_app(stats)
       { }
 
-      void register_calls(Pistache::Rest::Router& router);
+      void register_calls(Pistache::Rest::Description& desc);
 
       void obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 

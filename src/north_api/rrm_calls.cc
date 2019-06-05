@@ -27,8 +27,10 @@
 #include "flexran_log.h"
 #include "rrm_calls.h"
 
-void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& router)
+void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& desc)
 {
+  auto rrm_calls = desc.path("");
+
   /**
    * @api {post} /slice/enb/:id? Post a slice configuration
    * @apiName ApplySliceConfiguration
@@ -203,8 +205,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Protobuf parser error" }
    */
-  Pistache::Rest::Routes::Post(router, "/slice/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::apply_slice_config, this));
+  rrm_calls.route(desc.post("/slice/enb/:id?"),
+                  "Post a new slice configuration")
+           .bind(&flexran::north_api::rrm_calls::apply_slice_config, this);
 
   /**
    * @api {post} /slice/enb/:id? Create a new pair of slices (short version)
@@ -250,8 +253,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "invalid slice ID" }
    */
-  Pistache::Rest::Routes::Post(router, "/slice/enb/:id/slice/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::apply_slice_config_short, this));
+  rrm_calls.route(desc.post("/slice/enb/:id/slice/:slice_id"),
+                  "Create a new pair of slices copying the values of slice 0")
+           .bind(&flexran::north_api::rrm_calls::apply_slice_config_short, this);
 
   /**
    * @api {delete} /slice/enb/:id? Delete slices
@@ -308,8 +312,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Protobuf parser error" }
    */
-  Pistache::Rest::Routes::Delete(router, "/slice/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_slice_config, this));
+  rrm_calls.route(desc.del("/slice/enb/:id?"),
+                  "Delete slices as specified in the JSON")
+           .bind(&flexran::north_api::rrm_calls::remove_slice_config, this);
 
   /**
    * @api {delete} /slice/enb/:id/slice/:slice_id Delete slices (short version)
@@ -345,8 +350,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "can not find DL slice ID" }
    */
-  Pistache::Rest::Routes::Delete(router, "/slice/enb/:id/slice/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_slice_config_short, this));
+  rrm_calls.route(desc.del("/slice/enb/:id/slice/:slice_id"),
+                  "Delete the UL and DL slices by ID")
+           .bind(&flexran::north_api::rrm_calls::remove_slice_config_short, this);
 
   /**
    * @api {post} /ue_slice_assoc/enb/:id? Change the UE-slice association
@@ -414,8 +420,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Protobuf parser error" }
    */
-  Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc, this));
+  rrm_calls.route(desc.post("/ue_slice_assoc/enb/:id?"),
+                  "Change the slice association of a UE")
+           .bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc, this);
 
   /**
    * @api {post} /ue_slice_assoc/enb/:enb_id/ue/:rnti_imsi/slice/:slice_id Change the UE-slice association (short version)
@@ -468,8 +475,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Protobuf parser error" }
    */
-  Pistache::Rest::Routes::Post(router, "/ue_slice_assoc/enb/:enb_id/ue/:rnti_imsi/slice/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this));
+  rrm_calls.route(desc.post("/ue_slice_assoc/enb/:enb_id/ue/:rnti_imsi/slice/:slice_id"),
+                  "Change the association of a UE to a UL-DL slice pair (same ID)")
+           .bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc_short, this);
 
   /**
    * @api {post} /install_vnetwork/:bps Create a virtual network
@@ -504,8 +512,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "BS 12345 cannot provide the requested bitrate" }
    */
-  Pistache::Rest::Routes::Post(router, "/install_vnetwork/:bps",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::instantiate_vnetwork, this));
+  rrm_calls.route(desc.post("/install_vnetwork/:bps"),
+                  "Install a virtual network, i.e. a new slice on every connected base station")
+           .bind(&flexran::north_api::rrm_calls::instantiate_vnetwork, this);
 
   /**
    * @api {post} /remove_vnetwork/:slice_id Remove a virtual network
@@ -536,8 +545,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "BS 12345 does not have slice 13" }
    */
-  Pistache::Rest::Routes::Post(router, "/remove_vnetwork/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_vnetwork, this));
+  rrm_calls.route(desc.post("/remove_vnetwork/:slice_id"),
+                  "Remove a virtual network")
+           .bind(&flexran::north_api::rrm_calls::remove_vnetwork, this);
 
   /**
    * @api {post} /associate_ue_vnetwork/:slice_id Associate users to a slice
@@ -577,8 +587,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "no slices found" }
    */
-  Pistache::Rest::Routes::Post(router, "/associate_ue_vnetwork/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::associate_ue_vnetwork, this));
+  rrm_calls.route(desc.post("/associate_ue_vnetwork/:slice_id"),
+                  "Associate a list of IMSIs to a particular slice")
+           .bind(&flexran::north_api::rrm_calls::associate_ue_vnetwork, this);
 
   /**
    * @api {post} /remove_ue_vnetwork/ Remove user-slice association by IMSI
@@ -607,8 +618,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "parser error" }
    */
-  Pistache::Rest::Routes::Post(router, "/remove_ue_vnetwork/",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_ue_list_vnetwork, this));
+  rrm_calls.route(desc.post("/remove_ue_vnetwork/"),
+                  "Remove all UE-slice associations for a list of IMSIs")
+           .bind(&flexran::north_api::rrm_calls::remove_ue_list_vnetwork, this);
 
   /**
    * @api {post} /remove_ue_vnetwork/:slice_id Remove user-slice association by slice
@@ -631,8 +643,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 200 OK
    *    { "removed_items": 1 }
    */
-  Pistache::Rest::Routes::Post(router, "/remove_ue_vnetwork/:slice_id",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::remove_ue_vnetwork, this));
+  rrm_calls.route(desc.post("/remove_ue_vnetwork/:slice_id"),
+                  "Remove all UE-slice associations for a slice")
+           .bind(&flexran::north_api::rrm_calls::remove_ue_vnetwork, this);
 
 
   /**
@@ -704,8 +717,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    *    HTTP/1.1 400 BadRequest
    *    { "error": "unrecognized band 1" }
    */
-  Pistache::Rest::Routes::Post(router, "/conf/enb/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::cell_reconfiguration, this));
+  rrm_calls.route(desc.post("/conf/enb/:id?"),
+                  "Change the cell configuration of the eNodeB")
+           .bind(&flexran::north_api::rrm_calls::cell_reconfiguration, this);
 
   /**
    * @api {post} /yaml/:id? Send arbitrary YAML to the agent
@@ -726,8 +740,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Router& route
    * @apiVersion v0.1.0
    * @apiPermission None
    */
-  Pistache::Rest::Routes::Post(router, "/yaml/:id?",
-      Pistache::Rest::Routes::bind(&flexran::north_api::rrm_calls::yaml_compat, this));
+  rrm_calls.route(desc.post("/yaml/:id?"),
+                  "Deprecated: Send arbitrary YAML file")
+           .bind(&flexran::north_api::rrm_calls::yaml_compat, this);
 }
 
 void flexran::north_api::rrm_calls::apply_slice_config(

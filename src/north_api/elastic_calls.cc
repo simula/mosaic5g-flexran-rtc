@@ -31,8 +31,10 @@
 #include <chrono>
 #include <iomanip>
 
-void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& router)
+void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Description& desc)
 {
+  auto elastic = desc.path("/elasticmon");
+
   /**
    * @api {get} /elasticmon Status
    * @apiName Status
@@ -88,8 +90,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *      "batchConfigMaxSize": 5
    *    }
    */
-  Pistache::Rest::Routes::Get(router, "/elasticmon/",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::status, this));
+  elastic.route(desc.get("/"),
+                "Return the current status/configuration")
+         .bind(&flexran::north_api::elastic_calls::status, this);
 
   /**
    * @api {post} /elasticmon/endpoint/:ep Add ElasticSearch endpoint
@@ -119,8 +122,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "illegal endpoint or already present"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/endpoint/:ep",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::add_endpoint, this));
+  elastic.route(desc.post("/endpoint/:ep"),
+                "Post a new endpoint of a running ElasticSearch instance")
+         .bind(&flexran::north_api::elastic_calls::add_endpoint, this);
 
   /**
    * @api {delete} /elasticmon/endpoint/:ep Remove ElasticSearch endpoint
@@ -146,8 +150,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "is the endpoint present?"}
    */
-  Pistache::Rest::Routes::Delete(router, "/elasticmon/endpoint/:ep",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::remove_endpoint, this));
+  elastic.route(desc.del("/endpoint/:ep"),
+                "Remove an existing endpoint of a running ElasticSearch instance")
+         .bind(&flexran::north_api::elastic_calls::remove_endpoint, this);
 
   /**
    * @api {post} /elasticmon/interval/stats/:itvl Set statistics monitoring interval
@@ -178,8 +183,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Is the interval in the range 0<=dt<=1000?"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/interval/stats/:itvl",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::set_freq_stats, this));
+  elastic.route(desc.post("/interval/stats/:itvl"),
+                "Set the sampling interval (in ms) for sending statistics")
+         .bind(&flexran::north_api::elastic_calls::set_freq_stats, this);
 
   /**
    * @api {post} /elasticmon/interval/config/:itvl Set configuration monitoring interval
@@ -210,8 +216,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Is the interval in the range 0<=dt?"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/interval/config/:itvl",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::set_freq_config, this));
+  elastic.route(desc.post("/interval/config/:itvl"),
+                "Set the sampling interval (in ms) for sending configuration")
+         .bind(&flexran::north_api::elastic_calls::set_freq_config, this);
 
   /**
    * @api {post} /elasticmon/batch/stats/:size Set statistics batch size
@@ -240,8 +247,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Is the batch size in the range 1<=size<=1000?"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/batch/stats/:size",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::set_batch_stats_size, this));
+  elastic.route(desc.post("/batch/stats/:size"),
+                "Set the batch size for sending statistics")
+         .bind(&flexran::north_api::elastic_calls::set_batch_stats_size, this);
 
   /**
    * @api {post} /elasticmon/batch/config/:size Set configuration batch size
@@ -270,8 +278,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Is the batch size in the range 1<=size<=1000?"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/batch/config/:size",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::set_batch_config_size, this));
+  elastic.route(desc.post("/batch/config/:size"),
+                "Set the batch size for sending configuration")
+         .bind(&flexran::north_api::elastic_calls::set_batch_config_size, this);
 
   /**
    * @api {post} /elasticmon/enable Enable ElasticMon logging
@@ -297,8 +306,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "could not enable logging"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/enable",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::enable, this));
+  elastic.route(desc.post("/enable"),
+                "Enable the ElasticMon logging framework")
+         .bind(&flexran::north_api::elastic_calls::enable, this);
 
   /**
    * @api {post} /elasticmon/disable Disable ElasticMon logging
@@ -322,8 +332,9 @@ void flexran::north_api::elastic_calls::register_calls(Pistache::Rest::Router& r
    *    HTTP/1.1 400 BadRequest
    *    { "error": "could not disable logging"}
    */
-  Pistache::Rest::Routes::Post(router, "/elasticmon/disable",
-      Pistache::Rest::Routes::bind(&flexran::north_api::elastic_calls::disable, this));
+  elastic.route(desc.post("/disable"),
+                "Disable the ElasticMon logging framework")
+         .bind(&flexran::north_api::elastic_calls::disable, this);
 }
 
 void flexran::north_api::elastic_calls::status(

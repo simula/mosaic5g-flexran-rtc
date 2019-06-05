@@ -26,6 +26,7 @@
 #define RRC_TRIGGERING_CALLS_H_
 
 #include <pistache/http.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 #include "rrc_triggering.h"
@@ -42,7 +43,7 @@ namespace flexran {
 	: rrc_trigger(flex_trigger)
       { }
       
-      void register_calls(Pistache::Rest::Router& router);
+      void register_calls(Pistache::Rest::Description& desc);
 
       void change_rrc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 

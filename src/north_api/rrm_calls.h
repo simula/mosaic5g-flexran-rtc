@@ -26,6 +26,7 @@
 #define RRM_CALLS_H_
 
 #include <pistache/http.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 #include "rrm_management.h"
@@ -42,7 +43,7 @@ namespace flexran {
         : rrm_app(rrm)
       { }
       
-      void register_calls(Pistache::Rest::Router& router);
+      void register_calls(Pistache::Rest::Description& desc);
 
       //void change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
       void yaml_compat(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

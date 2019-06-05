@@ -26,6 +26,7 @@
 #define _ELASTIC_CALLS_H_
 
 #include <pistache/http.h>
+#include <pistache/description.h>
 
 #include "app_calls.h"
 #include "elastic_search.h"
@@ -38,7 +39,7 @@ namespace flexran {
         : elastic_app(elastic)
       {}
 
-      void register_calls(Pistache::Rest::Router& router);
+      void register_calls(Pistache::Rest::Description& desc);
 
       void status(const Pistache::Rest::Request& request,
           Pistache::Http::ResponseWriter response);

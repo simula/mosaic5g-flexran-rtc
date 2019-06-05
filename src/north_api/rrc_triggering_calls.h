@@ -17,9 +17,9 @@
 
 /*! \file    rrc_triggering_calls.h
  *  \brief   NB API for RRC triggering app
- *  \authors Shahab SHARIAT BAGHERI
+ *  \authors Robert Schmidt
  *  \company Eurecom
- *  \email   shahab.shariat@eurecom.fr
+ *  \email   robert.schmidt@eurecom.fr
  */
 
 #ifndef RRC_TRIGGERING_CALLS_H_
@@ -45,7 +45,12 @@ namespace flexran {
       
       void register_calls(Pistache::Rest::Description& desc);
 
-      void change_rrc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void rrc_reconf(const Pistache::Rest::Request& request,
+                      Pistache::Http::ResponseWriter response);
+      void rrc_ho(const Pistache::Rest::Request& request,
+                  Pistache::Http::ResponseWriter response);
+      void rrc_x2_ho_net_control(const Pistache::Rest::Request& request,
+                                 Pistache::Http::ResponseWriter response);
 
     private:
 

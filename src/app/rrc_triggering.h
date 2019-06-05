@@ -16,10 +16,10 @@
  */
 
 /*! \file    rrc_triggering.h
- *  \brief   trigger RRC measurements at the agent
- *  \authors Shahab SHARIAT BAGHERI
+ *  \brief   trigger RRC measurements
+ *  \authors Robert Schmidt
  *  \company Eurecom
- *  \email   shahab.shariat@eurecom.fr
+ *  \email   robert.schmidt@eurecom.fr
  */
 
 #ifndef RRC_TRIGGERING_H_
@@ -29,6 +29,8 @@
 #include "rib_common.h"
 
 #include <atomic>
+#include <unordered_set>
+#include <map>
 
 namespace flexran {
 
@@ -41,11 +43,31 @@ namespace flexran {
       public:
 
         rrc_triggering(const rib::Rib& rib, const core::requests_manager& rm,
-            event::subscription& sub)
-          : component(rib, rm, sub) { }
+            event::subscription& sub);
 
-        void reconfigure_agent(uint64_t bs_id, std::string freq_measure);
-        void enable_rrc_triggering(std::string freq_measure);
+        bool rrc_reconf(const std::string& bs, const std::string& policy,
+            std::string& error_reason);
+        bool rrc_ho(const std::string& sbs, const std::string& ue, const std::string& tbs,
+                    std::string& error_reason);
+        bool rrc_x2_ho_net_control(const std::string& bs, bool x2_ho_net_control,
+            std::string& error_reason);
+
+        void bs_added(uint64_t bs_id);
+        void bs_removed(uint64_t bs_id);
+
+      private:
+        uint64_t parse_bs_agent_id(const std::string& s) const;
+        uint64_t parse_bs_id(const std::string& s) const;
+        uint64_t parse_physical_cell_id(const std::string& s) const;
+
+        void push_config(uint64_t bs_id, const protocol::flex_measurement_info& rrc_info);
+        void push_ho(uint64_t bs_id, flexran::rib::rnti_t rnti, uint32_t target_phy_cell_id);
+        void push_x2_ho_net_control(uint64_t bs_id, bool x2_ho_net_control);
+
+        std::unordered_set<uint64_t> set_check_phyCellId;
+        std::map<uint64_t, int> map_phyCellId;
+        bs2::connection tick_check_phyCellId;
+        void check_phyCellId(uint64_t tick);
       };
     }
   }

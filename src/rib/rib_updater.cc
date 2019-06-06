@@ -203,10 +203,10 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
   }
   if (rib_.new_eNB_config_entry(agent->bs_id)) {
     // new BS is complete -> ask for configuration
-    trigger_bs_config(agent->bs_id);
-    event_sub_.bs_add_(agent->bs_id);
     LOG4CXX_INFO(flog::rib, "New BS " << agent->bs_id
         << ", creating RIB entry");
+    trigger_bs_config(agent->bs_id);
+    event_sub_.bs_add_(agent->bs_id);
   } else {
     LOG4CXX_WARN(flog::rib, "Could create BS " << agent->bs_id << " (yet)");
   }

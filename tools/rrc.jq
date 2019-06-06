@@ -11,7 +11,8 @@
         ueCategory: .capabilities.ueCategory,                         # from conf
         rrc_info:   .info,
         wbCqi:      .mac_stats.dlCqiReport.csiReport[0].p10csi.wbCqi, # from stats
-        rrc_meas:   .mac_stats.rrcMeasurements             # from stats
+        rrc_meas:   .mac_stats.rrcMeasurements,             # from stats
+        gtp:        .mac_stats.gtpStats
       }
     ]
   }

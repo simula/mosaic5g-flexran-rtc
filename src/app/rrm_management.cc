@@ -238,6 +238,17 @@ bool flexran::app::management::rrm_management::associate_ue_vnetwork(
     LOG4CXX_INFO(flog::app, "monitoring UE with IMSI " << imsi
         << " to be in slice " << slice_id);
   }
+
+  /* change all UEs whose IMSI is in list "imsi" */
+  for (uint64_t bs_id : rib_.get_available_base_stations()) {
+    auto bs = rib_.get_bs(bs_id);
+    for (const protocol::flex_ue_config& ue : bs->get_ue_configs().ue_config()) {
+      if (!ue.has_imsi()) continue;
+      const auto it = std::find(imsis.begin(), imsis.end(), ue.imsi());
+      if (it != imsis.end())
+        ue_add_update(bs_id, ue.rnti());
+    }
+  }
   return true;
 }
 

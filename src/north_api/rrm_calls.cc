@@ -123,10 +123,11 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * priority of the slice when scheduling in the interslice multiplexing stage
    * allocating in a greedy manner. Higher priority means preferential
    * scheduling.
-   * @apiParam (JSON UL part parameters) {Number{1-25}} [firstRb] Used to
+   * @apiParam (JSON UL part parameters) {Number{0-$(bandwidth RB-1)}} [firstRb] Used to
    * position a UL slice together with the percentage in the frequency plane.
-   * This parameter is subject to admission control like percentage: it is
-   * checked that no UL slice overlaps with any other, starting at `firstRb`
+   * This parameter should be used to isolate slices in the UL and is subject
+   * to admission control like percentage: it is checked that no UL slice
+   * overlaps with any other, starting at `firstRb`
    * and expanding `percentage` * bandwidth RB. This paramater is in *RB*,
    * unlike the `positionLow` and `positionHigh` parameters in the UL.
    * @apiParam (JSON UL part parameters) {Number{0-20}} [maxmcs] The maximum

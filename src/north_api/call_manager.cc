@@ -39,8 +39,42 @@ flexran::north_api::manager::call_manager::call_manager(Pistache::Address addr)
        .produces(MIME(Application, Json))
        .consumes(MIME(Application, Json));
 
-  desc_.route(desc_.get("/simple-flexran-api.json"),
-              "list FlexRAN REST endpoints in a simple format")
+  /**
+   * @api {get} /capabilities Get API list
+   * @apiName Capabilities
+   * @apiGroup Capabilities
+   *
+   * @apiDescription This call lists the current active REST end-points in JSON
+   * format, i.e.  the capabilities of the controller. It informs whether the
+   * controller is running and the northbound interface is up. Furthermore, it
+   * can be used to determine the active applications at the northbound
+   * interface for specific purposes. The returned JSON consists of one info
+   * object with generic information and a paths object representing a list of
+   * endpoints, the HTTP method to retrieve information, and a short
+   * description.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X GET http://127.0.0.1:9999/capabilities | jq .
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *    {
+   *      "info": {
+   *        "title": "FlexRAN NB API",
+   *        "version": "2.0"
+   *      },
+   *      "paths": {
+   *        "/capabilities": {
+   *          "GET": {
+   *            "description": "list active REST endpoints"
+   *          }
+   *        }
+   *      }
+   *    }
+   */
+  desc_.route(desc_.get("/capabilities"), "list active REST endpoints")
        .bind(&flexran::north_api::manager::call_manager::list_api, this);
 }
 

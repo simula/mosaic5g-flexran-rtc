@@ -100,6 +100,8 @@ message flex_ue_config {
 	optional uint32 ul_slice_id = 32;
   // Configuration about RRC measurements
   optional flex_measurement_info info = 33;
+  optional int32 dl_pdsch_power_diff = 34; // difference in DL PDSCH power, relative to dl_pdsch_power in cell_config
+  optional int32 ul_pusch_power_diff = 35; // difference in UL PUSCH power, relative to ul_pusch_power in cell_config
 }
 
 message flex_lc_ue_config {

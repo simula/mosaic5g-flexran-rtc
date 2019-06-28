@@ -655,7 +655,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiGroup CellConfigurationPolicy
    *
    * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
-   * to change the slice configuration. This can be one of the following: -1
+   * to change the cell configuration. This can be one of the following: -1
    * (last added agent), the eNB ID (in hex or decimal) or the internal agent
    * ID which can be obtained through a `stats` call. Numbers smaller than 1000
    * are parsed as the agent ID.

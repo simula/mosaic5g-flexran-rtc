@@ -51,6 +51,8 @@ namespace flexran {
             std::string& error_reason);
         bool apply_cell_config_policy(uint64_t bs_id, const std::string& policy,
             std::string& error_reason);
+        bool ue_pusch_power_diff(const std::string& bs, const std::string& ue,
+            int pusch_power_diff, std::string& error_reason);
 
         uint64_t parse_enb_agent_id(const std::string& enb_agent_id_s) const;
         uint64_t get_last_bs() const;

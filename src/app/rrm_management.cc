@@ -588,6 +588,36 @@ bool flexran::app::management::rrm_management::apply_cell_config_policy(
   return true;
 }
 
+bool flexran::app::management::rrm_management::ue_pusch_power_diff(
+    const std::string& bs, const std::string& ue,
+    int pusch_power_diff, std::string& error_reason)
+{
+  uint64_t bs_id = rib_.parse_enb_agent_id(bs);
+  if (bs_id == 0) {
+    error_reason = "can not find BS";
+    return false;
+  }
+
+  flexran::rib::rnti_t rnti;
+  if (!rib_.get_bs(bs_id)->parse_rnti_imsi(ue, rnti)) {
+    error_reason = "can not find UE";
+    return false;
+  }
+
+  protocol::flex_ue_config_reply ue_config_reply;
+  ue_config_reply.add_ue_config();
+  ue_config_reply.mutable_ue_config(0)->set_rnti(rnti);
+  ue_config_reply.mutable_ue_config(0)->set_ul_pusch_power_diff(pusch_power_diff);
+  push_ue_config_reconfiguration(bs_id, ue_config_reply);
+  google::protobuf::util::JsonPrintOptions opt;
+  opt.add_whitespace = true;
+  std::string s;
+  google::protobuf::util::MessageToJsonString(ue_config_reply, &s, opt);
+  LOG4CXX_INFO(flog::app, "sent new configuration to BS " << bs_id
+      << ":\n" << s);
+  return true;
+}
+
 void flexran::app::management::rrm_management::push_cell_config_reconfiguration(
     uint64_t bs_id, const protocol::flex_cell_config& cell_config)
 {

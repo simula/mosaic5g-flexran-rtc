@@ -723,6 +723,46 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
            .bind(&flexran::north_api::rrm_calls::cell_reconfiguration, this);
 
   /**
+   * @api {post} /ue_conf/enb/:bid/ue/:rnti_imsi/ul_pusch_power_diff/:pusch_diff Change UE PUSCH Power (short version)
+   * @apiName UePuschPowerDiff
+   * @apiGroup CellConfigurationPolicy
+   *
+   * @apiParam {Number} bid The BS ID at which this UE is available. Can be
+   * one of the following: -1 (last added agent), the eNB ID (in hex or
+   * decimal) or the internal agent ID which can be obtained through a `stats`
+   * call. Numbers smaller than 1000 are parsed as the agent ID.
+   * @apiParam {Number} rnti_imsi The ID of the UE in the form of either an
+   * RNTI or the IMSI. Everything shorter than 6 digits will be treated as the
+   * RNTI, the rest as the IMSI.
+   * @apiParam {Number} pusch_diff The difference in UE-specific PUSCH power,
+   * in dB.
+   *
+   * @apiDescription This API endpoint changes the UE-specific PUSCH power
+   * relative to the `ulPuschPower` parameter in the cell configuration.
+   * Currently, no bounds checks or or other checks are performed at the
+   * controller.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST    http://127.0.0.1:9999/ue_conf/enb/-1/ue/1234/ul_pusch_power_diff/-3
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find agent" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "no such UE" }
+   */
+  rrm_calls.route(desc.post("/ue_conf/enb/:bid/ue/:rnti_imsi/ul_pusch_power_diff/:pusch_diff"),
+                  "Changle UE PUSCH power relative to the cell's UL PUSCH Power")
+           .bind(&flexran::north_api::rrm_calls::ue_pusch_power_diff, this);
+
+  /**
    * @api {post} /yaml/:id? Send arbitrary YAML to the agent
    * @apiName YamlCompat
    * @apiGroup user/slice/BS policies
@@ -1063,4 +1103,20 @@ void flexran::north_api::rrm_calls::cell_reconfiguration(
     return;
   }
   response.send(Pistache::Http::Code::Ok, "");
+}
+
+void flexran::north_api::rrm_calls::ue_pusch_power_diff(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  std::string bs = request.param(":bid").as<std::string>();
+  std::string ue = request.param(":rnti_imsi").as<std::string>();
+  int pusch_power_diff = request.param(":pusch_diff").as<int>();
+  std::string error_reason;
+  if (!rrm_app->ue_pusch_power_diff(bs, ue, pusch_power_diff, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok, std::to_string(pusch_power_diff) + "\n");
 }

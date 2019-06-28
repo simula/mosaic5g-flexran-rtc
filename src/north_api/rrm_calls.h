@@ -64,6 +64,7 @@ namespace flexran {
       void remove_ue_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void cell_reconfiguration(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+      void ue_pusch_power_diff(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:
 

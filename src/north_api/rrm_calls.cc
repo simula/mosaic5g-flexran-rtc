@@ -1118,5 +1118,5 @@ void flexran::north_api::rrm_calls::ue_pusch_power_diff(
         "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
     return;
   }
-  response.send(Pistache::Http::Code::Ok, std::to_string(pusch_power_diff) + "\n");
+  response.send(Pistache::Http::Code::Ok, "");
 }

@@ -105,8 +105,12 @@ message flex_ue_config {
 message flex_lc_ue_config {
 	optional uint32 rnti = 1;
 	repeated flex_lc_config lc_config = 2;	// A list of LC configurations for the given UE
+  repeated flex_sdap_config sdap = 3;
 }
 
-
-
-
+message flex_sdap_config {
+  //optional flex_sdap_qdisc ingress = 2;
+  optional flex_sdap_entity egress = 3;
+  optional uint32 drb_id = 5;
+  optional flex_sdap_type type = 6;
+}

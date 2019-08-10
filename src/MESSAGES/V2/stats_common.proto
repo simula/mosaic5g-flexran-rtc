@@ -317,3 +317,27 @@ message flex_gtp_stats {
     optional uint32 teid_sgw = 4;
     optional string addr_sgw = 5;
 }
+
+//
+// SDAP stats
+//
+
+message flex_sdap_stats {
+  optional uint32 drb_id = 2;
+  repeated flex_sdap_queue_stats queues = 3;
+  optional uint64 bytes = 4;
+}
+
+message flex_sdap_queue_stats {
+  optional uint32 queue_id = 1;
+  optional uint32 hol_delay = 2;
+  optional uint32 avg_packet_sojourn = 3;
+  optional uint32 packets_enqueued = 4;
+  optional uint64 bytes_enqueued = 5;
+  optional uint32 packets_dequeued = 6;
+  optional uint64 bytes_dequeued = 7;
+  optional uint32 packets_dropped_policy = 8;
+  optional uint64 bytes_dropped_policy = 9;
+  optional uint32 packets_dropped_overflow = 10;
+  optional uint64 bytes_dropped_overflow = 11;
+}

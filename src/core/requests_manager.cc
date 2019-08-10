@@ -23,6 +23,8 @@
  */
 
 #include "requests_manager.h"
+#include "rib.h"
+#include "async_xface.h"
 #include "agent_info.h"
 #include "flexran_log.h"
 

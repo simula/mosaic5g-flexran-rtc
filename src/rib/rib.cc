@@ -136,16 +136,19 @@ bool flexran::rib::Rib::has_eNB_config_entry(uint64_t bs_id) const
 
 bool flexran::rib::Rib::remove_eNB_config_entry(int agent_id)
 {
-  auto it = agent_configs_.find(agent_id);
+  const auto it = agent_configs_.find(agent_id);
   if (it == agent_configs_.end()) return false;
+  const std::shared_ptr<agent_info> disconnected = it->second;
 
-  /* get all agents, remove corresponding enb_rib_info and agent_configs_ and
-   * put remaining agents into pending, if any */
-  std::set<std::shared_ptr<agent_info>> a = eNB_configs_.find(it->second->bs_id)->second->get_agents();
-  eNB_configs_.erase(it->second->bs_id);
-  for (auto b: a) agent_configs_.erase(b->agent_id);
-  a.erase(it->second);
-  for (auto b : a) pending_agents_.insert(b);
+  /* get all agents for this BS, remove corresponding enb_rib_info and
+   * agent_configs_ and put agents that are still connected into pending */
+  std::set<std::shared_ptr<agent_info>> all = eNB_configs_.find(disconnected->bs_id)->second->get_agents();
+  eNB_configs_.erase(disconnected->bs_id);
+  for (auto b: all)
+    agent_configs_.erase(b->agent_id);
+  all.erase(disconnected);
+  for (auto b: all)
+    pending_agents_.insert(b);
   return true;
 }
 

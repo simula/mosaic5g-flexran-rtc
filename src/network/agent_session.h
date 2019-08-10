@@ -49,7 +49,8 @@ namespace flexran {
 		  connection_manager& manager,
 		  async_xface& xface,
 		  int session_id)
-      : socket_(std::move(socket)), session_id_(session_id), manager_(manager), xface_(xface) {
+      : socket_(std::move(socket)), session_id_(session_id), manager_(manager), xface_(xface),
+        ip_port_(socket_.remote_endpoint().address().to_string() + ":" + std::to_string(socket_.remote_endpoint().port())) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
       }
       
@@ -57,6 +58,7 @@ namespace flexran {
 
       void deliver(std::shared_ptr<tagged_message> msg);
       void close();
+      std::string get_endpoint() const { return ip_port_; }
       
     private:
       
@@ -73,6 +75,8 @@ namespace flexran {
       int session_id_;
       connection_manager& manager_;
       async_xface& xface_;
+
+      const std::string ip_port_;
     };
   }
 }

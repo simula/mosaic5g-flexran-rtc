@@ -107,7 +107,8 @@ std::string flexran::rib::agent_info::to_json() const
 {
   std::string s = "{";
   s += "\"agent_id\":" + std::to_string(agent_id);
-  s += ",\"bs_id\":" + std::to_string(bs_id);
+  s += ",\"ip_port\":\"" + port_ip;
+  s += "\",\"bs_id\":" + std::to_string(bs_id);
   s += ",\"capabilities\":" + capabilities.to_json();
   s += "}";
   return s;
@@ -117,6 +118,7 @@ std::string flexran::rib::agent_info::to_string() const
 {
   std::string s;
   s += "agent ID " + std::to_string(agent_id);
+  s += " (" + port_ip + ")";
   s += " for BS " + std::to_string(bs_id);
   s += ", capabilities: " + capabilities.to_string();
   return s;

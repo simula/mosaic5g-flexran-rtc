@@ -249,7 +249,6 @@ void flexran::rib::Rib::dump_enb_configurations() const {
 }
 
 std::string flexran::rib::Rib::dump_all_enb_configurations_to_string() const {
-
   std::string str;
 
   for (auto eNB_config : eNB_configs_) {

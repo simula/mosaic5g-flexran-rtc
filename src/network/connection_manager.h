@@ -48,6 +48,7 @@ namespace flexran {
       void close_connection(int session_id);
       
       void send_msg_to_agent(std::shared_ptr<tagged_message> msg);
+      std::string get_endpoint(int session_id);
       
     private:
       

@@ -184,7 +184,8 @@ void flexran::rib::rib_updater::handle_hello(int agent_id,
   }
 
   std::shared_ptr<agent_info> agent = std::make_shared<agent_info>(
-      agent_id, hello_copy.bs_id(), hello_copy.capabilities());
+      agent_id, hello_copy.bs_id(), hello_copy.capabilities(),
+      net_xface_.get_endpoint(agent_id));
   LOG4CXX_INFO(flog::rib, "Agent " << agent_id << ": hello BS "
       << agent->bs_id << ", capabilities " << agent->capabilities.to_string());
 

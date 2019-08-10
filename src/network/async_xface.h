@@ -52,6 +52,7 @@ namespace flexran {
       bool get_msg_from_network(std::shared_ptr<tagged_message>& msg);
       
       bool send_msg(const protocol::flexran_message& msg, int agent_tag) const;
+      std::string get_endpoint(int agent_id) const;
       
       void forward_msg_to_agent();
 

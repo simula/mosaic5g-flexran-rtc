@@ -57,10 +57,12 @@ namespace flexran {
 
     class agent_info {
     public:
-      agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap)
+      agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap,
+                 const std::string &port_ip)
         : agent_id(agent_id),
           bs_id(bs_id),
           capabilities(cap),
+          port_ip(port_ip),
           rx_packets(0),
           rx_bytes(0)
       { }
@@ -70,6 +72,7 @@ namespace flexran {
       const int agent_id;
       const uint64_t bs_id;
       const agent_capabilities capabilities;
+      const std::string port_ip;
       std::atomic<uint64_t> rx_packets;
       std::atomic<uint64_t> rx_bytes;
     };

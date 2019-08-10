@@ -17,7 +17,7 @@ flexran::rib::agent_capabilities create_caps(const std::vector<cap>& cs)
 std::shared_ptr<flexran::rib::agent_info> make_agent(
     int agent_id, uint64_t bs_id, const std::vector<cap>& cs)
 {
-  return std::make_shared<flexran::rib::agent_info>(agent_id, bs_id, create_caps(cs));
+  return std::make_shared<flexran::rib::agent_info>(agent_id, bs_id, create_caps(cs), "127.0.0.1:4325");
 }
 
 TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")

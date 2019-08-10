@@ -62,6 +62,11 @@ bool flexran::network::async_xface::send_msg(const protocol::flexran_message& ms
   }
 }
 
+std::string flexran::network::async_xface::get_endpoint(int agent_id) const
+{
+  return manager_->get_endpoint(agent_id);
+}
+
 void flexran::network::async_xface::forward_msg_to_agent() {
   tagged_message *msg;
   out_queue_.pop(msg);

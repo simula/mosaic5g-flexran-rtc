@@ -65,3 +65,10 @@ void flexran::network::connection_manager::close_connection(int session_id) {
     sessions_.erase(session_id);
   }
 }
+
+std::string flexran::network::connection_manager::get_endpoint(int session_id) {
+  auto it = sessions_.find(session_id);
+  if (it == sessions_.end())
+    return "";
+  return it->second->get_endpoint();
+}

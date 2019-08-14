@@ -1,76 +1,46 @@
 cmake_minimum_required (VERSION 3.5)
 
-project (rt_controller C CXX)
+project (rt_controller CXX)
+set (CMAKE_CXX_STANDARD 11)
 
-macro(use_cxx11)
-  if (CMAKE_VERSION VERSION_LESS "3.1")
-      set (CMAKE_CXX_FLAGS "--std=c++11 ${CMAKE_CXX_FLAGS}")
-  else ()
-    set (CMAKE_CXX_STANDARD 11)
-  endif ()
-endmacro(use_cxx11)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
-use_cxx11()
-
-
-set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS} -O2")
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wstrict-prototypes -fno-strict-aliasing ")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3")
-#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g -DMALLOC_CHECK_=3 -O2") 
-#set (CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
-
-
-# Enable low-latency kernel (for kernel 3.14 and above)
 option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)" ON)
-
 if(LOWLATENCY)
-add_definitions(-DLOWLATENCY)
-include_directories("/usr/include")
+  add_definitions(-DLOWLATENCY)
 endif()
 
 # Set constants for abstract simulation mode
-if(ABSTRACT_SIMULATION)
-add_definitions(-DABSTRACT_SIMULATION)
-endif()
+#if(ABSTRACT_SIMULATION)
+#add_definitions(-DABSTRACT_SIMULATION)
+#endif()
 
 # Enable RESTful northbound API
 option(REST_NORTHBOUND "Enable RESTful northbound API for the management of the controller" ON)
-
 if(REST_NORTHBOUND)
-add_definitions(-DREST_NORTHBOUND)
+  add_definitions(-DREST_NORTHBOUND)
 endif()
 
 # Enable Neo4j app
 #option(NEO4J_SUPPORT "Enable graphing application" OFF)
-#
 #if(NEO4J_SUPPORT)
-#add_definitions(-DNEO4J_SUPPORT)
+#  add_definitions(-DNEO4J_SUPPORT)
 #endif()
 
 # Enable Elastic Search app
 option(ELASTIC_SEARCH_SUPPORT "Enable Elastic Search application" ON)
-add_definitions(-DCURL_STATICLIB)
-
-
 if(ELASTIC_SEARCH_SUPPORT)
-add_definitions(-DELASTIC_SEARCH_SUPPORT)
+  add_definitions(-DELASTIC_SEARCH_SUPPORT)
 endif()
 
 # Add Profiling support
 option(PROFILE "Enable profiling of task_manager" OFF)
-
 if(PROFILE)
   add_definitions(-DPROFILE)
 endif()
 
-# Base directories
-set(RT_CONTROLLER_DIR src)
-set(RT_CONTROLLER_BIN_DIR build)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 #Find threads library
 find_package (Threads)
@@ -78,311 +48,18 @@ find_package (Threads)
 #Find log4cxx library
 set(Log4CXX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
 find_package(Log4CXX REQUIRED)
-
 include_directories(${Log4CXX_INCLUDE_DIR})
 
-# Create and generate protobuf messages library
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
-
-set(PROTOBUF_IMPORT_DIR "src/MESSAGES/V2")
-
-set (msgs
-    ${PROTOBUF_IMPORT_DIR}/flexran.proto
-    ${PROTOBUF_IMPORT_DIR}/header.proto
-    ${PROTOBUF_IMPORT_DIR}/controller_commands.proto
-    ${PROTOBUF_IMPORT_DIR}/mac_primitives.proto
-    ${PROTOBUF_IMPORT_DIR}/stats_messages.proto
-    ${PROTOBUF_IMPORT_DIR}/stats_common.proto
-    ${PROTOBUF_IMPORT_DIR}/time_common.proto
-    ${PROTOBUF_IMPORT_DIR}/config_messages.proto
-    ${PROTOBUF_IMPORT_DIR}/config_common.proto
-    ${PROTOBUF_IMPORT_DIR}/control_delegation.proto
-
-
-)
-
-set(GENERATED_PROTO_DIR proto_messages)
-
-set(protoc_call "tools/generate_protobuf")
-set(protobuf_generated_dir ${RT_CONTROLLER_BIN_DIR})
-set(FLPT_CC_DIR ${protobuf_generated_dir}/${GENERATED_PROTO_DIR})
-
-execute_process(COMMAND ${protoc_call} ${FLPT_CC_DIR} ${PROTOBUF_IMPORT_DIR} ${msgs})
-file(GLOB FLPT_source ${FLPT_CC_DIR}/*.cc)
-
-set(FLPT_RT_CONTROLLER_generated
-    ${FLPT_CC_DIR}/header.pb.cc
-    ${FLPT_CC_DIR}/flexran.pb.cc
-    ${FLPT_CC_DIR}/stats_common.pb.cc
-    ${FLPT_CC_DIR}/stats_messages.pb.cc
-    ${FLPT_CC_DIR}/time_common.pb.cc
-    ${FLPT_CC_DIR}/controller_commands.pb.cc
-    ${FLPT_CC_DIR}/mac_primitives.pb.cc
-    ${FLPT_CC_DIR}/config_messages.pb.cc
-    ${FLPT_CC_DIR}/config_common.pb.cc
-    ${FLPT_CC_DIR}/control_delegation.pb.cc     
-
-
-    )
-  
-file(GLOB flpt_h ${FLPT_CC_DIR}/*.h)
-set(flpt_h ${flpt_h} )
- 
-add_library(FLPT_MSG
-  ${FLPT_RT_CONTROLLER_generated}
-  ${FLPT_source}
-  )
-set(FLPT_MSG_LIB FLPT_MSG)
-  
-message("flpt cpp dir is : ${FLPT_CC_DIR}")
-include_directories (${FLPT_CC_DIR})
-
-# Boost support
-
 set(Boost_USE_STATIC_LIBS OFF)
-
 find_package(Boost 1.54.0 REQUIRED COMPONENTS system program_options)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-endif(Boost_FOUND)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
-# Pistache support
-if(REST_NORTHBOUND)
-  find_package(Pistache REQUIRED)
-  if(Pistache_FOUND)
-    message(STATUS "Pistache found")
-    set(PISTACHE_INCLUDE_DIRS /usr/local/include/pistache)
-    set(PISTACHE_LIB /usr/local/lib/libpistache.a)
-    include_directories(${PISTACHE_INCLUDE_DIRS})
-  endif()
 
+add_subdirectory(src)
+
+option(ENABLE_TESTS "Enable tests" OFF)
+if(ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(tests/controller_test)
 endif()
-
-# Neo4j support
-#if(NEO4J_SUPPORT)
-#  # there is no find_package yet, but only /usr/include/neo4j_client.h
-#  set(NEO4J_INCLUDE "/usr/include/neo4j-client.h")
-#  if(EXISTS ${NEO4J_INCLUDE})
-#    message("--${NEO4J_INCLUDE} FOUND")
-#  else()
-#    message(FATAL_ERROR " --${NEO4J_INCLUDE} NOT FOUND. There is no find_package(),
-#    and it is not in /usr/include. If you are sure it is installed, consider
-#    changing the cmake file (search for 'NEO4J_SUPPORT')")
-#  endif()
-#endif()
-
-if(ELASTIC_SEARCH_SUPPORT)
-  find_package(CURL REQUIRED)
-  if(CURL_FOUND)
-    message(STATUS "CURL found")
-    include_directories(${CURL_INCLUDE_DIRS})
-    link_directories(${CURL_LIBRARY_DIRS})
-  endif()
-endif()
-
-
-# Network component
-set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
-include_directories(${RT_CONTROLLER_NETWORK_DIR})
-set(NETWORK_SRC
-  ${RT_CONTROLLER_NETWORK_DIR}/async_xface.cc
-  ${RT_CONTROLLER_NETWORK_DIR}/connection_manager.cc
-  ${RT_CONTROLLER_NETWORK_DIR}/agent_session.cc
-  ${RT_CONTROLLER_NETWORK_DIR}/protocol_message.cc
-  ${RT_CONTROLLER_NETWORK_DIR}/tagged_message.cc
-)
-add_library(RT_CONTROLLER_NETWORK_LIB
-  ${NETWORK_SRC}
-)
-
-
-# RIB component
-set (RT_CONTROLLER_RIB_DIR ${RT_CONTROLLER_DIR}/rib)
-include_directories(${RT_CONTROLLER_RIB_DIR})
-set(RIB_SRC
-  ${RT_CONTROLLER_RIB_DIR}/rib_updater.cc
-  ${RT_CONTROLLER_RIB_DIR}/rib.cc
-  ${RT_CONTROLLER_RIB_DIR}/enb_rib_info.cc
-  ${RT_CONTROLLER_RIB_DIR}/rib_common.cc
-  ${RT_CONTROLLER_RIB_DIR}/ue_mac_rib_info.cc
-  ${RT_CONTROLLER_RIB_DIR}/cell_mac_rib_info.cc
-  ${RT_CONTROLLER_RIB_DIR}/agent_info.cc
-)
-add_library(RT_CONTROLLER_RIB_LIB
-  ${RIB_SRC}
-)
-target_link_libraries(RT_CONTROLLER_RIB_LIB
-  RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_NETWORK_LIB
-  RT_CONTROLLER_EVENT_LIB
-)
-
-
-# Event component
-set(RT_CONTROLLER_EVENT_DIR ${RT_CONTROLLER_DIR}/event)
-include_directories(${RT_CONTROLLER_EVENT_DIR})
-set(EVENT_SRC
-  ${RT_CONTROLLER_EVENT_DIR}/subscription.cc
-)
-add_library(RT_CONTROLLER_EVENT_LIB
-  ${EVENT_SRC}
-)
-
-
-# App component
-set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
-include_directories(${RT_CONTROLLER_APP_DIR})
-set(APP_SRC
-  ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
-  ${RT_CONTROLLER_APP_DIR}/rrc_triggering.cc
-  ${RT_CONTROLLER_APP_DIR}/rib_management.cc
-  ${RT_CONTROLLER_APP_DIR}/recorder.cc
-  ${RT_CONTROLLER_APP_DIR}/rrm_management.cc
-  ${RT_CONTROLLER_APP_DIR}/band_check.cc
-#  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_helper.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
-#  ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
-#  ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
-#  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
-#  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
-#  ${RT_CONTROLLER_APP_DIR}/enb_scheduler_policy.cc
-)
-#if(NEO4J_SUPPORT)
-#  set(APP_SRC
-#    ${APP_SRC}
-#    ${RT_CONTROLLER_APP_DIR}/neo4j_client.cc
-#  )
-#endif(NEO4J_SUPPORT)
-if(ELASTIC_SEARCH_SUPPORT)
-  set(APP_SRC
-    ${APP_SRC}
-    ${RT_CONTROLLER_APP_DIR}/elastic_search.cc
-    )
-endif()
-add_library(RT_CONTROLLER_APP_LIB ${APP_SRC})
-target_link_libraries(RT_CONTROLLER_APP_LIB
-  RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_EVENT_LIB
-  RT_CONTROLLER_NETWORK_LIB
-  RT_CONTROLLER_RIB_LIB
-)
-
-
-# North_API component
-if(REST_NORTHBOUND)
-set (RT_CONTROLLER_NORTH_API_DIR ${RT_CONTROLLER_DIR}/north_api)
-include_directories(${RT_CONTROLLER_NORTH_API_DIR})
-set(NORTH_API_SRC
-  ${RT_CONTROLLER_NORTH_API_DIR}/call_manager.cc
-  ${RT_CONTROLLER_NORTH_API_DIR}/elastic_calls.cc
-  ${RT_CONTROLLER_NORTH_API_DIR}/rrm_calls.cc
-  ${RT_CONTROLLER_NORTH_API_DIR}/stats_manager_calls.cc
-  ${RT_CONTROLLER_NORTH_API_DIR}/rrc_triggering_calls.cc
-  ${RT_CONTROLLER_NORTH_API_DIR}/recorder_calls.cc
-)
-add_library(RT_CONTROLLER_NORTH_API_LIB
-  ${NORTH_API_SRC}
-)
-target_link_libraries(RT_CONTROLLER_NORTH_API_LIB
-  RT_CONTROLLER_APP_LIB
-)
-endif()
-
-
-# Core controller
-set (RT_CONTROLLER_CORE_DIR ${RT_CONTROLLER_DIR}/core)
-include_directories(${RT_CONTROLLER_CORE_DIR})
-set (RT_CONTROLLER_CORE_SRC
-    ${RT_CONTROLLER_CORE_DIR}/rt_wrapper.cc
-    ${RT_CONTROLLER_CORE_DIR}/task_manager.cc
-    ${RT_CONTROLLER_CORE_DIR}/rt_task.cc
-    ${RT_CONTROLLER_CORE_DIR}/requests_manager.cc
-)	
-add_library(RT_CONTROLLER_CORE_LIB
-  ${RT_CONTROLLER_CORE_SRC}
-)	
-target_link_libraries(RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_NETWORK_LIB
-  RT_CONTROLLER_EVENT_LIB
-)
-
-
-add_executable(rt_controller ${RT_CONTROLLER_CORE_DIR}/rt_controller.cc)
-target_link_libraries(rt_controller
-  RT_CONTROLLER_APP_LIB
-  RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_RIB_LIB
-  RT_CONTROLLER_EVENT_LIB
-  RT_CONTROLLER_NETWORK_LIB
-  ${FLPT_MSG_LIB}
-  ${Log4CXX_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${PROTOBUF_LIBRARY}
-)
-if(REST_NORTHBOUND)
-target_link_libraries(rt_controller
-  RT_CONTROLLER_NORTH_API_LIB
-  ${PISTACHE_LIB}
-)
-endif()
-#if(NEO4J_SUPPORT)
-#  target_link_libraries(rt_controller neo4j-client)
-#endif()
-if(ELASTIC_SEARCH_SUPPORT)
-  target_link_libraries(rt_controller ${CURL_LIBRARIES})
-endif()
-
-
-add_executable(parse-bd tools/parse-bd.cc)
-target_link_libraries(parse-bd
-  RT_CONTROLLER_APP_LIB
-  RT_CONTROLLER_RIB_LIB
-  ${FLPT_MSG_LIB}
-  ${Log4CXX_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${PROTOBUF_LIBRARY}
-)
-
-
-# Tests
-set(RT_CONTROLLER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/controller_test)
-set(CATCH_INCLUDE_DIR ${RT_CONTROLLER_TEST_DIR})
-add_library(Catch2::Catch IMPORTED INTERFACE)
-#set_property(Catch2::Catch PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-  #"${CATCH_INCLUDE_DIR}")
-
-include_directories(${RT_CONTROLLER_TEST_DIR})
-set (RT_CONTROLLER_TEST_SRC
-    ${RT_CONTROLLER_TEST_DIR}/test.cc
-    ${RT_CONTROLLER_TEST_DIR}/agent_capabilities.cc
-    ${RT_CONTROLLER_TEST_DIR}/app_rrm_management.cc
-    ${RT_CONTROLLER_TEST_DIR}/app_recorder.cc
-    ${RT_CONTROLLER_TEST_DIR}/enb_rib_info.cc
-    ${RT_CONTROLLER_TEST_DIR}/rib.cc
-)
-add_library(RT_CONTROLLER_TEST_LIB ${RT_CONTROLLER_TEST_SRC})
-
-add_executable(check ${RT_CONTROLLER_TEST_SRC})
-target_link_libraries(check
-  RT_CONTROLLER_APP_LIB
-  RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_RIB_LIB
-  RT_CONTROLLER_CORE_LIB
-  RT_CONTROLLER_NETWORK_LIB
-  ${FLPT_MSG_LIB}
-  ${Log4CXX_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${PROTOBUF_LIBRARY}
-  Catch2::Catch
-)
-
-enable_testing()
-add_test(NAME rt_controller_test COMMAND check)

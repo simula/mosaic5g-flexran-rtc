@@ -24,7 +24,7 @@ add_custom_command(TARGET rt_controller POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy rt_controller ${PROJECT_BINARY_DIR}/.
 )
 
-add_executable(parse-bd ../../tools/parse-bd.cc)
+add_executable(parse-bd parse-bd.cc)
 target_link_libraries(parse-bd PRIVATE RTC_APP_LIB RTC_CORE_LIB)
 add_custom_command(TARGET parse-bd POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy parse-bd ${PROJECT_BINARY_DIR}/.

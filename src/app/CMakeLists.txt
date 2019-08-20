@@ -31,8 +31,8 @@ set(APP_SRC
 
 if(ELASTIC_SEARCH_SUPPORT)
   find_package(CURL REQUIRED)
-  include_directories(${CURL_INCLUDE_DIRS})
-  link_directories(${CURL_LIBRARY_DIRS})
+  #include_directories(${CURL_INCLUDE_DIRS})
+  #link_directories(${CURL_LIBRARY_DIRS})
   set(APP_SRC ${APP_SRC} elastic_search.cc)
 endif()
 
@@ -41,8 +41,6 @@ add_library(RTC_APP_LIB ${APP_SRC})
 target_include_directories(RTC_APP_LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(RTC_APP_LIB
-  RTC_CORE_LIB
-  RTC_EVENT_LIB
   RTC_NETWORK_LIB
   RTC_RIB_LIB
 )

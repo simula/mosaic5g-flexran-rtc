@@ -16,8 +16,8 @@ add_executable(rtc_test ${RT_CONTROLLER_TEST_SRC})
 target_link_libraries(rtc_test
   RTC_APP_LIB
   RTC_CORE_LIB
+  Boost::boost
   ${Log4CXX_LIBRARIES}
-  ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   Catch2::Catch
 )

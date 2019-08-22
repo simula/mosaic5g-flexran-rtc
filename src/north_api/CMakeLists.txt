@@ -4,6 +4,7 @@ set(PISTACHE_LIB /usr/local/lib/libpistache.a)
 include_directories(${PISTACHE_INCLUDE_DIRS})
 
 set(NORTH_API_SRC
+    aqm_calls.cc
     call_manager.cc
     elastic_calls.cc
     rrm_calls.cc

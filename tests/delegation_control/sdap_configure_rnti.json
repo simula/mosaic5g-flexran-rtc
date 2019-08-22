@@ -1,0 +1,58 @@
+{
+  "egress": {
+    "name": "default",
+    "filters": [
+      {
+        "name": "default",
+        "targetQueueId": 0,
+        "l3": {
+          "ipDst": "127.0.0.1",
+          "ipSrc": "127.0.0.1"
+        },
+        "l4": {
+          "portDst": 22,
+          "portSrc": 22,
+          "protocol": "FLSDAPP_TCP"
+        },
+        "l7": {
+          "application": "youtube"
+        }
+      }
+    ],
+    "queues": [
+      {
+        "queueId": 0,
+        "shaper": {
+          "percentage": 100,
+          "windowTime": 1000
+        }
+      },
+      {
+        "queueId": 1,
+        "shaper": {
+          "percentage": 100,
+          "windowTime": 1000
+        }
+      },
+      {
+        "queueId": 2,
+        "shaper": {
+          "percentage": 100,
+          "windowTime": 1000
+        }
+      },
+      {
+        "queueId": 3,
+        "shaper": {
+          "percentage": 100,
+          "windowTime": 1000
+        }
+      }
+    ],
+    "qdisc": {
+      "schedName": "rr_sched"
+    }
+  },
+  "drbId": 0,
+  "type": "FLSDAPT_IP"
+}

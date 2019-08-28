@@ -16,17 +16,16 @@
  */
 
 /*! \file    delegation_manager.h
- *  \brief   example app for control delegation
- *  \authors Xenofon Foukas
+ *  \brief   application for control delegation (send shared objects to agent)
+ *  \authors Xenofon Foukas, Robert Schmidt
  *  \company Eurecom
- *  \email   x.foukas@sms.ed.ac.uk
+ *  \email   x.foukas@sms.ed.ac.uk, robert.schmidt@eurecom.fr
  */
 
 #ifndef DELEGATION_MANAGER_H_
 #define DELEGATION_MANAGER_H_
 
 #include "component.h"
-#include "rib_common.h"
 
 namespace flexran {
   
@@ -40,18 +39,15 @@ namespace flexran {
 
         delegation_manager(const rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub)
-          : component(rib, rm, sub), delegation_steps_{false} {}
+          : component(rib, rm, sub) {}
 
-	void periodic_task();
+        bool push_object(const std::string& bs, const std::string& name,
+                         const char *data, int len, std::string& error_reason);
 
-        void push_code(uint64_t bs_id, std::string function_name, std::string lib_name);
-
-        void reconfigure_agent(uint64_t bs_id, std::string policy_name);
-	
       private:
-	bool delegation_steps_[6];
+        void push_code(uint64_t bs_id, const std::string& name,
+                       const char *data, int len);
       };
-
     }
   }
 }

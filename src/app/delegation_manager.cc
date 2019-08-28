@@ -28,115 +28,53 @@
 
 #include "delegation_manager.h"
 
-// Example app for using control delegation
-void flexran::app::management::delegation_manager::periodic_task() {
-  
-  for (uint64_t bs_id : rib_.get_available_base_stations()) {
-    
-    ::std::shared_ptr<rib::enb_rib_info> bs_config = rib_.get_bs(bs_id);
-    rib::subframe_t current_subframe = bs_config->get_current_subframe();
-    rib::frame_t current_frame = bs_config->get_current_frame();
-
-    int time = (current_frame * 10) + current_subframe;
-
-    if (time == 2000) {
-      if (delegation_steps_[0] == false) {
-	//Push remote scheduler code
-	push_code(bs_id, "schedule_ue_spec_remote", "../tests/delegation_control/libremote_sched.so");
-	delegation_steps_[0] = true;
-      }
-    } else if (time == 2500) {
-       if (delegation_steps_[1] == false) {
-	 // Push local scheduler code
-	 push_code(bs_id, "schedule_ue_spec_default", "../tests/delegation_control/libdefault_sched.so");
-	 delegation_steps_[1] = true;
-      }
-
-    } else if (time == 4000) {
-       if (delegation_steps_[2] == false) {
-	 // Load remote scheduler and change its default parameters
-	 reconfigure_agent(bs_id, "../tests/delegation_control/remote_policy.yaml");
-	delegation_steps_[2] = true;
-      }
-      
-    } else if (time == 6000) {
-       if (delegation_steps_[3] == false) {
-	 // Change remote scheduler parameters
-	 reconfigure_agent(bs_id, "../tests/delegation_control/remote_policy2.yaml");
-	 delegation_steps_[3] = true;
-      }
-    } else if (time == 8000) {
-       if (delegation_steps_[4] == false) {
-	 // Load local scheduler
-	 reconfigure_agent(bs_id, "../tests/delegation_control/local_policy.yaml");
-	 delegation_steps_[4] = true;
-       } 
-    } else if (time == 10000) {
-       if (delegation_steps_[5] == false) {
-	 // Change local scheduler parameters
-	 reconfigure_agent(bs_id, "../tests/delegation_control/local_policy2.yaml");
-	 delegation_steps_[5] = true;
-       }
-    }    
-  }
-}
-
-void flexran::app::management::delegation_manager::reconfigure_agent(
-    uint64_t bs_id, std::string policy_name)
+bool flexran::app::management::delegation_manager::push_object(
+    const std::string &bs, const std::string& name,
+    const char *data, int len, std::string& error_reason)
 {
-  std::ifstream policy_file(policy_name);
-  std::string str_policy;
+  uint64_t bs_id = rib_.parse_enb_agent_id(bs);
+  if (bs_id == 0) {
+    error_reason = "can not find BS";
+    return false;
+  }
 
-  policy_file.seekg(0, std::ios::end);
-  str_policy.reserve(policy_file.tellg());
-  policy_file.seekg(0, std::ios::beg);
+  if (name.empty()) {
+    error_reason = "empty name";
+    return false;
+  }
 
-  str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
-		    std::istreambuf_iterator<char>());
+  if (data == nullptr) {
+    error_reason = "no data";
+    return false;
+  }
 
-  protocol::flexran_message config_message;
-  // Create control delegation message header
-  protocol::flex_header *config_header(new protocol::flex_header);
-  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
-  config_header->set_version(0);
-  config_header->set_xid(0);
-  
-  protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
-  agent_reconfiguration_msg->set_allocated_header(config_header);
+  if (len < 1 || len > 230000) {
+    error_reason = "invalid object size " + std::to_string(len)
+                    + "B, must be within [1,230000]B";
+    return false;
+  }
 
-  agent_reconfiguration_msg->set_policy(str_policy);
-
-  config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-  config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
-  req_manager_.send_message(bs_id, config_message);
+  push_code(bs_id, name, data, len);
+  LOG4CXX_INFO(flog::app, "delegation: sent new object (name " << name
+               << ", length " << len << ") to BS " << bs_id);
+  return true;
 }
 
 void flexran::app::management::delegation_manager::push_code(
-    uint64_t bs_id, std::string function_name, std::string lib_name)
+    uint64_t bs_id, const std::string& name, const char *data, int len)
 {
-  protocol::flexran_message d_message;
-  // Create control delegation message header
+  protocol::flexran_message msg;
   protocol::flex_header *delegation_header(new protocol::flex_header);
   delegation_header->set_type(protocol::FLPT_DELEGATE_CONTROL);
   delegation_header->set_version(0);
   delegation_header->set_xid(0);
   
-  protocol::flex_control_delegation *control_delegation_msg(new protocol::flex_control_delegation);
-  control_delegation_msg->set_allocated_header(delegation_header);
-  control_delegation_msg->set_delegation_type(protocol::FLCDT_MAC_DL_UE_SCHEDULER);
-  
-  ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
-  fin.seekg( 0, std::ios::end );  
-  size_t len = fin.tellg();
-  char *ret = new char[len];  
-  fin.seekg(0, std::ios::beg);   
-  fin.read(ret, len);  
-  fin.close();
-  std::string test(ret, len);
-  control_delegation_msg->set_payload(ret, len);
-  control_delegation_msg->set_name(function_name);
-  // Create and send the flexran message
-  d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-  d_message.set_allocated_control_delegation_msg(control_delegation_msg);
-  req_manager_.send_message(bs_id, d_message);
+  protocol::flex_control_delegation *delg(new protocol::flex_control_delegation);
+  delg->set_allocated_header(delegation_header);
+  delg->set_payload(data, len);
+  delg->set_name(name);
+
+  msg.set_msg_dir(protocol::INITIATING_MESSAGE);
+  msg.set_allocated_control_delegation_msg(delg);
+  req_manager_.send_message(bs_id, msg);
 }

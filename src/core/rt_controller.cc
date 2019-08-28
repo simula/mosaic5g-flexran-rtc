@@ -49,7 +49,7 @@
 //#include "remote_scheduler_eicic.h"
 //#include "flexible_scheduler.h"
 #include "rrc_triggering.h"
-//#include "delegation_manager.h"
+#include "delegation_manager.h"
 #include "requests_manager.h"
 #include "rib_management.h"
 #include "recorder.h"
@@ -74,6 +74,7 @@
 #ifdef ELASTIC_SEARCH_SUPPORT
 #include "elastic_calls.h"
 #endif
+#include "delegation_calls.h"
 
 #endif
 
@@ -207,6 +208,7 @@ int main(int argc, char* argv[]) {
   auto rrc_trigger = std::make_shared<flexran::app::rrc::rrc_triggering>(rib, rm, ev);
   auto rib_management = std::make_shared<flexran::app::management::rib_management>(rib, rm, ev);
   auto recorder = std::make_shared<flexran::app::log::recorder>(rib, rm, ev);
+  auto delegation = std::make_shared<flexran::app::management::delegation_manager>(rib, rm, ev);
 
   /* More examples of developed applications are available in the commented section.
      WARNING: Some of them might still contain bugs or might be from previous versions of the controller. */
@@ -257,6 +259,8 @@ int main(int argc, char* argv[]) {
   flexran::north_api::elastic_calls elastic_calls(elastic);
   north_api.register_calls(elastic_calls);
 #endif
+  flexran::north_api::delegation_calls delegation_calls(delegation);
+  north_api.register_calls(delegation_calls);
 
   // Start the call manager threaded. Once task_manager_thread and
   // networkThread return, north_api will be shut down too

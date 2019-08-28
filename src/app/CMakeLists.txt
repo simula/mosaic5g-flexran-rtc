@@ -6,6 +6,7 @@ set(APP_SRC
     recorder.cc
     rrm_management.cc
     band_check.cc
+    delegation_manager.cc
 #   flexible_scheduler.cc
 #   remote_scheduler.cc
 #   remote_scheduler_helper.cc
@@ -13,7 +14,6 @@ set(APP_SRC
 #   enb_scheduling_info.cc
 #   ue_scheduling_info.cc
 #   remote_scheduler_delegation.cc
-#   delegation_manager.cc
 #   remote_scheduler_eicic.cc
 #   enb_scheduler_policy.cc
 )

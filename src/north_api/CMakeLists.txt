@@ -6,6 +6,7 @@ include_directories(${PISTACHE_INCLUDE_DIRS})
 set(NORTH_API_SRC
     aqm_calls.cc
     call_manager.cc
+    delegation_calls.cc
     elastic_calls.cc
     rrm_calls.cc
     stats_manager_calls.cc

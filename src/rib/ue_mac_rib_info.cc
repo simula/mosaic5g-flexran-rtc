@@ -113,6 +113,9 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
 
   if (protocol::FLUST_GTP_STATS & flags)
     mac_stats_report_.mutable_gtp_stats()->CopyFrom(stats_report.gtp_stats());
+
+  if (protocol::FLUST_SDAP_STATS & flags)
+    mac_stats_report_.mutable_sdap_stats()->CopyFrom(stats_report.sdap_stats());
 }
 
 void flexran::rib::ue_mac_rib_info::dump_stats() const {

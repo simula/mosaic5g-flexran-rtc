@@ -70,6 +70,7 @@ void flexran::app::stats::stats_manager::bs_add(uint64_t bs_id)
   ue_flags |= protocol::FLUST_PDCP_STATS;
   ue_flags |= protocol::FLUST_MAC_STATS;
   ue_flags |= protocol::FLUST_GTP_STATS;
+  ue_flags |= protocol::FLUST_SDAP_STATS;
 
   complete_stats_request->set_ue_report_flags(ue_flags);
   int cell_flags = 0;

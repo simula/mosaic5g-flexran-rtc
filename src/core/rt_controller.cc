@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
   }
 
 #ifdef PROFILE
-  LOG4CXX_WARN(flog::core, "Compiled with profiling support");
+  LOG4CXX_WARN(flog::core, "Compiled with profiling support (send USR2 to controller)");
 #endif
     
   LOG4CXX_INFO(flog::core, "Listening on port " << cport << " for incoming agent connections");

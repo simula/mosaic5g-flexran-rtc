@@ -71,6 +71,7 @@ void flexran::core::rt::rt_task::set_scheduling_policy(Policy pol,
   default:
     LOG4CXX_ERROR(flog::core, "unsupported policy " << static_cast<int>(pol)
         << ", using SCHED_RR instead");
+    sched_policy = SCHED_RR;
   }
 
   sched_priority min = sched_get_priority_min(sched_policy);

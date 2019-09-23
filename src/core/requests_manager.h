@@ -25,11 +25,16 @@
 #ifndef REQUESTS_MANAGER_H_
 #define REQUESTS_MANAGER_H_
 
-#include "async_xface.h"
-#include "rib.h"
 #include "flexran.pb.h"
 
 namespace flexran {
+
+  namespace rib {
+    class Rib;
+  }
+  namespace network {
+    class async_xface;
+  }
 
   namespace core {
 

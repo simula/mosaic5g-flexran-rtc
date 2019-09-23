@@ -55,13 +55,27 @@ namespace flexran {
       std::vector<protocol::flex_bs_capability> caps_;
     };
 
+    class agent_splits {
+    public:
+      agent_splits(const agent_splits& splits)
+        : splits_(splits.splits_) {}
+      agent_splits(const google::protobuf::RepeatedField<int>& proto_splits);
+
+      std::string to_string() const;
+      std::string to_json() const;
+
+    private:
+      std::vector<protocol::flex_bs_split> splits_;
+    };
+
     class agent_info {
     public:
       agent_info(int agent_id, uint64_t bs_id, const agent_capabilities& cap,
-                 const std::string &port_ip)
+                 const agent_splits& spl, const std::string &port_ip)
         : agent_id(agent_id),
           bs_id(bs_id),
           capabilities(cap),
+          splits(spl),
           port_ip(port_ip),
           rx_packets(0),
           rx_bytes(0)
@@ -72,6 +86,7 @@ namespace flexran {
       const int agent_id;
       const uint64_t bs_id;
       const agent_capabilities capabilities;
+      const agent_splits splits;
       const std::string port_ip;
       std::atomic<uint64_t> rx_packets;
       std::atomic<uint64_t> rx_bytes;

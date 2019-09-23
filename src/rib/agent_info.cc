@@ -25,6 +25,7 @@
 #include "agent_info.h"
 #include <google/protobuf/util/json_util.h>
 #include <stdexcept>
+#include <algorithm>
 
 flexran::rib::agent_capabilities::agent_capabilities(
     const ::google::protobuf::RepeatedField<int>& proto_caps)
@@ -103,6 +104,34 @@ flexran::rib::agent_capabilities::make_caps(
   return cs;
 }
 
+flexran::rib::agent_splits::agent_splits(
+    const ::google::protobuf::RepeatedField<int>& proto_splits)
+{
+  std::transform(proto_splits.begin(), proto_splits.end(),
+      std::back_inserter(splits_),
+      [] (int p) { return static_cast<protocol::flex_bs_split>(p); });
+}
+
+std::string flexran::rib::agent_splits::to_string() const
+{
+  if (splits_.size() < 1) return "[]";
+  std::string s = "[";
+  for (protocol::flex_bs_split sp: splits_)
+    s += protocol::flex_bs_split_Name(sp) + ",";
+  s[s.size() - 1] = ']';
+  return s;
+}
+
+std::string flexran::rib::agent_splits::to_json() const
+{
+  if (splits_.size() < 1) return "[]";
+  std::string s = "[";
+  for (protocol::flex_bs_split sp: splits_)
+    s += "\"" + protocol::flex_bs_split_Name(sp) + "\",";
+  s[s.size() - 1] = ']';
+  return s;
+}
+
 std::string flexran::rib::agent_info::to_json() const
 {
   std::string s = "{";
@@ -110,6 +139,7 @@ std::string flexran::rib::agent_info::to_json() const
   s += ",\"ip_port\":\"" + port_ip;
   s += "\",\"bs_id\":" + std::to_string(bs_id);
   s += ",\"capabilities\":" + capabilities.to_json();
+  s += ",\"splits\":" + splits.to_json();
   s += "}";
   return s;
 }
@@ -121,5 +151,6 @@ std::string flexran::rib::agent_info::to_string() const
   s += " (" + port_ip + ")";
   s += " for BS " + std::to_string(bs_id);
   s += ", capabilities: " + capabilities.to_string();
+  s += ", splits: " + splits.to_string();
   return s;
 }

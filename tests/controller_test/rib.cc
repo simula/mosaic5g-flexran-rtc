@@ -5,6 +5,7 @@
 #include <vector>
 
 using cap = protocol::flex_bs_capability;
+using spl = protocol::flex_bs_split;
 
 flexran::rib::agent_capabilities create_caps(const std::vector<cap>& cs)
 {
@@ -14,10 +15,19 @@ flexran::rib::agent_capabilities create_caps(const std::vector<cap>& cs)
   return flexran::rib::agent_capabilities(h.capabilities());
 }
 
-std::shared_ptr<flexran::rib::agent_info> make_agent(
-    int agent_id, uint64_t bs_id, const std::vector<cap>& cs)
+flexran::rib::agent_splits create_splits(const std::vector<spl>& sp)
 {
-  return std::make_shared<flexran::rib::agent_info>(agent_id, bs_id, create_caps(cs), "127.0.0.1:4325");
+  protocol::flex_hello h;
+  for (auto s: sp)
+    h.add_splits(s);
+  return flexran::rib::agent_splits(h.splits());
+}
+
+std::shared_ptr<flexran::rib::agent_info> make_agent(
+    int agent_id, uint64_t bs_id, const std::vector<cap>& cs,
+    const std::vector<spl>& sp)
+{
+  return std::make_shared<flexran::rib::agent_info>(agent_id, bs_id, create_caps(cs), create_splits(sp), "127.0.0.1:4325");
 }
 
 TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
@@ -26,7 +36,7 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
 
   uint64_t bs_one = 0xe0000;
   int agent_one = 0;
-  auto ai = make_agent(agent_one, bs_one, {cap::LOPHY, cap::HIPHY, cap::LOMAC});
+  auto ai = make_agent(agent_one, bs_one, {cap::LOPHY, cap::HIPHY, cap::LOMAC}, {});
 
   REQUIRE (rib.add_pending_agent(ai) == true);
   REQUIRE (rib.add_pending_agent(ai) == false); // adding the same agent is forbidden
@@ -44,13 +54,13 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
   }
 
   SECTION ("Second agent with the same ID and overlapping capabilities is forbidden") {
-    auto aj = make_agent(3, bs_one, {cap::LOPHY});
+    auto aj = make_agent(3, bs_one, {cap::LOPHY}, {});
     REQUIRE (rib.add_pending_agent(aj) == false);
   }
 
   SECTION ("Adding second agent and complete base station") {
     int agent_two = 1;
-    auto aj = make_agent(agent_two, bs_one, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP});
+    auto aj = make_agent(agent_two, bs_one, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP}, {});
     REQUIRE (rib.add_pending_agent(aj) == true);
     REQUIRE (rib.get_num_pending_agents() == 2);
     REQUIRE (rib.new_eNB_config_entry(bs_one) == true);
@@ -105,7 +115,7 @@ TEST_CASE("RIB pending agents and add of disaggregated BS", "[rib]")
   SECTION ("adding agent of other base station makes no new base station") {
     uint64_t bs_two = 0xf0000;
     int agent_two = 3;
-    auto ak = make_agent(agent_two, bs_two, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP});
+    auto ak = make_agent(agent_two, bs_two, {cap::HIMAC, cap::RLC, cap::RRC, cap::SDAP, cap::PDCP}, {});
     REQUIRE (rib.add_pending_agent(ak) == true);
     REQUIRE (rib.new_eNB_config_entry(bs_one) == false);
     REQUIRE (rib.new_eNB_config_entry(bs_two) == false);
@@ -144,7 +154,7 @@ TEST_CASE("RIB with two BS", "[rib]")
   const int agent2 = 2;
 
   // add BS1 and verify
-  const auto a1 = make_agent(agent1, bs1, all_caps);
+  const auto a1 = make_agent(agent1, bs1, all_caps, {});
   REQUIRE(rib.add_pending_agent(a1) == true);
   REQUIRE(rib.new_eNB_config_entry(bs1) == true);
   REQUIRE(rib.get_available_base_stations().size() == 1);
@@ -161,7 +171,7 @@ TEST_CASE("RIB with two BS", "[rib]")
   REQUIRE(enb_rib1->get_enb_config().cell_config(0).phy_cell_id() == phy_cell_id1);
 
   // add BS2 and verify we have two BS with different enb_rib_infos
-  const auto a2 = make_agent(agent2, bs2, all_caps);
+  const auto a2 = make_agent(agent2, bs2, all_caps, {});
   REQUIRE(rib.add_pending_agent(a2) == true);
   REQUIRE(rib.new_eNB_config_entry(bs2) == true);
   REQUIRE(rib.get_available_base_stations().size() == 2);
@@ -206,12 +216,12 @@ TEST_CASE("Refuse BS with the same ID")
   const int agent2 = 2;
 
   // add BS1 and verify
-  const auto a1 = make_agent(agent1, bs1, all_caps);
+  const auto a1 = make_agent(agent1, bs1, all_caps, {});
   REQUIRE(rib.add_pending_agent(a1) == true);
   REQUIRE(rib.new_eNB_config_entry(bs1) == true);
 
   // add BS2 with the same ID, must be refused
-  const auto a2 = make_agent(agent2, bs1, all_caps);
+  const auto a2 = make_agent(agent2, bs1, all_caps, {});
   REQUIRE(rib.add_pending_agent(a2) == true);
   REQUIRE(rib.new_eNB_config_entry(bs1) == false);
 }

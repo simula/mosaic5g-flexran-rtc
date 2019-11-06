@@ -13,6 +13,11 @@ message flex_complete_stats_request {
 	optional uint32 sf = 2;
 	optional uint32 cell_report_flags = 3;
 	optional uint32 ue_report_flags = 4;
+  // The following two fields are used for representational purposes at the
+  // northbound of the controller. For historical reasons, the agent expects
+  // the flags as a uint32, though, which should be sent.
+  repeated flex_cell_stats_type cell_reports = 5;
+  repeated flex_ue_stats_type ue_reports = 6;
 }
 
 message flex_cell_stats_request {
@@ -94,4 +99,11 @@ enum flex_ue_stats_type {
      FLUST_RRC_MEASUREMENTS = 65536;
      // To be extended with more types of stats
     
+}
+
+//
+// Northbound interface-related message
+//
+message flex_complete_stats_request_repeated {
+  repeated flex_complete_stats_request reports = 1;
 }

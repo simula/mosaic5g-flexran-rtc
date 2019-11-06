@@ -32,6 +32,10 @@
 #include "rib_common.h"
 #include "subscription.h"
 
+namespace protocol {
+  class flex_complete_stats_request;
+}
+
 namespace flexran {
 
   namespace app {
@@ -75,8 +79,11 @@ namespace flexran {
           uint64_t& bs_id) const;
 
       private:
+        void push_complete_stats_request(uint64_t bs_id, uint32_t xid,
+            const protocol::flex_complete_stats_request& req);
+        protocol::flex_complete_stats_request_repeated default_stats_request();
 
-        std::set<uint64_t> bs_list_;
+        std::map<uint64_t, protocol::flex_complete_stats_request_repeated> bs_list_;
 
       };
 

@@ -308,7 +308,7 @@ void flexran::rib::rib_updater::handle_stats_reply(int agent_id,
     protocol::flex_header *header(new protocol::flex_header);
     header->set_type(protocol::FLPT_STATS_REQUEST);
     header->set_version(0);
-    header->set_xid(0);
+    header->set_xid(mac_stats_reply.header().xid());
     protocol::flex_complete_stats_request *off_msg(new protocol::flex_complete_stats_request);
     off_msg->set_report_frequency(protocol::FLSRF_OFF);
     protocol::flex_stats_request *stats_request_msg(new protocol::flex_stats_request);

@@ -494,6 +494,107 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
   stats.route(desc.get("/enb/:id_enb/ue/:id_ue"),
               "Get UE statistics for a UE on a BS")
        .bind(&flexran::north_api::stats_manager_calls::obtain_json_stats_ue, this);
+
+  /**
+   * @api {get} /stats/conf/enb/:id? Get statistics configuration
+   * @apiName GetStatsConf
+   * @apiGroup Stats
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the desired BS. This
+   * can be one of the following: -1 (last added agent), the eNB ID (in hex,
+   * preceded by "0x", or decimal) or the internal agent ID which can be
+   * obtained through a `stats` call.  Numbers smaller than 1000 are parsed as
+   * the agent ID.
+   *
+   * @apiDescription This returns the active statistics configuration for a
+   * given BS. The configuration governs which statistics are sent how often
+   * from the BS to the controller. For a description of the returned
+   * parameters, check the <a href="#api-Stats-SetStatsConf">SetStatsConf</a>
+   * API endpoint.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *     curl -XGET http://127.0.0.1:9999/stats/conf/enb/
+   * @apiSuccessExample Success-Response:
+   * {
+   *   "reports": [
+   *     {
+   *       "reportFrequency": "FLSRF_PERIODICAL",
+   *       "sf": 1000,
+   *       "cellReports": [
+   *         "FLCST_NOISE_INTERFERENCE"
+   *       ],
+   *       "ueReports": [
+   *         "FLUST_PHR",
+   *         "FLUST_DL_CQI",
+   *         "FLUST_BSR",
+   *         "FLUST_RLC_BS",
+   *         "FLUST_MAC_CE_BS",
+   *         "FLUST_UL_CQI",
+   *         "FLUST_RRC_MEASUREMENTS",
+   *         "FLUST_PDCP_STATS",
+   *         "FLUST_MAC_STATS",
+   *         "FLUST_GTP_STATS"
+   *       ]
+   *     }
+   *   ]
+   * }
+   *
+   * @apiError BadRequest The given eNB ID is invalid.
+   * @apiErrorExample Error-Response:
+   *     HTTP/1.1 400 BadRequest
+   *     { "error": "unknown BS" }
+   */
+  stats.route(desc.get("/conf/enb/:id?/"),
+              "Get the statistics configuration")
+       .bind(&flexran::north_api::stats_manager_calls::get_stats_req, this);
+
+  /**
+   * @api {post} /stats/conf/enb/:id? Set statistics configuration
+   * @apiName SetStatsConf
+   * @apiGroup Stats
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the desired BS. This
+   * can be one of the following: -1 (last added agent), the eNB ID (in hex,
+   * preceded by "0x", or decimal) or the internal agent ID which can be
+   * obtained through a `stats` call.  Numbers smaller than 1000 are parsed as
+   * the agent ID.
+   * @apiParam (JSON parameter) {Object[]} reports An array of individual
+   * configurations.
+   * @apiParam (JSON parameter) {String="FLSRF_PERIODICAL"} reports[reportFrequency] Report
+   * frequency type, only periodical reports are implemented at the moment.
+   * @apiParam (JSON parameter) {Number{1-}} reports[sf] The periodicity in subframes
+   * (i.e., milliseconds).
+   * @apiParam (JSON parameter) {String[]="FLCST_NOISE_INTERFERENCE"} reports[cellReports] The
+   * cell-level statistics. Implemented: noise/interference measurements.
+   * @apiParam (JSON parameter) {String[]="FLUST_PHR","FLUST_DL_CQI","FLUST_UL_CQI",
+   * "FLUST_BSR","FLUST_RLC_BS","FLUST_MAC_CE_BS","FLUST_RRC_MEASUREMENTS",
+   * "FLUST_PDCP_STATS","FLUST_MAC_STATS","FLUST_GTP_STATS"}  reports[ueReports] The
+   * UE-level (per-UE) reports. Implemented: power headroom, DL/UL CQI, buffer
+   * status report, RLC report, pending MAC Control Elements, RRC measurements,
+   * PDCP statistics (e.g., packets bytes), MAC statistics (e.g., used PRBs),
+   * GTP statistics (used tunnel identifiers).
+   *
+   * @apiDescription This sets a new statistics configuration for a
+   * given BS. The configuration governs which statistics are sent how often
+   * from the BS to the controller. The controller will delete all current
+   * statistics configurations present in the BS and configure the given ones.
+   * To modify an existing configuration, use the <a
+   * href="#api-Stats-GetStatsConf">GetStatsConf</a> endpoint:
+   * `curl localhost:9999/stats/conf/enb | jq . > stats.json`.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *     curl -XPOST http://127.0.0.1:9999/stats/conf/enb/ --data-binary @stats.json
+   *
+   * @apiError BadRequest The given eNB ID is invalid.
+   * @apiErrorExample Error-Response:
+   *     HTTP/1.1 400 BadRequest
+   *     { "error": "unknown BS" }
+   */
+  stats.route(desc.post("/conf/enb/:id?/"),
+              "Set the statistics configuration")
+       .bind(&flexran::north_api::stats_manager_calls::set_stats_req, this);
 }
 
 void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
@@ -594,4 +695,43 @@ void flexran::north_api::stats_manager_calls::obtain_json_stats_ue(const Pistach
   stats_app->ue_stats_by_rnti_by_bs_id_to_json_string(rnti, resp, bs_id);
   response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
   response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
+}
+
+void flexran::north_api::stats_manager_calls::get_stats_req(
+    const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
+
+  std::string resp;
+  if (!stats_app->get_stats_requests(bs, resp)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + resp +"\" }", MIME(Application, Json));
+    return;
+  }
+
+  response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+  response.send(Pistache::Http::Code::Ok, resp, MIME(Application, Json));
+}
+
+void flexran::north_api::stats_manager_calls::set_stats_req(
+    const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }\n", MIME(Application, Json));
+    return;
+  }
+
+  std::string error_reason;
+  if (!stats_app->set_stats_requests(bs, policy, error_reason)) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"" + error_reason + "\" }\n", MIME(Application, Json));
+    return;
+  }
+  response.send(Pistache::Http::Code::Ok, "");
 }

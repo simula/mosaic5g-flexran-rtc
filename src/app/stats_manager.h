@@ -78,9 +78,14 @@ namespace flexran {
       bool parse_rnti_imsi_find_bs(const std::string& rnti_imsi_s, flexran::rib::rnti_t& rnti,
           uint64_t& bs_id) const;
 
+      bool get_stats_requests(const std::string& bs, std::string& resp) const;
+      bool set_stats_requests(const std::string& bs, const std::string& policy,
+          std::string& error_reason);
+
       private:
         void push_complete_stats_request(uint64_t bs_id, uint32_t xid,
             const protocol::flex_complete_stats_request& req);
+        void remove_complete_stats_request(uint64_t bs_id, uint32_t xid);
         protocol::flex_complete_stats_request_repeated default_stats_request();
 
         std::map<uint64_t, protocol::flex_complete_stats_request_repeated> bs_list_;

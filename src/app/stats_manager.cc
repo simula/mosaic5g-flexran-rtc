@@ -27,6 +27,8 @@
 
 #include "stats_manager.h"
 #include "flexran.pb.h"
+#include <google/protobuf/util/json_util.h>
+namespace proto_util = google::protobuf::util;
 
 #include "flexran_log.h"
 
@@ -103,6 +105,29 @@ void flexran::app::stats::stats_manager::push_complete_stats_request(
   msg.set_msg_dir(protocol::INITIATING_MESSAGE);
   msg.set_allocated_stats_request_msg(stats_request_msg);
   req_manager_.send_message(bs_id, msg);
+}
+
+void flexran::app::stats::stats_manager::remove_complete_stats_request(
+    uint64_t bs_id, uint32_t xid)
+{
+  protocol::flex_header *header(new protocol::flex_header);
+  header->set_type(protocol::FLPT_STATS_REQUEST);
+  header->set_version(0);
+  header->set_xid(xid);
+
+  protocol::flex_complete_stats_request *off_msg(new protocol::flex_complete_stats_request);
+  off_msg->set_report_frequency(protocol::FLSRF_OFF);
+
+  protocol::flex_stats_request *stats_request_msg(new protocol::flex_stats_request);
+  stats_request_msg->set_allocated_header(header);
+  stats_request_msg->set_type(protocol::FLST_COMPLETE_STATS);
+  stats_request_msg->set_allocated_complete_stats_request(off_msg);
+
+  protocol::flexran_message out_message;
+  out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+  out_message.set_allocated_stats_request_msg(stats_request_msg);
+  req_manager_.send_message(bs_id, out_message);
+
 }
 
 void flexran::app::stats::stats_manager::bs_remove(uint64_t bs_id)
@@ -221,4 +246,63 @@ bool flexran::app::stats::stats_manager::parse_rnti_imsi_find_bs(const std::stri
     }
   }
   return false;
+}
+
+bool flexran::app::stats::stats_manager::get_stats_requests(
+    const std::string& bs, std::string& resp) const
+{
+  auto bsit = bs_list_.find(rib_.parse_enb_agent_id(bs));
+  if (bsit == bs_list_.end()) {
+    resp = "can not find BS";
+    return false;
+  }
+
+  auto ret = proto_util::MessageToJsonString(bsit->second, &resp, proto_util::JsonPrintOptions());
+  if (ret != proto_util::Status::OK) {
+    resp = "ProtoBuf parser error";
+    return false;
+  }
+  return true;
+}
+
+bool flexran::app::stats::stats_manager::set_stats_requests(
+    const std::string& bs, const std::string& policy, std::string& error_reason)
+{
+  const uint64_t bs_id = rib_.parse_enb_agent_id(bs);
+  if (bs_id == 0) {
+    error_reason = "can not find BS";
+    return false;
+  }
+
+  protocol::flex_complete_stats_request_repeated proto;
+  auto ret = proto_util::JsonStringToMessage(policy, &proto, proto_util::JsonParseOptions());
+  if (ret != proto_util::Status::OK) {
+    error_reason = "ProtoBuf parser error";
+    LOG4CXX_ERROR(flog::app,
+        "error while parsing ProtoBuf  message:" << ret.ToString());
+    return false;
+  }
+
+  /* remove all old requests */
+  auto it = bs_list_.find(bs_id);
+  if (it != bs_list_.end()) {
+    for (int xid = 0; xid < it->second.reports().size(); ++xid) {
+      remove_complete_stats_request(bs_id, xid);
+      LOG4CXX_INFO(flog::app, "Remove stats request (xid " << xid << ") of BS " << bs_id);
+    }
+    it->second.mutable_reports()->Clear();
+  } else {
+    LOG4CXX_WARN(flog::app, "no previous stats_req configuration for BS " << bs_id);
+  }
+
+  /* send new requests and store */
+  uint32_t xid = 0;
+  for (const auto& r : proto.reports()) {
+    push_complete_stats_request(bs_id, xid, r);
+    LOG4CXX_INFO(flog::app, "Sent periodical stats request to BS " << bs_id
+        << " (xid " << xid << ")");
+    it->second.mutable_reports()->Add()->CopyFrom(r);
+    xid++;
+  }
+  return true;
 }

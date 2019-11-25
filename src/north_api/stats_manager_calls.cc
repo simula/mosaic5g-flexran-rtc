@@ -398,11 +398,10 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    * @api {get} /stats/enb/:id/:type? Get RAN statistics in JSON for one eNB
    * @apiName GetStatsEnb
    * @apiGroup Stats
-   * @apiParam {Number} id The ID of the agent for which to change the
-   * slice configuration. This can be one of the following: -1 (last added
-   * agent), the eNB ID (in hex, preceded by "0x", or decimal) or the internal
-   * agent ID which can be obtained through a `stats` call.  Numbers smaller
-   * than 1000 are parsed as the agent ID.
+   * @apiParam {Number} id The ID of the desired BS. This can be one of the
+   * following: -1 (last added agent), the eNB ID (in hex, preceded by "0x", or
+   * decimal) or the internal agent ID which can be obtained through a `stats`
+   * call.  Numbers smaller than 1000 are parsed as the agent ID.
    * @apiParam {string=enb_config,mac_stats,all} [type=all] The type of
    * statistics to be returned. The following types are allowed:
    * * `enb_config`: static configuration (for eNB, UE, and LC)
@@ -470,11 +469,10 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    * @api {get} /stats/enb/:id_enb/ue/:id_ue Get UE statistics in JSON, delimited to a given eNB
    * @apiName GetStatsUELimited
    * @apiGroup Stats
-   * @apiParam {Number} id_enb The ID of the agent for which to change the
-   * slice configuration. This can be one of the following: -1 (last added
-   * agent), the eNB ID (in hex, preceded by "0x", or decimal) or the internal
-   * agent ID which can be obtained through a `stats` call.  Numbers smaller
-   * than 1000 are parsed as the agent ID.
+   * @apiParam {Number} id_enb The ID of the desired BS. This can be one of the
+   * following: -1 (last added agent), the eNB ID (in hex, preceded by "0x", or
+   * decimal) or the internal agent ID which can be obtained through a `stats`
+   * call.  Numbers smaller than 1000 are parsed as the agent ID.
    * @apiParam {number} id_ue The ID of the UE in the form of either an RNTI or
    * the IMSI. Everything shorter than 6 digits will be treated as the RNTI,
    * the rest as the IMSI.

@@ -564,11 +564,12 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiDescription This API associates a list of IMSIs to a particular
    * vnetwork/slice. Internally, it is checked that at least one base station
    * has a slice with the given slice ID and can therefore be used without a
-   * prior call to (#SliceConfiguration:InstallVNetwork). In this case, the
-   * IMSIs are stored.  Whenever a UE whose IMSI is known (this might not
-   * always be the case, go to flight mode and exit to get it reliably) is not
-   * in the slice it was associated to, it will automatically be associated to
-   * this slice. The controller checks for this every second.
+   * prior call to <a
+   * href="#api-SliceConfiguration-InstallVNetwork">SliceConfiguration:InstallVNetwork</a>. In this
+   * case, the IMSIs are stored.  Whenever a UE whose IMSI is known (this might
+   * not always be the case, go to flight mode and exit to get it reliably) is
+   * not in the slice it was associated to, it will automatically be associated
+   * to this slice. The controller checks for this every second.
    *
    * @apiVersion v0.1.0
    * @apiPermission None

@@ -42,7 +42,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    * @apiDescription This API gets the RAN config and status for the current
    * TTI for all eNBs connected to this controller. The output is in a
    * human-readable format. For JSON output, see
-   * (#Stats:GetStats).
+   * <a href="#api-Stats-GetStats">Stats:GetStats</a>.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -508,7 +508,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    * @apiDescription This returns the active statistics configuration for a
    * given BS. The configuration governs which statistics are sent how often
    * from the BS to the controller. For a description of the returned
-   * parameters, check the <a href="#api-Stats-SetStatsConf">SetStatsConf</a>
+   * parameters, check the <a href="#api-Stats-SetStatsConf">Stats:SetStatsConf</a>
    * API endpoint.
    *
    * @apiVersion v0.1.0

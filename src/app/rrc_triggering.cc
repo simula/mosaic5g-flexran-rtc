@@ -56,17 +56,19 @@ void flexran::app::rrc::rrc_triggering::check_phyCellId(uint64_t tick)
 {
   _unused(tick);
   for (auto it = set_check_phyCellId.begin(); it != set_check_phyCellId.end(); ) {
-    const uint64_t bs = *it;
-    if (rib_.get_bs(bs)->get_enb_config().cell_config_size() > 0
-        && rib_.get_bs(bs)->get_enb_config().cell_config(0).has_phy_cell_id()) {
-      const int phyCellId = rib_.get_bs(bs)->get_enb_config().cell_config(0).phy_cell_id();
+    const uint64_t bs_id = *it;
+    const std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+    if (bs
+        && bs->get_enb_config().cell_config_size() > 0
+        && bs->get_enb_config().cell_config(0).has_phy_cell_id()) {
+      const int phyCellId = bs->get_enb_config().cell_config(0).phy_cell_id();
       for (auto o : map_phyCellId)
         if (phyCellId == o.second)
-          LOG4CXX_WARN(flog::app, "rrc_triggering: New BS " << bs
+          LOG4CXX_WARN(flog::app, "rrc_triggering: New BS " << bs_id
               << " has the same phyCellId ("
               << phyCellId << ") as old BS " << o.first);
       /* we checked it against all BSs known to us */
-      map_phyCellId.insert(std::make_pair(bs, phyCellId));
+      map_phyCellId.insert(std::make_pair(bs_id, phyCellId));
       it = set_check_phyCellId.erase(it);
     } else {
       it++;

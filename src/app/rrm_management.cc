@@ -23,6 +23,7 @@
  */
 
 #include <map>
+#include <cmath>
 
 #include <google/protobuf/util/json_util.h>
 

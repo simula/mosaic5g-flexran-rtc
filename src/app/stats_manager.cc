@@ -58,7 +58,8 @@ protocol::flex_complete_stats_request_repeated flexran::app::stats::stats_manage
       protocol::FLUST_BSR,              protocol::FLUST_RLC_BS,
       protocol::FLUST_MAC_CE_BS,        protocol::FLUST_UL_CQI,
       protocol::FLUST_RRC_MEASUREMENTS, protocol::FLUST_PDCP_STATS,
-      protocol::FLUST_MAC_STATS,        protocol::FLUST_GTP_STATS};
+      protocol::FLUST_MAC_STATS,        protocol::FLUST_GTP_STATS,
+      protocol::FLUST_S1AP_STATS};
   for (auto f : ue_reports)
     req->add_ue_reports(f);
   req->add_cell_reports(protocol::FLCST_NOISE_INTERFERENCE);

@@ -25,6 +25,8 @@
 #ifndef RT_CONTROLLER_COMMON_H_
 #define RT_CONTROLLER_COMMON_H_
 
+#include "rtc_version.h"
+
 #define _unused(x) ((void)(x))
 
 #endif

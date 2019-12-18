@@ -29,7 +29,7 @@
 
 flexran::north_api::manager::call_manager::call_manager(Pistache::Address addr)
 	: httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr)),
-    desc_("FlexRAN NB API", "2.0")
+    desc_("FlexRAN NB API", RTC_VERSION)
 {
   desc_.info()
        .license("Apache", "http://www.apache.org/licenses/LICENSE-2.0");

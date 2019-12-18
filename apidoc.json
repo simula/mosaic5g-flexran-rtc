@@ -1,9 +1,9 @@
 {
-  "name": "FLEXRAN",
-  "version": "0.1.0",
-  "description": "FLEXRAN northbound API documentation",
-  "title": "FLEXRAN northbound API documentation",
-  "url" : "http://FLEXRAN-URL:PORT",
+  "name": "FlexRAN northbound API documentation",
+  "version": "2.2.1",
+  "description": "This document describes the REST north-bound interface of FlexRAN. Check the README to learn how to generate it yourself.",
+  "title": "FlexRAN northbound API documentation",
+  "url" : "http://FlexRAN-URL:PORT",
   "template": {
     "withCompare": false,
     "withGenerator": true

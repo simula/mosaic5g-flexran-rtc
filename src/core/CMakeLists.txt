@@ -5,7 +5,10 @@ add_library(RTC_CORE_LIB
   requests_manager.cc
 )	
 
-target_include_directories(RTC_CORE_LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+configure_file("rtc_version.h.in" "rtc_version.h")
+
+target_include_directories(RTC_CORE_LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+  "${CMAKE_CURRENT_BINARY_DIR}")
 
 target_link_libraries(RTC_CORE_LIB
   PRIVATE FLPT_MSG_LIB RTC_APP_LIB RTC_NETWORK_LIB RTC_RIB_LIB

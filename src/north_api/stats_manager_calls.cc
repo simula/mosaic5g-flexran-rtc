@@ -83,17 +83,900 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    * @apiPermission None
    * @apiExample Example usage:
    *     curl -X GET http://127.0.0.1:9999/stats/
-   * @apiSuccessExample Monolithic BS, 1UE
+   * @apiSuccessExample Two BSs, X2 en., 2 UEs
    *     HTTP/1.1 200 OK
    *     {
-   *       "date_time": "2019-11-26T18:05:21.603",
+   *       "date_time": "2019-12-19T11:45:44.089",
+   *       "eNB_config": [
+   *         {
+   *           "bs_id": 98765,
+   *           "agent_info": [
+   *             {
+   *               "agent_id": 9,
+   *               "ip_port": "192.168.12.161:45756",
+   *               "bs_id": 98765,
+   *               "capabilities": [
+   *                 "LOPHY",
+   *                 "HIPHY",
+   *                 "LOMAC",
+   *                 "HIMAC",
+   *                 "RLC",
+   *                 "PDCP",
+   *                 "SDAP",
+   *                 "RRC",
+   *                 "S1AP"
+   *               ],
+   *               "splits": []
+   *             }
+   *           ],
+   *           "eNB": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 8,
+   *               "xid": 0
+   *             },
+   *             "cellConfig": [
+   *               {
+   *                 "phyCellId": 20,
+   *                 "puschHoppingOffset": 0,
+   *                 "hoppingMode": 0,
+   *                 "nSb": 1,
+   *                 "phichResource": 0,
+   *                 "phichDuration": 0,
+   *                 "initNrPDCCHOFDMSym": 1,
+   *                 "siConfig": {
+   *                   "sfn": 986,
+   *                   "sib1Length": 17,
+   *                   "siWindowLength": 5
+   *                 },
+   *                 "dlBandwidth": 25,
+   *                 "ulBandwidth": 25,
+   *                 "ulCyclicPrefixLength": 0,
+   *                 "dlCyclicPrefixLength": 0,
+   *                 "antennaPortsCount": 1,
+   *                 "duplexMode": 1,
+   *                 "subframeAssignment": 0,
+   *                 "specialSubframePatterns": 0,
+   *                 "prachConfigIndex": 0,
+   *                 "prachFreqOffset": 2,
+   *                 "raResponseWindowSize": 7,
+   *                 "macContentionResolutionTimer": 5,
+   *                 "maxHARQMsg3Tx": 0,
+   *                 "n1PUCCHAN": 0,
+   *                 "deltaPUCCHShift": 1,
+   *                 "nRBCqi": 0,
+   *                 "srsSubframeConfig": 0,
+   *                 "srsBwConfig": 0,
+   *                 "srsMacUpPts": 0,
+   *                 "enable64QAM": 0,
+   *                 "carrierIndex": 0,
+   *                 "dlFreq": 2665,
+   *                 "ulFreq": 2545,
+   *                 "eutraBand": 7,
+   *                 "dlPdschPower": -27,
+   *                 "ulPuschPower": -96,
+   *                 "plmnId": [
+   *                   {
+   *                     "mcc": 208,
+   *                     "mnc": 93,
+   *                     "mncLength": 2
+   *                   }
+   *                 ],
+   *                 "sliceConfig": {
+   *                   "dl": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 10,
+   *                       "positionLow": 0,
+   *                       "positionHigh": 25,
+   *                       "maxmcs": 28,
+   *                       "sorting": [
+   *                         "CR_ROUND",
+   *                         "CR_SRB12",
+   *                         "CR_HOL",
+   *                         "CR_LC",
+   *                         "CR_CQI",
+   *                         "CR_LCP"
+   *                       ],
+   *                       "accounting": "POL_FAIR",
+   *                       "schedulerName": "schedule_ue_spec"
+   *                     }
+   *                   ],
+   *                   "ul": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 0,
+   *                       "firstRb": 0,
+   *                       "maxmcs": 20,
+   *                       "accounting": "POLU_FAIR",
+   *                       "schedulerName": "schedule_ulsch_rnti"
+   *                     }
+   *                   ],
+   *                   "intrasliceShareActive": true,
+   *                   "intersliceShareActive": true
+   *                 },
+   *                 "x2HoNetControl": true
+   *               }
+   *             ],
+   *             "s1ap": {
+   *               "pending": 0,
+   *               "connected": 1,
+   *               "enbS1Ip": "192.168.12.161",
+   *               "enbName": "eNB-Eurecom-LTEBox",
+   *               "mme": [
+   *                 {
+   *                   "s1Ip": "192.168.12.240",
+   *                   "name": "MME 1",
+   *                   "state": "FLMMES_CONNECTED",
+   *                   "servedGummeis": [
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 92,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 93,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 94,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 95,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 1,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     }
+   *                   ],
+   *                   "requestedPlmns": [
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 93,
+   *                       "mncLength": 2
+   *                     }
+   *                   ],
+   *                   "relCapacity": 50
+   *                 }
+   *               ]
+   *             }
+   *           },
+   *           "UE": {
+   *             "ueConfig": [
+   *               {
+   *                 "rnti": 29646,
+   *                 "timeAlignmentTimer": 7,
+   *                 "measGapConfigPattern": 4294967295,
+   *                 "measGapConfigSfOffset": 4294967295,
+   *                 "transmissionMode": 0,
+   *                 "ueAggregatedMaxBitrateUL": "0",
+   *                 "ueAggregatedMaxBitrateDL": "0",
+   *                 "capabilities": {
+   *                   "halfDuplex": 0,
+   *                   "intraSFHopping": 0,
+   *                   "type2Sb1": 1,
+   *                   "ueCategory": 4,
+   *                   "resAllocType1": 1
+   *                 },
+   *                 "ueTransmissionAntenna": 2,
+   *                 "ttiBundling": 0,
+   *                 "maxHARQTx": 4,
+   *                 "betaOffsetACKIndex": 0,
+   *                 "betaOffsetRIIndex": 0,
+   *                 "betaOffsetCQIIndex": 8,
+   *                 "ackNackSimultaneousTrans": 0,
+   *                 "simultaneousAckNackCqi": 0,
+   *                 "aperiodicCqiRepMode": 3,
+   *                 "tddAckNackFeedback": 4294967295,
+   *                 "ackNackRepetitionFactor": 0,
+   *                 "extendedBsrSize": 4294967295,
+   *                 "imsi": "208930000000003",
+   *                 "dlSliceId": 0,
+   *                 "ulSliceId": 0,
+   *                 "info": {
+   *                   "offsetFreqServing": "0",
+   *                   "offsetFreqNeighbouring": "0",
+   *                   "cellIndividualOffset": [
+   *                     "0",
+   *                     "0"
+   *                   ],
+   *                   "filterCoefficientRsrp": "4",
+   *                   "filterCoefficientRsrq": "4",
+   *                   "event": {
+   *                     "a3": {
+   *                       "a3Offset": "0",
+   *                       "reportOnLeave": 1,
+   *                       "hysteresis": "0",
+   *                       "timeToTrigger": "40",
+   *                       "maxReportCells": "2"
+   *                     }
+   *                   }
+   *                 }
+   *               }
+   *             ]
+   *           },
+   *           "LC": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 12,
+   *               "xid": 0
+   *             },
+   *             "lcUeConfig": [
+   *               {
+   *                 "rnti": 29646,
+   *                 "lcConfig": [
+   *                   {
+   *                     "lcid": 1,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 2,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 3,
+   *                     "lcg": 1,
+   *                     "direction": 1,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   }
+   *                 ]
+   *               }
+   *             ]
+   *           }
+   *         },
+   *         {
+   *           "bs_id": 123456,
+   *           "agent_info": [
+   *             {
+   *               "agent_id": 10,
+   *               "ip_port": "192.168.12.97:46046",
+   *               "bs_id": 123456,
+   *               "capabilities": [
+   *                 "LOPHY",
+   *                 "HIPHY",
+   *                 "LOMAC",
+   *                 "HIMAC",
+   *                 "RLC",
+   *                 "PDCP",
+   *                 "SDAP",
+   *                 "RRC",
+   *                 "S1AP"
+   *               ],
+   *               "splits": []
+   *             }
+   *           ],
+   *           "eNB": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 8,
+   *               "xid": 0
+   *             },
+   *             "cellConfig": [
+   *               {
+   *                 "phyCellId": 10,
+   *                 "puschHoppingOffset": 0,
+   *                 "hoppingMode": 0,
+   *                 "nSb": 1,
+   *                 "phichResource": 0,
+   *                 "phichDuration": 0,
+   *                 "initNrPDCCHOFDMSym": 1,
+   *                 "siConfig": {
+   *                   "sfn": 842,
+   *                   "sib1Length": 17,
+   *                   "siWindowLength": 5
+   *                 },
+   *                 "dlBandwidth": 25,
+   *                 "ulBandwidth": 25,
+   *                 "ulCyclicPrefixLength": 0,
+   *                 "dlCyclicPrefixLength": 0,
+   *                 "antennaPortsCount": 1,
+   *                 "duplexMode": 1,
+   *                 "subframeAssignment": 0,
+   *                 "specialSubframePatterns": 0,
+   *                 "prachConfigIndex": 0,
+   *                 "prachFreqOffset": 2,
+   *                 "raResponseWindowSize": 7,
+   *                 "macContentionResolutionTimer": 5,
+   *                 "maxHARQMsg3Tx": 0,
+   *                 "n1PUCCHAN": 0,
+   *                 "deltaPUCCHShift": 1,
+   *                 "nRBCqi": 0,
+   *                 "srsSubframeConfig": 0,
+   *                 "srsBwConfig": 0,
+   *                 "srsMacUpPts": 0,
+   *                 "enable64QAM": 0,
+   *                 "carrierIndex": 0,
+   *                 "dlFreq": 2665,
+   *                 "ulFreq": 2545,
+   *                 "eutraBand": 7,
+   *                 "dlPdschPower": -27,
+   *                 "ulPuschPower": -96,
+   *                 "plmnId": [
+   *                   {
+   *                     "mcc": 208,
+   *                     "mnc": 93,
+   *                     "mncLength": 2
+   *                   }
+   *                 ],
+   *                 "sliceConfig": {
+   *                   "dl": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 10,
+   *                       "positionLow": 0,
+   *                       "positionHigh": 25,
+   *                       "maxmcs": 28,
+   *                       "sorting": [
+   *                         "CR_ROUND",
+   *                         "CR_SRB12",
+   *                         "CR_HOL",
+   *                         "CR_LC",
+   *                         "CR_CQI",
+   *                         "CR_LCP"
+   *                       ],
+   *                       "accounting": "POL_FAIR",
+   *                       "schedulerName": "schedule_ue_spec"
+   *                     }
+   *                   ],
+   *                   "ul": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 0,
+   *                       "firstRb": 0,
+   *                       "maxmcs": 20,
+   *                       "accounting": "POLU_FAIR",
+   *                       "schedulerName": "schedule_ulsch_rnti"
+   *                     }
+   *                   ],
+   *                   "intrasliceShareActive": true,
+   *                   "intersliceShareActive": true
+   *                 },
+   *                 "x2HoNetControl": true
+   *               }
+   *             ],
+   *             "s1ap": {
+   *               "pending": 0,
+   *               "connected": 1,
+   *               "enbS1Ip": "192.168.12.97",
+   *               "enbName": "eNB-Eurecom-LTEBox",
+   *               "mme": [
+   *                 {
+   *                   "s1Ip": "192.168.12.240",
+   *                   "name": "MME 1",
+   *                   "state": "FLMMES_CONNECTED",
+   *                   "servedGummeis": [
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 92,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 93,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 94,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 95,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 1,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     }
+   *                   ],
+   *                   "requestedPlmns": [
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 93,
+   *                       "mncLength": 2
+   *                     }
+   *                   ],
+   *                   "relCapacity": 50
+   *                 }
+   *               ]
+   *             }
+   *           },
+   *           "UE": {
+   *             "ueConfig": [
+   *               {
+   *                 "rnti": 19349,
+   *                 "timeAlignmentTimer": 7,
+   *                 "measGapConfigPattern": 4294967295,
+   *                 "measGapConfigSfOffset": 4294967295,
+   *                 "transmissionMode": 0,
+   *                 "ueAggregatedMaxBitrateUL": "0",
+   *                 "ueAggregatedMaxBitrateDL": "0",
+   *                 "capabilities": {
+   *                   "halfDuplex": 0,
+   *                   "intraSFHopping": 0,
+   *                   "type2Sb1": 1,
+   *                   "ueCategory": 4,
+   *                   "resAllocType1": 1
+   *                 },
+   *                 "ueTransmissionAntenna": 2,
+   *                 "ttiBundling": 0,
+   *                 "maxHARQTx": 4,
+   *                 "betaOffsetACKIndex": 0,
+   *                 "betaOffsetRIIndex": 0,
+   *                 "betaOffsetCQIIndex": 8,
+   *                 "ackNackSimultaneousTrans": 0,
+   *                 "simultaneousAckNackCqi": 0,
+   *                 "aperiodicCqiRepMode": 3,
+   *                 "tddAckNackFeedback": 4294967295,
+   *                 "ackNackRepetitionFactor": 0,
+   *                 "extendedBsrSize": 4294967295,
+   *                 "imsi": "0",
+   *                 "dlSliceId": 0,
+   *                 "ulSliceId": 0,
+   *                 "info": {
+   *                   "offsetFreqServing": "0",
+   *                   "offsetFreqNeighbouring": "0",
+   *                   "cellIndividualOffset": [
+   *                     "0",
+   *                     "0"
+   *                   ],
+   *                   "filterCoefficientRsrp": "4",
+   *                   "filterCoefficientRsrq": "4",
+   *                   "event": {
+   *                     "a3": {
+   *                       "a3Offset": "0",
+   *                       "reportOnLeave": 1,
+   *                       "hysteresis": "0",
+   *                       "timeToTrigger": "40",
+   *                       "maxReportCells": "2"
+   *                     }
+   *                   }
+   *                 }
+   *               }
+   *             ]
+   *           },
+   *           "LC": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 12,
+   *               "xid": 0
+   *             },
+   *             "lcUeConfig": [
+   *               {
+   *                 "rnti": 19349,
+   *                 "lcConfig": [
+   *                   {
+   *                     "lcid": 1,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 2,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 3,
+   *                     "lcg": 1,
+   *                     "direction": 1,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   }
+   *                 ]
+   *               }
+   *             ]
+   *           }
+   *         }
+   *       ],
+   *       "mac_stats": [
+   *         {
+   *           "bs_id": 98765,
+   *           "ue_mac_stats": [
+   *             {
+   *               "rnti": 29646,
+   *               "mac_stats": {
+   *                 "rnti": 29646,
+   *                 "bsr": [
+   *                   0,
+   *                   0,
+   *                   0,
+   *                   0
+   *                 ],
+   *                 "phr": 37,
+   *                 "rlcReport": [
+   *                   {
+   *                     "lcId": 1,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 2,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 3,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   }
+   *                 ],
+   *                 "pendingMacCes": 0,
+   *                 "dlCqiReport": {
+   *                   "sfnSn": 44,
+   *                   "csiReport": [
+   *                     {
+   *                       "servCellIndex": 0,
+   *                       "ri": 0,
+   *                       "type": "FLCSIT_P10",
+   *                       "p10csi": {
+   *                         "wbCqi": 15
+   *                       }
+   *                     }
+   *                   ]
+   *                 },
+   *                 "ulCqiReport": {
+   *                   "sfnSn": 44,
+   *                   "cqiMeas": [
+   *                     {
+   *                       "type": "FLUCT_SRS",
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ],
+   *                   "pucchDbm": [
+   *                     {
+   *                       "p0PucchDbm": 0,
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ]
+   *                 },
+   *                 "rrcMeasurements": {
+   *                   "measid": 5,
+   *                   "pcellRsrp": -90,
+   *                   "pcellRsrq": -2,
+   *                   "neighMeas": {
+   *                     "eutraMeas": [
+   *                       {
+   *                         "physCellId": 10,
+   *                         "measResult": {
+   *                           "rsrp": -101,
+   *                           "rsrq": -12
+   *                         }
+   *                       },
+   *                       {
+   *                         "physCellId": 237,
+   *                         "measResult": {
+   *                           "rsrp": -113,
+   *                           "rsrq": -19
+   *                         }
+   *                       }
+   *                     ]
+   *                   }
+   *                 },
+   *                 "pdcpStats": {
+   *                   "pktTx": 33,
+   *                   "pktTxBytes": 9224,
+   *                   "pktTxSn": 32,
+   *                   "pktTxW": 0,
+   *                   "pktTxBytesW": 0,
+   *                   "pktTxAiat": 91005,
+   *                   "pktTxAiatW": 0,
+   *                   "pktRx": 53,
+   *                   "pktRxBytes": 5232,
+   *                   "pktRxSn": 53,
+   *                   "pktRxW": 0,
+   *                   "pktRxBytesW": 0,
+   *                   "pktRxAiat": 91976,
+   *                   "pktRxAiatW": 0,
+   *                   "pktRxOo": 0,
+   *                   "sfn": "92201"
+   *                 },
+   *                 "macStats": {
+   *                   "tbsDl": 4,
+   *                   "tbsUl": 63,
+   *                   "prbRetxDl": 4,
+   *                   "prbRetxUl": 0,
+   *                   "prbDl": 2,
+   *                   "prbUl": 0,
+   *                   "mcs1Dl": 28,
+   *                   "mcs2Dl": 0,
+   *                   "mcs1Ul": 10,
+   *                   "mcs2Ul": 10,
+   *                   "totalBytesSdusUl": 22149,
+   *                   "totalBytesSdusDl": 10488,
+   *                   "totalPrbDl": 985,
+   *                   "totalPrbUl": 6107,
+   *                   "totalPduDl": 442,
+   *                   "totalPduUl": 1968,
+   *                   "totalTbsDl": 11920,
+   *                   "totalTbsUl": 129767,
+   *                   "macSdusDl": [
+   *                     {
+   *                       "sduLength": 2,
+   *                       "lcid": 1
+   *                     }
+   *                   ],
+   *                   "harqRound": 8
+   *                 },
+   *                 "gtpStats": [
+   *                   {
+   *                     "eRabId": 5,
+   *                     "teidEnb": 2375692390,
+   *                     "teidSgw": 6
+   *                   }
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.240",
+   *                   "enbUeS1apId": 7773174,
+   *                   "mmeUeS1apId": 553648149,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 93,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
+   *               },
+   *               "harq": [
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK"
+   *               ]
+   *             }
+   *           ]
+   *         },
+   *         {
+   *           "bs_id": 123456,
+   *           "ue_mac_stats": [
+   *             {
+   *               "rnti": 19349,
+   *               "mac_stats": {
+   *                 "rnti": 19349,
+   *                 "bsr": [
+   *                   0,
+   *                   0,
+   *                   0,
+   *                   0
+   *                 ],
+   *                 "phr": 19,
+   *                 "rlcReport": [
+   *                   {
+   *                     "lcId": 1,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 2,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 3,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   }
+   *                 ],
+   *                 "pendingMacCes": 0,
+   *                 "dlCqiReport": {
+   *                   "sfnSn": 8792,
+   *                   "csiReport": [
+   *                     {
+   *                       "servCellIndex": 0,
+   *                       "ri": 0,
+   *                       "type": "FLCSIT_P10",
+   *                       "p10csi": {
+   *                         "wbCqi": 8
+   *                       }
+   *                     }
+   *                   ]
+   *                 },
+   *                 "ulCqiReport": {
+   *                   "sfnSn": 8792,
+   *                   "cqiMeas": [
+   *                     {
+   *                       "type": "FLUCT_SRS",
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ],
+   *                   "pucchDbm": [
+   *                     {
+   *                       "p0PucchDbm": 0,
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ]
+   *                 },
+   *                 "rrcMeasurements": {
+   *                   "measid": 4,
+   *                   "pcellRsrp": -119,
+   *                   "pcellRsrq": -8,
+   *                   "neighMeas": {
+   *                     "eutraMeas": [
+   *                       {
+   *                         "physCellId": 20,
+   *                         "measResult": {
+   *                           "rsrp": -114,
+   *                           "rsrq": -11
+   *                         }
+   *                       },
+   *                       {
+   *                         "physCellId": 237,
+   *                         "measResult": {
+   *                           "rsrp": -126,
+   *                           "rsrq": -19
+   *                         }
+   *                       }
+   *                     ]
+   *                   }
+   *                 },
+   *                 "pdcpStats": {
+   *                   "pktTx": 30,
+   *                   "pktTxBytes": 9961,
+   *                   "pktTxSn": 29,
+   *                   "pktTxW": 0,
+   *                   "pktTxBytesW": 0,
+   *                   "pktTxAiat": 88986,
+   *                   "pktTxAiatW": 0,
+   *                   "pktRx": 36,
+   *                   "pktRxBytes": 9848,
+   *                   "pktRxSn": 39,
+   *                   "pktRxW": 0,
+   *                   "pktRxBytesW": 0,
+   *                   "pktRxAiat": 88976,
+   *                   "pktRxAiatW": 0,
+   *                   "pktRxOo": 0,
+   *                   "sfn": "90709"
+   *                 },
+   *                 "macStats": {
+   *                   "tbsDl": 4,
+   *                   "tbsUl": 63,
+   *                   "prbRetxDl": 2,
+   *                   "prbRetxUl": 0,
+   *                   "prbDl": 2,
+   *                   "prbUl": 0,
+   *                   "mcs1Dl": 13,
+   *                   "mcs2Dl": 0,
+   *                   "mcs1Ul": 10,
+   *                   "mcs2Ul": 10,
+   *                   "totalBytesSdusUl": 16810,
+   *                   "totalBytesSdusDl": 10917,
+   *                   "totalPrbDl": 780,
+   *                   "totalPrbUl": 1847,
+   *                   "totalPduDl": 223,
+   *                   "totalPduUl": 537,
+   *                   "totalTbsDl": 11575,
+   *                   "totalTbsUl": 44716,
+   *                   "macSdusDl": [
+   *                     {
+   *                       "sduLength": 2,
+   *                       "lcid": 1
+   *                     }
+   *                   ],
+   *                   "harqRound": 8
+   *                 },
+   *                 "gtpStats": [
+   *                   {
+   *                     "eRabId": 5,
+   *                     "teidEnb": 3396329693,
+   *                     "teidSgw": 7
+   *                   }
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.240",
+   *                   "enbUeS1apId": 16398672,
+   *                   "mmeUeS1apId": 553648150,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 93,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
+   *               },
+   *               "harq": [
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK"
+   *               ]
+   *             }
+   *           ]
+   *         }
+   *       ]
+   *     }
+   * @apiSuccessExample Monol. BS, S1-flex, 2 UEs
+   *     HTTP/1.1 200 OK
+   *     {
+   *       "date_time": "2019-12-18T15:45:20.882",
    *       "eNB_config": [
    *         {
    *           "bs_id": 123456,
    *           "agent_info": [
    *             {
-   *               "agent_id": 15,
-   *               "ip_port": "127.0.0.1:39068",
+   *               "agent_id": 5,
+   *               "ip_port": "127.0.0.1:56438",
    *               "bs_id": 123456,
    *               "capabilities": [
    *                 "LOPHY",
@@ -125,8 +1008,8 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 "phichDuration": 0,
    *                 "initNrPDCCHOFDMSym": 1,
    *                 "siConfig": {
-   *                   "sfn": 456,
-   *                   "sib1Length": 17,
+   *                   "sfn": 762,
+   *                   "sib1Length": 20,
    *                   "siWindowLength": 5
    *                 },
    *                 "dlBandwidth": 25,
@@ -159,6 +1042,11 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   {
    *                     "mcc": 208,
    *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   },
+   *                   {
+   *                     "mcc": 208,
+   *                     "mnc": 94,
    *                     "mncLength": 2
    *                   }
    *                 ],
@@ -206,12 +1094,12 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *             ],
    *             "s1ap": {
    *               "pending": 0,
-   *               "connected": 1,
-   *               "enbS1Ip": "127.0.1.30",
+   *               "connected": 2,
+   *               "enbS1Ip": "192.168.12.45",
    *               "enbName": "eNB-Eurecom-LTEBox",
    *               "mme": [
    *                 {
-   *                   "s1Ip": "127.0.1.10",
+   *                   "s1Ip": "192.168.12.119",
    *                   "state": "FLMMES_CONNECTED",
    *                   "servedGummeis": [
    *                     {
@@ -229,21 +1117,70 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                       "mcc": 208,
    *                       "mnc": 95,
    *                       "mncLength": 2
+   *                     },
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 94,
+   *                       "mncLength": 2
    *                     }
    *                   ],
    *                   "relCapacity": 10
-   *                 }
-   *               ],
-   *               "ue": [
+   *                 },
    *                 {
-   *                   "mmeS1Ip": "127.0.1.10",
-   *                   "enbUeS1apId": 420141,
-   *                   "mmeUeS1apId": 2,
-   *                   "selectedPlmn": {
-   *                     "mcc": 208,
-   *                     "mnc": 95,
-   *                     "mncLength": 2
-   *                   }
+   *                   "s1Ip": "192.168.12.170",
+   *                   "name": "MME 1",
+   *                   "state": "FLMMES_CONNECTED",
+   *                   "servedGummeis": [
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 92,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 93,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 94,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     },
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 95,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 32768,
+   *                       "mmeCode": 1
+   *                     }
+   *                   ],
+   *                   "requestedPlmns": [
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 95,
+   *                       "mncLength": 2
+   *                     },
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 94,
+   *                       "mncLength": 2
+   *                     }
+   *                   ],
+   *                   "relCapacity": 50
    *                 }
    *               ]
    *             }
@@ -251,7 +1188,56 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *           "UE": {
    *             "ueConfig": [
    *               {
-   *                 "rnti": 2994,
+   *                 "rnti": 53123,
+   *                 "timeAlignmentTimer": 7,
+   *                 "measGapConfigPattern": 4294967295,
+   *                 "measGapConfigSfOffset": 4294967295,
+   *                 "transmissionMode": 0,
+   *                 "ueAggregatedMaxBitrateUL": "0",
+   *                 "ueAggregatedMaxBitrateDL": "0",
+   *                 "capabilities": {
+   *                   "halfDuplex": 0,
+   *                   "intraSFHopping": 0,
+   *                   "type2Sb1": 1,
+   *                   "ueCategory": 4,
+   *                   "resAllocType1": 1
+   *                 },
+   *                 "ueTransmissionAntenna": 2,
+   *                 "ttiBundling": 0,
+   *                 "maxHARQTx": 4,
+   *                 "betaOffsetACKIndex": 0,
+   *                 "betaOffsetRIIndex": 0,
+   *                 "betaOffsetCQIIndex": 8,
+   *                 "ackNackSimultaneousTrans": 0,
+   *                 "simultaneousAckNackCqi": 0,
+   *                 "aperiodicCqiRepMode": 3,
+   *                 "tddAckNackFeedback": 4294967295,
+   *                 "ackNackRepetitionFactor": 0,
+   *                 "extendedBsrSize": 4294967295,
+   *                 "imsi": "0",
+   *                 "dlSliceId": 0,
+   *                 "ulSliceId": 0,
+   *                 "info": {
+   *                   "offsetFreqServing": "0",
+   *                   "offsetFreqNeighbouring": "0",
+   *                   "cellIndividualOffset": [
+   *                     "0"
+   *                   ],
+   *                   "filterCoefficientRsrp": "4",
+   *                   "filterCoefficientRsrq": "4",
+   *                   "event": {
+   *                     "a3": {
+   *                       "a3Offset": "0",
+   *                       "reportOnLeave": 1,
+   *                       "hysteresis": "0",
+   *                       "timeToTrigger": "40",
+   *                       "maxReportCells": "2"
+   *                     }
+   *                   }
+   *                 }
+   *               },
+   *               {
+   *                 "rnti": 12471,
    *                 "timeAlignmentTimer": 7,
    *                 "measGapConfigPattern": 4294967295,
    *                 "measGapConfigSfOffset": 4294967295,
@@ -309,7 +1295,33 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *             },
    *             "lcUeConfig": [
    *               {
-   *                 "rnti": 2994,
+   *                 "rnti": 53123,
+   *                 "lcConfig": [
+   *                   {
+   *                     "lcid": 1,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 2,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   },
+   *                   {
+   *                     "lcid": 3,
+   *                     "lcg": 1,
+   *                     "direction": 1,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
+   *                   }
+   *                 ]
+   *               },
+   *               {
+   *                 "rnti": 12471,
    *                 "lcConfig": [
    *                   {
    *                     "lcid": 1,
@@ -343,16 +1355,16 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *           "bs_id": 123456,
    *           "ue_mac_stats": [
    *             {
-   *               "rnti": 2994,
+   *               "rnti": 12471,
    *               "mac_stats": {
-   *                 "rnti": 2994,
+   *                 "rnti": 12471,
    *                 "bsr": [
    *                   0,
    *                   0,
    *                   0,
    *                   0
    *                 ],
-   *                 "phr": 35,
+   *                 "phr": 36,
    *                 "rlcReport": [
    *                   {
    *                     "lcId": 1,
@@ -368,14 +1380,14 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   },
    *                   {
    *                     "lcId": 3,
-   *                     "txQueueSize": 128011,
-   *                     "txQueueHolDelay": 496,
-   *                     "statusPduSize": 86
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
    *                   }
    *                 ],
    *                 "pendingMacCes": 0,
    *                 "dlCqiReport": {
-   *                   "sfnSn": 4964,
+   *                   "sfnSn": 7809,
    *                   "csiReport": [
    *                     {
    *                       "servCellIndex": 0,
@@ -388,7 +1400,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   ]
    *                 },
    *                 "ulCqiReport": {
-   *                   "sfnSn": 4964,
+   *                   "sfnSn": 7809,
    *                   "cqiMeas": [
    *                     {
    *                       "type": "FLUCT_SRS",
@@ -404,50 +1416,50 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 },
    *                 "rrcMeasurements": {
    *                   "measid": 2,
-   *                   "pcellRsrp": -72,
-   *                   "pcellRsrq": -7
+   *                   "pcellRsrp": -87,
+   *                   "pcellRsrq": -2
    *                 },
    *                 "pdcpStats": {
-   *                   "pktTx": 4161,
-   *                   "pktTxBytes": 5974236,
-   *                   "pktTxSn": 64,
-   *                   "pktTxW": 214,
-   *                   "pktTxBytesW": 321000,
-   *                   "pktTxAiat": 15200,
+   *                   "pktTx": 59,
+   *                   "pktTxBytes": 15185,
+   *                   "pktTxSn": 58,
+   *                   "pktTxW": 0,
+   *                   "pktTxBytesW": 0,
+   *                   "pktTxAiat": 128541,
    *                   "pktTxAiatW": 0,
-   *                   "pktRx": 2731,
-   *                   "pktRxBytes": 200867,
-   *                   "pktRxSn": 2732,
-   *                   "pktRxW": 18,
-   *                   "pktRxBytesW": 936,
-   *                   "pktRxAiat": 15200,
-   *                   "pktRxAiatW": 4,
+   *                   "pktRx": 74,
+   *                   "pktRxBytes": 10406,
+   *                   "pktRxSn": 76,
+   *                   "pktRxW": 0,
+   *                   "pktRxBytesW": 0,
+   *                   "pktRxAiat": 128569,
+   *                   "pktRxAiatW": 0,
    *                   "pktRxOo": 0,
-   *                   "sfn": "15201"
+   *                   "sfn": "140926"
    *                 },
    *                 "macStats": {
-   *                   "tbsDl": 2292,
+   *                   "tbsDl": 4,
    *                   "tbsUl": 63,
    *                   "prbRetxDl": 0,
    *                   "prbRetxUl": 0,
-   *                   "prbDl": 25,
+   *                   "prbDl": 2,
    *                   "prbUl": 0,
    *                   "mcs1Dl": 28,
-   *                   "mcs2Dl": 28,
+   *                   "mcs2Dl": 0,
    *                   "mcs1Ul": 10,
    *                   "mcs2Ul": 10,
-   *                   "totalBytesSdusUl": 213608,
-   *                   "totalBytesSdusDl": 5867209,
-   *                   "totalPrbDl": 64536,
-   *                   "totalPrbUl": 4781,
-   *                   "totalPduDl": 2852,
-   *                   "totalPduUl": 524,
-   *                   "totalTbsDl": 5885581,
-   *                   "totalTbsUl": 224657,
+   *                   "totalBytesSdusUl": 20085,
+   *                   "totalBytesSdusDl": 16481,
+   *                   "totalPrbDl": 1003,
+   *                   "totalPrbUl": 5410,
+   *                   "totalPduDl": 435,
+   *                   "totalPduUl": 1754,
+   *                   "totalTbsDl": 17886,
+   *                   "totalTbsUl": 117184,
    *                   "macSdusDl": [
    *                     {
-   *                       "sduLength": 2289,
-   *                       "lcid": 3
+   *                       "sduLength": 2,
+   *                       "lcid": 1
    *                     }
    *                   ],
    *                   "harqRound": 8
@@ -455,10 +1467,159 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 "gtpStats": [
    *                   {
    *                     "eRabId": 5,
-   *                     "teidEnb": 3396329693,
-   *                     "teidSgw": 2
+   *                     "teidEnb": 2375692390,
+   *                     "teidSgw": 5
    *                   }
-   *                 ]
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.119",
+   *                   "enbUeS1apId": 7773174,
+   *                   "mmeUeS1apId": 5,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
+   *               },
+   *               "harq": [
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK"
+   *               ]
+   *             },
+   *             {
+   *               "rnti": 53123,
+   *               "mac_stats": {
+   *                 "rnti": 53123,
+   *                 "bsr": [
+   *                   0,
+   *                   0,
+   *                   0,
+   *                   0
+   *                 ],
+   *                 "phr": 32,
+   *                 "rlcReport": [
+   *                   {
+   *                     "lcId": 1,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 2,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 3,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   }
+   *                 ],
+   *                 "pendingMacCes": 0,
+   *                 "dlCqiReport": {
+   *                   "sfnSn": 7809,
+   *                   "csiReport": [
+   *                     {
+   *                       "servCellIndex": 0,
+   *                       "ri": 0,
+   *                       "type": "FLCSIT_P10",
+   *                       "p10csi": {
+   *                         "wbCqi": 15
+   *                       }
+   *                     }
+   *                   ]
+   *                 },
+   *                 "ulCqiReport": {
+   *                   "sfnSn": 7809,
+   *                   "cqiMeas": [
+   *                     {
+   *                       "type": "FLUCT_SRS",
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ],
+   *                   "pucchDbm": [
+   *                     {
+   *                       "p0PucchDbm": 0,
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ]
+   *                 },
+   *                 "rrcMeasurements": {
+   *                   "measid": 2,
+   *                   "pcellRsrp": -89,
+   *                   "pcellRsrq": -2
+   *                 },
+   *                 "pdcpStats": {
+   *                   "pktTx": 5334,
+   *                   "pktTxBytes": 3363877,
+   *                   "pktTxSn": 1237,
+   *                   "pktTxW": 0,
+   *                   "pktTxBytesW": 0,
+   *                   "pktTxAiat": 123211,
+   *                   "pktTxAiatW": 0,
+   *                   "pktRx": 2500,
+   *                   "pktRxBytes": 647681,
+   *                   "pktRxSn": 2538,
+   *                   "pktRxW": 0,
+   *                   "pktRxBytesW": 0,
+   *                   "pktRxAiat": 140040,
+   *                   "pktRxAiatW": 0,
+   *                   "pktRxOo": 0,
+   *                   "sfn": "140926"
+   *                 },
+   *                 "macStats": {
+   *                   "tbsDl": 4,
+   *                   "tbsUl": 63,
+   *                   "prbRetxDl": 2,
+   *                   "prbRetxUl": 0,
+   *                   "prbDl": 2,
+   *                   "prbUl": 0,
+   *                   "mcs1Dl": 28,
+   *                   "mcs2Dl": 0,
+   *                   "mcs1Ul": 10,
+   *                   "mcs2Ul": 10,
+   *                   "totalBytesSdusUl": 684324,
+   *                   "totalBytesSdusDl": 3387478,
+   *                   "totalPrbDl": 40133,
+   *                   "totalPrbUl": 21913,
+   *                   "totalPduDl": 2884,
+   *                   "totalPduUl": 4134,
+   *                   "totalTbsDl": 3422958,
+   *                   "totalTbsUl": 854645,
+   *                   "macSdusDl": [
+   *                     {
+   *                       "sduLength": 2,
+   *                       "lcid": 1
+   *                     }
+   *                   ],
+   *                   "harqRound": 8
+   *                 },
+   *                 "gtpStats": [
+   *                   {
+   *                     "eRabId": 5,
+   *                     "teidEnb": 2369645879,
+   *                     "teidSgw": 893
+   *                   }
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.170",
+   *                   "enbUeS1apId": 16398672,
+   *                   "mmeUeS1apId": 687865978,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 94,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
    *               },
    *               "harq": [
    *                 "ACK",
@@ -475,18 +1636,18 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *         }
    *       ]
    *     }
-   * @apiSuccessExample RCC+RRU, 1UE
+   * @apiSuccessExample RCC+RRU, 1 UE
    *     HTTP/1.1 200 OK
    *     {
-   *       "date_time": "2019-11-26T18:04:00.284",
+   *       "date_time": "2019-12-18T16:20:44.124",
    *       "eNB_config": [
    *         {
-   *           "bs_id": 10014,
+   *           "bs_id": 10006,
    *           "agent_info": [
    *             {
-   *               "agent_id": 14,
-   *               "ip_port": "127.0.0.1:39056",
-   *               "bs_id": 10014,
+   *               "agent_id": 6,
+   *               "ip_port": "127.0.0.1:56778",
+   *               "bs_id": 10006,
    *               "capabilities": [
    *                 "LOPHY",
    *                 "HIPHY",
@@ -519,7 +1680,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 "phichDuration": 0,
    *                 "initNrPDCCHOFDMSym": 1,
    *                 "siConfig": {
-   *                   "sfn": 262,
+   *                   "sfn": 40,
    *                   "sib1Length": 17,
    *                   "siWindowLength": 5
    *                 },
@@ -627,25 +1788,13 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   ],
    *                   "relCapacity": 10
    *                 }
-   *               ],
-   *               "ue": [
-   *                 {
-   *                   "mmeS1Ip": "127.0.1.10",
-   *                   "enbUeS1apId": 420141,
-   *                   "mmeUeS1apId": 1,
-   *                   "selectedPlmn": {
-   *                     "mcc": 208,
-   *                     "mnc": 95,
-   *                     "mncLength": 2
-   *                   }
-   *                 }
    *               ]
    *             }
    *           },
    *           "UE": {
    *             "ueConfig": [
    *               {
-   *                 "rnti": 5300,
+   *                 "rnti": 15184,
    *                 "timeAlignmentTimer": 7,
    *                 "measGapConfigPattern": 4294967295,
    *                 "measGapConfigSfOffset": 4294967295,
@@ -703,7 +1852,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *             },
    *             "lcUeConfig": [
    *               {
-   *                 "rnti": 5300,
+   *                 "rnti": 15184,
    *                 "lcConfig": [
    *                   {
    *                     "lcid": 1,
@@ -734,19 +1883,19 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *       ],
    *       "mac_stats": [
    *         {
-   *           "bs_id": 10014,
+   *           "bs_id": 10006,
    *           "ue_mac_stats": [
    *             {
-   *               "rnti": 5300,
+   *               "rnti": 15184,
    *               "mac_stats": {
-   *                 "rnti": 5300,
+   *                 "rnti": 15184,
    *                 "bsr": [
    *                   0,
    *                   0,
    *                   0,
    *                   0
    *                 ],
-   *                 "phr": 25,
+   *                 "phr": 32,
    *                 "rlcReport": [
    *                   {
    *                     "lcId": 1,
@@ -769,7 +1918,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 ],
    *                 "pendingMacCes": 0,
    *                 "dlCqiReport": {
-   *                   "sfnSn": 2684,
+   *                   "sfnSn": 1264,
    *                   "csiReport": [
    *                     {
    *                       "servCellIndex": 0,
@@ -782,7 +1931,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   ]
    *                 },
    *                 "ulCqiReport": {
-   *                   "sfnSn": 2684,
+   *                   "sfnSn": 1264,
    *                   "cqiMeas": [
    *                     {
    *                       "type": "FLUCT_SRS",
@@ -802,435 +1951,45 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   "pcellRsrq": -1
    *                 },
    *                 "pdcpStats": {
-   *                   "pktTx": 5179,
-   *                   "pktTxBytes": 7288125,
-   *                   "pktTxSn": 1082,
+   *                   "pktTx": 19,
+   *                   "pktTxBytes": 2511,
+   *                   "pktTxSn": 18,
    *                   "pktTxW": 0,
    *                   "pktTxBytesW": 0,
-   *                   "pktTxAiat": 32746,
+   *                   "pktTxAiat": 8904,
    *                   "pktTxAiatW": 0,
-   *                   "pktRx": 3224,
-   *                   "pktRxBytes": 287849,
-   *                   "pktRxSn": 3223,
-   *                   "pktRxW": 1,
-   *                   "pktRxBytesW": 60,
-   *                   "pktRxAiat": 33388,
-   *                   "pktRxAiatW": 571,
-   *                   "pktRxOo": 0,
-   *                   "sfn": "33401"
-   *                 },
-   *                 "macStats": {
-   *                   "tbsDl": 1836,
-   *                   "tbsUl": 63,
-   *                   "prbRetxDl": 0,
-   *                   "prbRetxUl": 0,
-   *                   "prbDl": 20,
-   *                   "prbUl": 0,
-   *                   "mcs1Dl": 28,
-   *                   "mcs2Dl": 28,
-   *                   "mcs1Ul": 10,
-   *                   "mcs2Ul": 10,
-   *                   "totalBytesSdusUl": 301770,
-   *                   "totalBytesSdusDl": 7314138,
-   *                   "totalPrbDl": 80167,
-   *                   "totalPrbUl": 8727,
-   *                   "totalPduDl": 3605,
-   *                   "totalPduUl": 1573,
-   *                   "totalTbsDl": 7338128,
-   *                   "totalTbsUl": 357597,
-   *                   "macSdusDl": [
-   *                     {
-   *                       "sduLength": 1794,
-   *                       "lcid": 3
-   *                     }
-   *                   ],
-   *                   "harqRound": 8
-   *                 },
-   *                 "gtpStats": [
-   *                   {
-   *                     "eRabId": 5,
-   *                     "teidEnb": 3396329693,
-   *                     "teidSgw": 1
-   *                   }
-   *                 ]
-   *               },
-   *               "harq": [
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK",
-   *                 "ACK"
-   *               ]
-   *             }
-   *           ]
-   *         }
-   *       ]
-   *     }
-   * @apiSuccessExample DU+CU, 1UE
-   *     HTTP/1.1 200 OK
-   *     {
-   *       "date_time": "2019-11-26T18:07:02.297",
-   *       "eNB_config": [
-   *         {
-   *           "bs_id": 12345678,
-   *           "agent_info": [
-   *             {
-   *               "agent_id": 17,
-   *               "ip_port": "127.0.0.1:39134",
-   *               "bs_id": 12345678,
-   *               "capabilities": [
-   *                 "LOPHY",
-   *                 "HIPHY",
-   *                 "LOMAC",
-   *                 "HIMAC",
-   *                 "RLC"
-   *               ],
-   *               "splits": [
-   *                 "F1"
-   *               ]
-   *             },
-   *             {
-   *               "agent_id": 16,
-   *               "ip_port": "192.168.12.119:36442",
-   *               "bs_id": 12345678,
-   *               "capabilities": [
-   *                 "PDCP",
-   *                 "SDAP",
-   *                 "RRC",
-   *                 "S1AP"
-   *               ],
-   *               "splits": [
-   *                 "F1"
-   *               ]
-   *             }
-   *           ],
-   *           "eNB": {
-   *             "header": {
-   *               "version": 0,
-   *               "type": 8,
-   *               "xid": 0
-   *             },
-   *             "cellConfig": [
-   *               {
-   *                 "phyCellId": 0,
-   *                 "puschHoppingOffset": 0,
-   *                 "hoppingMode": 0,
-   *                 "nSb": 1,
-   *                 "phichResource": 0,
-   *                 "phichDuration": 0,
-   *                 "initNrPDCCHOFDMSym": 1,
-   *                 "siConfig": {
-   *                   "sfn": 25,
-   *                   "sib1Length": 17,
-   *                   "siWindowLength": 5
-   *                 },
-   *                 "dlBandwidth": 25,
-   *                 "ulBandwidth": 25,
-   *                 "ulCyclicPrefixLength": 0,
-   *                 "dlCyclicPrefixLength": 0,
-   *                 "antennaPortsCount": 1,
-   *                 "duplexMode": 1,
-   *                 "subframeAssignment": 0,
-   *                 "specialSubframePatterns": 0,
-   *                 "prachConfigIndex": 0,
-   *                 "prachFreqOffset": 2,
-   *                 "raResponseWindowSize": 7,
-   *                 "macContentionResolutionTimer": 5,
-   *                 "maxHARQMsg3Tx": 0,
-   *                 "n1PUCCHAN": 0,
-   *                 "deltaPUCCHShift": 1,
-   *                 "nRBCqi": 0,
-   *                 "srsSubframeConfig": 0,
-   *                 "srsBwConfig": 0,
-   *                 "srsMacUpPts": 0,
-   *                 "enable64QAM": 0,
-   *                 "carrierIndex": 0,
-   *                 "dlFreq": 2665,
-   *                 "ulFreq": 2545,
-   *                 "eutraBand": 7,
-   *                 "dlPdschPower": -27,
-   *                 "ulPuschPower": -96,
-   *                 "plmnId": [
-   *                   {
-   *                     "mcc": 208,
-   *                     "mnc": 95,
-   *                     "mncLength": 2
-   *                   }
-   *                 ],
-   *                 "sliceConfig": {
-   *                   "dl": [
-   *                     {
-   *                       "id": 0,
-   *                       "label": "xMBB",
-   *                       "percentage": 100,
-   *                       "isolation": false,
-   *                       "priority": 10,
-   *                       "positionLow": 0,
-   *                       "positionHigh": 25,
-   *                       "maxmcs": 28,
-   *                       "sorting": [
-   *                         "CR_ROUND",
-   *                         "CR_SRB12",
-   *                         "CR_HOL",
-   *                         "CR_LC",
-   *                         "CR_CQI",
-   *                         "CR_LCP"
-   *                       ],
-   *                       "accounting": "POL_FAIR",
-   *                       "schedulerName": "schedule_ue_spec"
-   *                     }
-   *                   ],
-   *                   "ul": [
-   *                     {
-   *                       "id": 0,
-   *                       "label": "xMBB",
-   *                       "percentage": 100,
-   *                       "isolation": false,
-   *                       "priority": 0,
-   *                       "firstRb": 0,
-   *                       "maxmcs": 20,
-   *                       "accounting": "POLU_FAIR",
-   *                       "schedulerName": "schedule_ulsch_rnti"
-   *                     }
-   *                   ],
-   *                   "intrasliceShareActive": true,
-   *                   "intersliceShareActive": true
-   *                 },
-   *                 "x2HoNetControl": false
-   *               }
-   *             ],
-   *             "s1ap": {
-   *               "pending": 0,
-   *               "connected": 1,
-   *               "enbS1Ip": "192.168.12.119",
-   *               "enbName": "eNB-CU-Eurecom-LTEBox",
-   *               "mme": [
-   *                 {
-   *                   "s1Ip": "192.168.12.45",
-   *                   "state": "FLMMES_CONNECTED",
-   *                   "servedGummeis": [
-   *                     {
-   *                       "plmn": {
-   *                         "mcc": 208,
-   *                         "mnc": 95,
-   *                         "mncLength": 2
-   *                       },
-   *                       "mmeGroupId": 4,
-   *                       "mmeCode": 1
-   *                     }
-   *                   ],
-   *                   "requestedPlmns": [
-   *                     {
-   *                       "mcc": 208,
-   *                       "mnc": 95,
-   *                       "mncLength": 2
-   *                     }
-   *                   ],
-   *                   "relCapacity": 10
-   *                 }
-   *               ],
-   *               "ue": [
-   *                 {
-   *                   "mmeS1Ip": "192.168.12.45",
-   *                   "enbUeS1apId": 420141,
-   *                   "mmeUeS1apId": 1,
-   *                   "selectedPlmn": {
-   *                     "mcc": 208,
-   *                     "mnc": 95,
-   *                     "mncLength": 2
-   *                   }
-   *                 }
-   *               ]
-   *             }
-   *           },
-   *           "UE": {
-   *             "ueConfig": [
-   *               {
-   *                 "rnti": 49456,
-   *                 "timeAlignmentTimer": 7,
-   *                 "measGapConfigPattern": 4294967295,
-   *                 "measGapConfigSfOffset": 4294967295,
-   *                 "transmissionMode": 0,
-   *                 "ueAggregatedMaxBitrateUL": "0",
-   *                 "ueAggregatedMaxBitrateDL": "0",
-   *                 "capabilities": {
-   *                   "halfDuplex": 0,
-   *                   "intraSFHopping": 0,
-   *                   "type2Sb1": 1,
-   *                   "ueCategory": 4,
-   *                   "resAllocType1": 1
-   *                 },
-   *                 "ueTransmissionAntenna": 2,
-   *                 "ttiBundling": 0,
-   *                 "maxHARQTx": 4,
-   *                 "betaOffsetACKIndex": 0,
-   *                 "betaOffsetRIIndex": 0,
-   *                 "betaOffsetCQIIndex": 8,
-   *                 "ackNackSimultaneousTrans": 0,
-   *                 "simultaneousAckNackCqi": 0,
-   *                 "aperiodicCqiRepMode": 3,
-   *                 "tddAckNackFeedback": 4294967295,
-   *                 "ackNackRepetitionFactor": 0,
-   *                 "extendedBsrSize": 4294967295,
-   *                 "imsi": "208950000000011",
-   *                 "dlSliceId": 0,
-   *                 "ulSliceId": 0,
-   *                 "info": {
-   *                   "offsetFreqServing": "0",
-   *                   "offsetFreqNeighbouring": "0",
-   *                   "cellIndividualOffset": [
-   *                     "0"
-   *                   ],
-   *                   "filterCoefficientRsrp": "4",
-   *                   "filterCoefficientRsrq": "4",
-   *                   "event": {
-   *                     "a3": {
-   *                       "a3Offset": "0",
-   *                       "reportOnLeave": 1,
-   *                       "hysteresis": "0",
-   *                       "timeToTrigger": "40",
-   *                       "maxReportCells": "2"
-   *                     }
-   *                   }
-   *                 }
-   *               }
-   *             ]
-   *           },
-   *           "LC": {
-   *             "header": {
-   *               "version": 0,
-   *               "type": 12,
-   *               "xid": 0
-   *             },
-   *             "lcUeConfig": [
-   *               {
-   *                 "rnti": 49456,
-   *                 "lcConfig": [
-   *                   {
-   *                     "lcid": 1,
-   *                     "lcg": 0,
-   *                     "direction": 2,
-   *                     "qosBearerType": 0,
-   *                     "qci": 1
-   *                   }
-   *                 ]
-   *               }
-   *             ]
-   *           }
-   *         }
-   *       ],
-   *       "mac_stats": [
-   *         {
-   *           "bs_id": 12345678,
-   *           "ue_mac_stats": [
-   *             {
-   *               "rnti": 49456,
-   *               "mac_stats": {
-   *                 "rnti": 49456,
-   *                 "bsr": [
-   *                   0,
-   *                   0,
-   *                   0,
-   *                   0
-   *                 ],
-   *                 "phr": 38,
-   *                 "rlcReport": [
-   *                   {
-   *                     "lcId": 1,
-   *                     "txQueueSize": 0,
-   *                     "txQueueHolDelay": 0,
-   *                     "statusPduSize": 0
-   *                   },
-   *                   {
-   *                     "lcId": 2,
-   *                     "txQueueSize": 0,
-   *                     "txQueueHolDelay": 0,
-   *                     "statusPduSize": 0
-   *                   },
-   *                   {
-   *                     "lcId": 3,
-   *                     "txQueueSize": 9355,
-   *                     "txQueueHolDelay": 28,
-   *                     "statusPduSize": 7
-   *                   }
-   *                 ],
-   *                 "pendingMacCes": 0,
-   *                 "dlCqiReport": {
-   *                   "sfnSn": 284,
-   *                   "csiReport": [
-   *                     {
-   *                       "servCellIndex": 0,
-   *                       "ri": 0,
-   *                       "type": "FLCSIT_P10",
-   *                       "p10csi": {
-   *                         "wbCqi": 15
-   *                       }
-   *                     }
-   *                   ]
-   *                 },
-   *                 "ulCqiReport": {
-   *                   "sfnSn": 284,
-   *                   "cqiMeas": [
-   *                     {
-   *                       "type": "FLUCT_SRS",
-   *                       "servCellIndex": 0
-   *                     }
-   *                   ],
-   *                   "pucchDbm": [
-   *                     {
-   *                       "p0PucchDbm": 0,
-   *                       "servCellIndex": 0
-   *                     }
-   *                   ]
-   *                 },
-   *                 "rrcMeasurements": {
-   *                   "measid": -1,
-   *                   "pcellRsrp": -1,
-   *                   "pcellRsrq": -1
-   *                 },
-   *                 "pdcpStats": {
-   *                   "pktTx": 2372,
-   *                   "pktTxBytes": 2933107,
-   *                   "pktTxSn": 2371,
-   *                   "pktTxW": 0,
-   *                   "pktTxBytesW": 0,
-   *                   "pktTxAiat": 7,
-   *                   "pktTxAiatW": 0,
-   *                   "pktRx": 1816,
-   *                   "pktRxBytes": 198459,
-   *                   "pktRxSn": 1822,
+   *                   "pktRx": 26,
+   *                   "pktRxBytes": 3205,
+   *                   "pktRxSn": 25,
    *                   "pktRxW": 0,
    *                   "pktRxBytesW": 0,
-   *                   "pktRxAiat": 7,
+   *                   "pktRxAiat": 9356,
    *                   "pktRxAiatW": 0,
    *                   "pktRxOo": 0,
-   *                   "sfn": "7"
+   *                   "sfn": "11501"
    *                 },
    *                 "macStats": {
-   *                   "tbsDl": 2292,
+   *                   "tbsDl": 61,
    *                   "tbsUl": 63,
    *                   "prbRetxDl": 0,
    *                   "prbRetxUl": 0,
-   *                   "prbDl": 25,
+   *                   "prbDl": 2,
    *                   "prbUl": 0,
    *                   "mcs1Dl": 28,
-   *                   "mcs2Dl": 28,
+   *                   "mcs2Dl": 14,
    *                   "mcs1Ul": 10,
    *                   "mcs2Ul": 10,
-   *                   "totalBytesSdusUl": 207659,
-   *                   "totalBytesSdusDl": 2975989,
-   *                   "totalPrbDl": 32840,
-   *                   "totalPrbUl": 6406,
-   *                   "totalPduDl": 1620,
-   *                   "totalPduUl": 1073,
-   *                   "totalTbsDl": 2996994,
-   *                   "totalTbsUl": 258293,
+   *                   "totalBytesSdusUl": 4273,
+   *                   "totalBytesSdusDl": 2850,
+   *                   "totalPrbDl": 80,
+   *                   "totalPrbUl": 775,
+   *                   "totalPduDl": 31,
+   *                   "totalPduUl": 245,
+   *                   "totalTbsDl": 3009,
+   *                   "totalTbsUl": 17704,
    *                   "macSdusDl": [
    *                     {
-   *                       "sduLength": 2289,
+   *                       "sduLength": 56,
    *                       "lcid": 3
    *                     }
    *                   ],
@@ -1240,9 +1999,19 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   {
    *                     "eRabId": 5,
    *                     "teidEnb": 3396329693,
-   *                     "teidSgw": 1
+   *                     "teidSgw": 2
    *                   }
-   *                 ]
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "127.0.1.10",
+   *                   "enbUeS1apId": 420141,
+   *                   "mmeUeS1apId": 2,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
    *               },
    *               "harq": [
    *                 "ACK",
@@ -1259,17 +2028,17 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *         }
    *       ]
    *     }
-   * @apiSuccessExample RU+DU+CU, 1UE
+   * @apiSuccessExample DU+CU, 1 UE
    *     HTTP/1.1 200 OK
    *     {
-   *       "date_time": "2019-11-26T18:09:36.372",
+   *       "date_time": "2019-12-18T16:58:34.778",
    *       "eNB_config": [
    *         {
    *           "bs_id": 12345678,
    *           "agent_info": [
    *             {
-   *               "agent_id": 20,
-   *               "ip_port": "192.168.12.119:36446",
+   *               "agent_id": 2,
+   *               "ip_port": "192.168.12.119:37158",
    *               "bs_id": 12345678,
    *               "capabilities": [
    *                 "PDCP",
@@ -1282,8 +2051,8 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *               ]
    *             },
    *             {
-   *               "agent_id": 21,
-   *               "ip_port": "127.0.0.1:39170",
+   *               "agent_id": 3,
+   *               "ip_port": "127.0.0.1:59178",
    *               "bs_id": 12345678,
    *               "capabilities": [
    *                 "LOPHY",
@@ -1293,8 +2062,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 "RLC"
    *               ],
    *               "splits": [
-   *                 "F1",
-   *                 "IF4p5"
+   *                 "F1"
    *               ]
    *             }
    *           ],
@@ -1314,7 +2082,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 "phichDuration": 0,
    *                 "initNrPDCCHOFDMSym": 1,
    *                 "siConfig": {
-   *                   "sfn": 209,
+   *                   "sfn": 514,
    *                   "sib1Length": 17,
    *                   "siWindowLength": 5
    *                 },
@@ -1422,25 +2190,13 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   ],
    *                   "relCapacity": 10
    *                 }
-   *               ],
-   *               "ue": [
-   *                 {
-   *                   "mmeS1Ip": "192.168.12.45",
-   *                   "enbUeS1apId": 420141,
-   *                   "mmeUeS1apId": 3,
-   *                   "selectedPlmn": {
-   *                     "mcc": 208,
-   *                     "mnc": 95,
-   *                     "mncLength": 2
-   *                   }
-   *                 }
    *               ]
    *             }
    *           },
    *           "UE": {
    *             "ueConfig": [
    *               {
-   *                 "rnti": 39721,
+   *                 "rnti": 28189,
    *                 "timeAlignmentTimer": 7,
    *                 "measGapConfigPattern": 4294967295,
    *                 "measGapConfigSfOffset": 4294967295,
@@ -1498,7 +2254,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *             },
    *             "lcUeConfig": [
    *               {
-   *                 "rnti": 39721,
+   *                 "rnti": 28189,
    *                 "lcConfig": [
    *                   {
    *                     "lcid": 1,
@@ -1518,16 +2274,16 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *           "bs_id": 12345678,
    *           "ue_mac_stats": [
    *             {
-   *               "rnti": 39721,
+   *               "rnti": 28189,
    *               "mac_stats": {
-   *                 "rnti": 39721,
+   *                 "rnti": 28189,
    *                 "bsr": [
    *                   0,
    *                   0,
    *                   0,
    *                   0
    *                 ],
-   *                 "phr": 16,
+   *                 "phr": 40,
    *                 "rlcReport": [
    *                   {
    *                     "lcId": 1,
@@ -1550,7 +2306,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                 ],
    *                 "pendingMacCes": 0,
    *                 "dlCqiReport": {
-   *                   "sfnSn": 2224,
+   *                   "sfnSn": 5506,
    *                   "csiReport": [
    *                     {
    *                       "servCellIndex": 0,
@@ -1563,7 +2319,7 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   ]
    *                 },
    *                 "ulCqiReport": {
-   *                   "sfnSn": 2224,
+   *                   "sfnSn": 5506,
    *                   "cqiMeas": [
    *                     {
    *                       "type": "FLUCT_SRS",
@@ -1583,16 +2339,16 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   "pcellRsrq": -1
    *                 },
    *                 "pdcpStats": {
-   *                   "pktTx": 1522,
-   *                   "pktTxBytes": 1669195,
-   *                   "pktTxSn": 1521,
+   *                   "pktTx": 223,
+   *                   "pktTxBytes": 218709,
+   *                   "pktTxSn": 222,
    *                   "pktTxW": 0,
    *                   "pktTxBytesW": 0,
    *                   "pktTxAiat": 7,
    *                   "pktTxAiatW": 0,
-   *                   "pktRx": 1053,
-   *                   "pktRxBytes": 156320,
-   *                   "pktRxSn": 1052,
+   *                   "pktRx": 238,
+   *                   "pktRxBytes": 48063,
+   *                   "pktRxSn": 237,
    *                   "pktRxW": 0,
    *                   "pktRxBytesW": 0,
    *                   "pktRxAiat": 7,
@@ -1611,14 +2367,14 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   "mcs2Dl": 14,
    *                   "mcs1Ul": 10,
    *                   "mcs2Ul": 10,
-   *                   "totalBytesSdusUl": 163770,
-   *                   "totalBytesSdusDl": 1676629,
-   *                   "totalPrbDl": 18647,
-   *                   "totalPrbUl": 5969,
-   *                   "totalPduDl": 1040,
-   *                   "totalPduUl": 1828,
-   *                   "totalTbsDl": 1684566,
-   *                   "totalTbsUl": 197548,
+   *                   "totalBytesSdusUl": 50069,
+   *                   "totalBytesSdusDl": 219962,
+   *                   "totalPrbDl": 2514,
+   *                   "totalPrbUl": 1305,
+   *                   "totalPduDl": 191,
+   *                   "totalPduUl": 189,
+   *                   "totalTbsDl": 223687,
+   *                   "totalTbsUl": 56882,
    *                   "macSdusDl": [
    *                     {
    *                       "sduLength": 56,
@@ -1631,9 +2387,408 @@ void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Des
    *                   {
    *                     "eRabId": 5,
    *                     "teidEnb": 3396329693,
-   *                     "teidSgw": 3
+   *                     "teidSgw": 1
+   *                   }
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.45",
+   *                   "enbUeS1apId": 420141,
+   *                   "mmeUeS1apId": 1,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
+   *               },
+   *               "harq": [
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK",
+   *                 "ACK"
+   *               ]
+   *             }
+   *           ]
+   *         }
+   *       ]
+   *     }
+   * @apiSuccessExample RU+DU+CU, 1 UE
+   *     HTTP/1.1 200 OK
+   *     {
+   *       "date_time": "2019-12-18T17:02:21.178",
+   *       "eNB_config": [
+   *         {
+   *           "bs_id": 12345678,
+   *           "agent_info": [
+   *             {
+   *               "agent_id": 6,
+   *               "ip_port": "127.0.0.1:59568",
+   *               "bs_id": 12345678,
+   *               "capabilities": [
+   *                 "LOPHY",
+   *                 "HIPHY",
+   *                 "LOMAC",
+   *                 "HIMAC",
+   *                 "RLC"
+   *               ],
+   *               "splits": [
+   *                 "F1",
+   *                 "IF4p5"
+   *               ]
+   *             },
+   *             {
+   *               "agent_id": 5,
+   *               "ip_port": "192.168.12.119:37160",
+   *               "bs_id": 12345678,
+   *               "capabilities": [
+   *                 "PDCP",
+   *                 "SDAP",
+   *                 "RRC",
+   *                 "S1AP"
+   *               ],
+   *               "splits": [
+   *                 "F1"
+   *               ]
+   *             }
+   *           ],
+   *           "eNB": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 8,
+   *               "xid": 0
+   *             },
+   *             "cellConfig": [
+   *               {
+   *                 "phyCellId": 0,
+   *                 "puschHoppingOffset": 0,
+   *                 "hoppingMode": 0,
+   *                 "nSb": 1,
+   *                 "phichResource": 0,
+   *                 "phichDuration": 0,
+   *                 "initNrPDCCHOFDMSym": 1,
+   *                 "siConfig": {
+   *                   "sfn": 595,
+   *                   "sib1Length": 17,
+   *                   "siWindowLength": 5
+   *                 },
+   *                 "dlBandwidth": 25,
+   *                 "ulBandwidth": 25,
+   *                 "ulCyclicPrefixLength": 0,
+   *                 "dlCyclicPrefixLength": 0,
+   *                 "antennaPortsCount": 1,
+   *                 "duplexMode": 1,
+   *                 "subframeAssignment": 0,
+   *                 "specialSubframePatterns": 0,
+   *                 "prachConfigIndex": 0,
+   *                 "prachFreqOffset": 2,
+   *                 "raResponseWindowSize": 7,
+   *                 "macContentionResolutionTimer": 5,
+   *                 "maxHARQMsg3Tx": 0,
+   *                 "n1PUCCHAN": 0,
+   *                 "deltaPUCCHShift": 1,
+   *                 "nRBCqi": 0,
+   *                 "srsSubframeConfig": 0,
+   *                 "srsBwConfig": 0,
+   *                 "srsMacUpPts": 0,
+   *                 "enable64QAM": 0,
+   *                 "carrierIndex": 0,
+   *                 "dlFreq": 2665,
+   *                 "ulFreq": 2545,
+   *                 "eutraBand": 7,
+   *                 "dlPdschPower": -27,
+   *                 "ulPuschPower": -96,
+   *                 "plmnId": [
+   *                   {
+   *                     "mcc": 208,
+   *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   }
+   *                 ],
+   *                 "sliceConfig": {
+   *                   "dl": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 10,
+   *                       "positionLow": 0,
+   *                       "positionHigh": 25,
+   *                       "maxmcs": 28,
+   *                       "sorting": [
+   *                         "CR_ROUND",
+   *                         "CR_SRB12",
+   *                         "CR_HOL",
+   *                         "CR_LC",
+   *                         "CR_CQI",
+   *                         "CR_LCP"
+   *                       ],
+   *                       "accounting": "POL_FAIR",
+   *                       "schedulerName": "schedule_ue_spec"
+   *                     }
+   *                   ],
+   *                   "ul": [
+   *                     {
+   *                       "id": 0,
+   *                       "label": "xMBB",
+   *                       "percentage": 100,
+   *                       "isolation": false,
+   *                       "priority": 0,
+   *                       "firstRb": 0,
+   *                       "maxmcs": 20,
+   *                       "accounting": "POLU_FAIR",
+   *                       "schedulerName": "schedule_ulsch_rnti"
+   *                     }
+   *                   ],
+   *                   "intrasliceShareActive": true,
+   *                   "intersliceShareActive": true
+   *                 },
+   *                 "x2HoNetControl": false
+   *               }
+   *             ],
+   *             "s1ap": {
+   *               "pending": 0,
+   *               "connected": 1,
+   *               "enbS1Ip": "192.168.12.119",
+   *               "enbName": "eNB-CU-Eurecom-LTEBox",
+   *               "mme": [
+   *                 {
+   *                   "s1Ip": "192.168.12.45",
+   *                   "state": "FLMMES_CONNECTED",
+   *                   "servedGummeis": [
+   *                     {
+   *                       "plmn": {
+   *                         "mcc": 208,
+   *                         "mnc": 95,
+   *                         "mncLength": 2
+   *                       },
+   *                       "mmeGroupId": 4,
+   *                       "mmeCode": 1
+   *                     }
+   *                   ],
+   *                   "requestedPlmns": [
+   *                     {
+   *                       "mcc": 208,
+   *                       "mnc": 95,
+   *                       "mncLength": 2
+   *                     }
+   *                   ],
+   *                   "relCapacity": 10
+   *                 }
+   *               ]
+   *             }
+   *           },
+   *           "UE": {
+   *             "ueConfig": [
+   *               {
+   *                 "rnti": 29211,
+   *                 "timeAlignmentTimer": 7,
+   *                 "measGapConfigPattern": 4294967295,
+   *                 "measGapConfigSfOffset": 4294967295,
+   *                 "transmissionMode": 0,
+   *                 "ueAggregatedMaxBitrateUL": "0",
+   *                 "ueAggregatedMaxBitrateDL": "0",
+   *                 "capabilities": {
+   *                   "halfDuplex": 0,
+   *                   "intraSFHopping": 0,
+   *                   "type2Sb1": 1,
+   *                   "ueCategory": 4,
+   *                   "resAllocType1": 1
+   *                 },
+   *                 "ueTransmissionAntenna": 2,
+   *                 "ttiBundling": 0,
+   *                 "maxHARQTx": 4,
+   *                 "betaOffsetACKIndex": 0,
+   *                 "betaOffsetRIIndex": 0,
+   *                 "betaOffsetCQIIndex": 8,
+   *                 "ackNackSimultaneousTrans": 0,
+   *                 "simultaneousAckNackCqi": 0,
+   *                 "aperiodicCqiRepMode": 3,
+   *                 "tddAckNackFeedback": 4294967295,
+   *                 "ackNackRepetitionFactor": 0,
+   *                 "extendedBsrSize": 4294967295,
+   *                 "imsi": "208950000000011",
+   *                 "dlSliceId": 0,
+   *                 "ulSliceId": 0,
+   *                 "info": {
+   *                   "offsetFreqServing": "0",
+   *                   "offsetFreqNeighbouring": "0",
+   *                   "cellIndividualOffset": [
+   *                     "0"
+   *                   ],
+   *                   "filterCoefficientRsrp": "4",
+   *                   "filterCoefficientRsrq": "4",
+   *                   "event": {
+   *                     "a3": {
+   *                       "a3Offset": "0",
+   *                       "reportOnLeave": 1,
+   *                       "hysteresis": "0",
+   *                       "timeToTrigger": "40",
+   *                       "maxReportCells": "2"
+   *                     }
+   *                   }
+   *                 }
+   *               }
+   *             ]
+   *           },
+   *           "LC": {
+   *             "header": {
+   *               "version": 0,
+   *               "type": 12,
+   *               "xid": 0
+   *             },
+   *             "lcUeConfig": [
+   *               {
+   *                 "rnti": 29211,
+   *                 "lcConfig": [
+   *                   {
+   *                     "lcid": 1,
+   *                     "lcg": 0,
+   *                     "direction": 2,
+   *                     "qosBearerType": 0,
+   *                     "qci": 1
    *                   }
    *                 ]
+   *               }
+   *             ]
+   *           }
+   *         }
+   *       ],
+   *       "mac_stats": [
+   *         {
+   *           "bs_id": 12345678,
+   *           "ue_mac_stats": [
+   *             {
+   *               "rnti": 29211,
+   *               "mac_stats": {
+   *                 "rnti": 29211,
+   *                 "bsr": [
+   *                   0,
+   *                   0,
+   *                   0,
+   *                   0
+   *                 ],
+   *                 "phr": 21,
+   *                 "rlcReport": [
+   *                   {
+   *                     "lcId": 1,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 2,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   },
+   *                   {
+   *                     "lcId": 3,
+   *                     "txQueueSize": 0,
+   *                     "txQueueHolDelay": 0,
+   *                     "statusPduSize": 0
+   *                   }
+   *                 ],
+   *                 "pendingMacCes": 0,
+   *                 "dlCqiReport": {
+   *                   "sfnSn": 6694,
+   *                   "csiReport": [
+   *                     {
+   *                       "servCellIndex": 0,
+   *                       "ri": 0,
+   *                       "type": "FLCSIT_P10",
+   *                       "p10csi": {
+   *                         "wbCqi": 15
+   *                       }
+   *                     }
+   *                   ]
+   *                 },
+   *                 "ulCqiReport": {
+   *                   "sfnSn": 6694,
+   *                   "cqiMeas": [
+   *                     {
+   *                       "type": "FLUCT_SRS",
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ],
+   *                   "pucchDbm": [
+   *                     {
+   *                       "p0PucchDbm": 0,
+   *                       "servCellIndex": 0
+   *                     }
+   *                   ]
+   *                 },
+   *                 "rrcMeasurements": {
+   *                   "measid": -1,
+   *                   "pcellRsrp": -1,
+   *                   "pcellRsrq": -1
+   *                 },
+   *                 "pdcpStats": {
+   *                   "pktTx": 361,
+   *                   "pktTxBytes": 309300,
+   *                   "pktTxSn": 360,
+   *                   "pktTxW": 0,
+   *                   "pktTxBytesW": 0,
+   *                   "pktTxAiat": 7,
+   *                   "pktTxAiatW": 0,
+   *                   "pktRx": 289,
+   *                   "pktRxBytes": 107401,
+   *                   "pktRxSn": 288,
+   *                   "pktRxW": 0,
+   *                   "pktRxBytesW": 0,
+   *                   "pktRxAiat": 7,
+   *                   "pktRxAiatW": 0,
+   *                   "pktRxOo": 0,
+   *                   "sfn": "7"
+   *                 },
+   *                 "macStats": {
+   *                   "tbsDl": 61,
+   *                   "tbsUl": 63,
+   *                   "prbRetxDl": 0,
+   *                   "prbRetxUl": 0,
+   *                   "prbDl": 2,
+   *                   "prbUl": 0,
+   *                   "mcs1Dl": 28,
+   *                   "mcs2Dl": 14,
+   *                   "mcs1Ul": 10,
+   *                   "mcs2Ul": 10,
+   *                   "totalBytesSdusUl": 109747,
+   *                   "totalBytesSdusDl": 249471,
+   *                   "totalPrbDl": 2921,
+   *                   "totalPrbUl": 2610,
+   *                   "totalPduDl": 258,
+   *                   "totalPduUl": 477,
+   *                   "totalTbsDl": 253259,
+   *                   "totalTbsUl": 118745,
+   *                   "macSdusDl": [
+   *                     {
+   *                       "sduLength": 56,
+   *                       "lcid": 3
+   *                     }
+   *                   ],
+   *                   "harqRound": 8
+   *                 },
+   *                 "gtpStats": [
+   *                   {
+   *                     "eRabId": 5,
+   *                     "teidEnb": 3396329693,
+   *                     "teidSgw": 2
+   *                   }
+   *                 ],
+   *                 "s1apStats": {
+   *                   "mmeS1Ip": "192.168.12.45",
+   *                   "enbUeS1apId": 420141,
+   *                   "mmeUeS1apId": 2,
+   *                   "selectedPlmn": {
+   *                     "mcc": 208,
+   *                     "mnc": 95,
+   *                     "mncLength": 2
+   *                   }
+   *                 }
    *               },
    *               "harq": [
    *                 "ACK",

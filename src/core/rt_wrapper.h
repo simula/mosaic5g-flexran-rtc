@@ -56,8 +56,6 @@ namespace flexran {
 
 #ifdef LOWLATENCY
 
-#define gettid() syscall(__NR_gettid)
-    
 #define SCHED_DEADLINE  6
 
     /* XXX use the proper syscall numbers */

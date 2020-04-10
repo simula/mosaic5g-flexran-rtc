@@ -42,6 +42,7 @@
 #include "task_manager.h"
 #include "subscription.h"
 #include "stats_manager.h"
+#include "plmn_management.h"
 #include "rrm_management.h"
 //#include "remote_scheduler.h"
 //#include "remote_scheduler_delegation.h"
@@ -65,6 +66,7 @@
 #ifdef REST_NORTHBOUND
 
 #include "call_manager.h"
+#include "plmn_calls.h"
 #include "rrm_calls.h"
 #include "rrc_triggering_calls.h"
 #include "stats_manager_calls.h"
@@ -200,6 +202,7 @@ int main(int argc, char* argv[]) {
 
   // Register any applications that we might want to execute in the controller
   auto stats_app = std::make_shared<flexran::app::stats::stats_manager>(rib, rm, ev);
+  auto plmn_management = std::make_shared<flexran::app::management::plmn_management>(rib, rm, ev);
   auto rrm_management = std::make_shared<flexran::app::management::rrm_management>(rib, rm, ev);
   auto rrc_trigger = std::make_shared<flexran::app::rrc::rrc_triggering>(rib, rm, ev);
   auto rib_management = std::make_shared<flexran::app::management::rib_management>(rib, rm, ev);
@@ -240,6 +243,8 @@ int main(int argc, char* argv[]) {
   Pistache::Address addr(Pistache::Ipv4::any(), port);
   flexran::north_api::manager::call_manager north_api(addr);
 
+  flexran::north_api::plmn_calls plmn_calls(plmn_management);
+  north_api.register_calls(plmn_calls);
   flexran::north_api::rrm_calls rrm_calls(rrm_management);
   north_api.register_calls(rrm_calls);
   flexran::north_api::stats_manager_calls stats_calls(stats_app);

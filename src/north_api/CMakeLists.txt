@@ -5,6 +5,7 @@ include_directories(${PISTACHE_INCLUDE_DIRS})
 
 add_library(RTC_NORTH_API_LIB
     call_manager.cc
+    plmn_calls.cc
     rrm_calls.cc
     stats_manager_calls.cc
     rrc_triggering_calls.cc

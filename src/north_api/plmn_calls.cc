@@ -126,6 +126,12 @@ void flexran::north_api::plmn_calls::register_calls(Pistache::Rest::Description&
   mme_calls.route(desc.del("/enb/:id?"),
                   "Remove an MME")
            .bind(&flexran::north_api::plmn_calls::remove_mme, this);
+
+  auto plmn_calls = desc.path("/plmn");
+
+  plmn_calls.route(desc.post("/enb/:id?"),
+                   "Post a new set of PLMNs")
+            .bind(&flexran::north_api::plmn_calls::change_plmn, this);
 }
 
 void flexran::north_api::plmn_calls::add_mme(
@@ -169,6 +175,32 @@ void flexran::north_api::plmn_calls::remove_mme(
 
   try {
     plmn_app->remove_mme(bs, policy);
+  } catch (const std::invalid_argument& e) {
+    LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
+          << "(): " << e.what());
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error:\": \"" + std::string(e.what()) + "\"}\n", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "{ \"status\": \"Ok\" }\n");
+}
+
+void flexran::north_api::plmn_calls::change_plmn(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }\n", MIME(Application, Json));
+    return;
+  }
+
+  try {
+    plmn_app->change_plmn(bs, policy);
   } catch (const std::invalid_argument& e) {
     LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
           << "(): " << e.what());

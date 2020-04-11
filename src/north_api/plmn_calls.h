@@ -51,6 +51,9 @@ namespace flexran {
       void add_mme(const Pistache::Rest::Request& request,
                    Pistache::Http::ResponseWriter response);
 
+      void change_plmn(const Pistache::Rest::Request& request,
+                       Pistache::Http::ResponseWriter response);
+
     private:
 
       std::shared_ptr<flexran::app::management::plmn_management> plmn_app;

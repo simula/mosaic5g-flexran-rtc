@@ -1,0 +1,14 @@
+{
+  "plmnId": [
+    {
+      "mcc": 208,
+      "mnc": 95,
+      "mncLength": 2
+    },
+    {
+      "mcc": 208,
+      "mnc": 94,
+      "mncLength": 2
+    }
+  ]
+}

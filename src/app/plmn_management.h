@@ -44,10 +44,12 @@ namespace flexran {
             event::subscription& sub);
         void add_mme(const std::string& bs, const std::string& config);
         void remove_mme(const std::string& bs, const std::string& config);
+        void change_plmn(const std::string& bs, const std::string& config);
 
       private:
 
         void push_mme_config(uint64_t bs_id, const protocol::flex_s1ap_config& s1ap);
+        void push_cell_config(uint64_t bs_id, const protocol::flex_cell_config& s1ap);
       };
     }
   }

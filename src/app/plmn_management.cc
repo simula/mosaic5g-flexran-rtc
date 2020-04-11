@@ -133,6 +133,47 @@ void flexran::app::management::plmn_management::remove_mme(const std::string& bs
   push_mme_config(bs_id, s1ap);
 }
 
+void flexran::app::management::plmn_management::change_plmn(const std::string& bs,
+    const std::string& config)
+{
+  uint64_t bs_id = rib_.parse_bs_id(bs);
+  if (bs_id == 0)
+    throw std::invalid_argument("cannot find BS " + bs);
+
+  protocol::flex_cell_config cc;
+  auto ret = proto_util::JsonStringToMessage(config, &cc, proto_util::JsonParseOptions());
+  if (ret != proto_util::Status::OK) {
+    LOG4CXX_ERROR(flog::app, "error while parsing ProtoBuf message:" << ret.ToString());
+    throw std::invalid_argument("Protobuf parser error");
+  }
+
+  if (cc.plmn_id_size() < 1 || cc.plmn_id_size() > 6)
+    throw std::invalid_argument("length of PLMN list must be within [1,6]");
+
+  protocol::flex_cell_config ncc;
+  for (const protocol::flex_plmn& p : cc.plmn_id()) {
+    if (!p.has_mcc() || !p.has_mnc() || !p.mnc_length())
+      throw std::invalid_argument("Need MCC, MNC, and MNC length");
+    if (p.mcc() > 999)
+      throw std::invalid_argument("MCC cannot be greater than 99");
+    if (p.mnc_length() < 2 || p.mnc_length() > 3)
+      throw std::invalid_argument("MNC length can only be in range [2,3]");
+    if (p.mnc_length() == 2 && p.mnc() > 99)
+      throw std::invalid_argument("MNC cannot be greater than 99 for MNC length 2");
+    if (p.mnc_length() == 3 && p.mnc() > 999)
+      throw std::invalid_argument("MNC cannot be greater than 999 for MNC length 2");
+    ncc.add_plmn_id()->CopyFrom(p);
+  }
+
+  std::string s;
+  proto_util::JsonPrintOptions opt;
+  opt.add_whitespace = true;
+  proto_util::MessageToJsonString(ncc, &s, opt);
+  LOG4CXX_INFO(flog::app, "sending MME list to BS " << bs_id << ":\n" << s);
+
+  push_cell_config(bs_id, ncc);
+}
+
 void flexran::app::management::plmn_management::push_mme_config(
     uint64_t bs_id, const protocol::flex_s1ap_config& s1ap)
 {
@@ -145,6 +186,25 @@ void flexran::app::management::plmn_management::push_mme_config(
   s->CopyFrom(s1ap);
   protocol::flex_enb_config_reply *enb_config_msg(new protocol::flex_enb_config_reply);
   enb_config_msg->set_allocated_s1ap(s);
+  enb_config_msg->set_allocated_header(config_header);
+
+  protocol::flexran_message config_message;
+  config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+  config_message.set_allocated_enb_config_reply_msg(enb_config_msg);
+  req_manager_.send_message(bs_id, config_message);
+}
+
+void flexran::app::management::plmn_management::push_cell_config(
+    uint64_t bs_id, const protocol::flex_cell_config& cell_config)
+{
+  protocol::flex_header *config_header(new protocol::flex_header);
+  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
+  config_header->set_version(0);
+  config_header->set_xid(0);
+
+  protocol::flex_enb_config_reply *enb_config_msg(new protocol::flex_enb_config_reply);
+  enb_config_msg->add_cell_config();
+  enb_config_msg->mutable_cell_config(0)->CopyFrom(cell_config);
   enb_config_msg->set_allocated_header(config_header);
 
   protocol::flexran_message config_message;

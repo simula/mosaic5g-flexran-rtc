@@ -73,6 +73,14 @@ namespace flexran {
         void verify_static_slice_configuration(
             const protocol::flex_slice_dl_ul_config& c,
             const protocol::flex_slice_dl_ul_config& exist);
+        protocol::flex_slice_config transform_to_static_slice_configuration(
+            const protocol::flex_slice_config& c);
+
+        void verify_nvs_slice_configuration(
+            const protocol::flex_slice_dl_ul_config& c,
+            const protocol::flex_slice_dl_ul_config& exist);
+        protocol::flex_slice_config transform_to_nvs_slice_configuration(
+            const protocol::flex_slice_config& c);
 
         static bool verify_cell_config_for_restart(const protocol::flex_cell_config& c,
             std::string& error_message);

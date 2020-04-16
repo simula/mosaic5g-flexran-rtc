@@ -130,6 +130,8 @@ void flexran::app::management::rrm_management::apply_slice_config_policy(
     dl->set_algorithm(current.dl().algorithm());
   if (dl->algorithm() == protocol::flex_slice_algorithm::Static)
     verify_static_slice_configuration(*dl, current.dl());
+  if (dl->algorithm() == protocol::flex_slice_algorithm::NVS)
+    verify_nvs_slice_configuration(*dl, current.dl());
 
   if (!slice_config.has_ul()) {
     auto *ul(new protocol::flex_slice_dl_ul_config);
@@ -632,4 +634,40 @@ void flexran::app::management::rrm_management::
       rbg[i] = 1;
     }
   }
+}
+
+protocol::flex_slice_config flexran::app::management::rrm_management::
+    transform_to_static_slice_configuration(
+        const protocol::flex_slice_config& c)
+{
+  throw std::invalid_argument(std::string(__func__) + "() not implemented yet");
+  protocol::flex_slice_config nc;
+  return nc;
+}
+
+void flexran::app::management::rrm_management::verify_nvs_slice_configuration(
+      const protocol::flex_slice_dl_ul_config& nc,
+      const protocol::flex_slice_dl_ul_config& exist)
+{
+  auto f = [](const protocol::flex_slice& s) {
+    return s.has_id() && s.has_nvs();
+  };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), f))
+    throw std::invalid_argument("all slices need to have an ID and parameters");
+  auto p = [](const protocol::flex_slice& s) {
+    return s.nvs().has_pct_reserved()
+      || (s.nvs().has_rate()
+          && s.nvs().rate().has_mbps_required()
+          && s.nvs().rate().has_mbps_reference()); };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), p))
+    throw std::invalid_argument("all slices need to have complete parameters");
+}
+
+protocol::flex_slice_config
+flexran::app::management::rrm_management::transform_to_nvs_slice_configuration(
+    const protocol::flex_slice_config& c)
+{
+  throw std::invalid_argument(std::string(__func__) + "() not implemented yet");
+  protocol::flex_slice_config nc;
+  return nc;
 }

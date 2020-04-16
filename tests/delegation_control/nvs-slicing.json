@@ -1,0 +1,23 @@
+{
+  "dl": {
+    "algorithm": "NVS",
+    "slices": [
+      {
+        "id": 0,
+        "nvs": {
+          "rate": {
+            "Mbps_required": 1.0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "nvs": {
+          "rate": {
+            "Mbps_required": 16.5
+          }
+        }
+      }
+    ]
+  }
+}

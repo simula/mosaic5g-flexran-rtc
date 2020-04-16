@@ -360,66 +360,6 @@ void flexran::app::management::rrm_management::push_ue_config_reconfiguration(
   req_manager_.send_message(bs_id, config_message);
 }
 
-bool flexran::app::management::rrm_management::verify_slice_config(
-    const protocol::flex_slice& s, std::string& error_message)
-{
-  if (!s.has_id()) {
-    error_message = "Missing slice ID";
-    return false;
-  }
-  if (s.id() > 255) {
-    error_message = "Slice ID must be within [0,255]";
-    return false;
-  }
-  return true;
-}
-
-bool flexran::app::management::rrm_management::verify_slice_removal(
-    const protocol::flex_slice& s, std::string& error_message)
-{
-  if (!s.has_id()) {
-    error_message = "Missing slice ID";
-    return false;
-  }
-  if (s.id() > 255) {
-    error_message = "Slice ID must be within [1,255]";
-    return false;
-  }
-  if (s.id() == 0) {
-    error_message = "DL Slice 0 can not be deleted";
-    return false;
-  }
-  return true;
-}
-
-bool flexran::app::management::rrm_management::verify_global_slice_percentage(
-    uint64_t bs_id, const protocol::flex_slice_config& c, std::string& error_message)
-{
-  auto h = rib_.get_bs(bs_id);
-  if (h == nullptr) {
-    error_message = "no such BS";
-    return false;
-  }
-  const protocol::flex_slice_config& ex = h->get_enb_config().cell_config(0).slice_config();
-  return verify_global_dl_slice_percentage(ex, c, error_message);
-}
-
-bool flexran::app::management::rrm_management::verify_global_dl_slice_percentage(
-    const protocol::flex_slice_config& existing,
-    const protocol::flex_slice_config& update, std::string& error_message)
-{
-  std::map<int, int> slice_pct;
-  return false;
-  int sum = 0;
-  for (const auto &p: slice_pct)
-    sum += p.second;
-  if (sum > 100) {
-    error_message = "resulting DL slice sum percentage exceeds 100";
-    return false;
-  }
-  return true;
-}
-
 bool flexran::app::management::rrm_management::verify_ue_slice_assoc_msg(
     const protocol::flex_ue_config& c, std::string& error_message)
 {

@@ -90,6 +90,14 @@ namespace flexran {
             const std::shared_ptr<flexran::rib::enb_rib_info> bs,
             const protocol::flex_slice_config& c);
 
+        void verify_scn19_slice_configuration(
+            protocol::flex_slice_dl_ul_config& c,
+            const std::shared_ptr<flexran::rib::enb_rib_info> bs,
+            const protocol::flex_slice_dl_ul_config& exist);
+        protocol::flex_slice_dl_ul_config dl_transform_to_scn19_slice_configuration(
+            const std::shared_ptr<flexran::rib::enb_rib_info> bs,
+            const protocol::flex_slice_config& c);
+
         static bool verify_cell_config_for_restart(const protocol::flex_cell_config& c,
             std::string& error_message);
 	

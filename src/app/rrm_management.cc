@@ -33,6 +33,7 @@
 #include "flexran.pb.h"
 #include "rib_common.h"
 #include "band_check.h"
+#include "rt_controller_common.h"
 
 #include "flexran_log.h"
 
@@ -179,6 +180,13 @@ void flexran::app::management::rrm_management::apply_slice_config_policy(
           bs, bs->get_enb_config().cell_config(0).slice_config());
     else
       verify_nvs_slice_configuration(*dl, bs, current.dl());
+  }
+  if (dl->algorithm() == protocol::flex_slice_algorithm::SCN19) {
+    if (dl->slices_size() == 0)
+      *dl = dl_transform_to_scn19_slice_configuration(
+          bs, bs->get_enb_config().cell_config(0).slice_config());
+    else
+      verify_scn19_slice_configuration(*dl, bs, current.dl());
   }
 
   if (!slice_config.has_ul()) {
@@ -856,6 +864,8 @@ flexran::app::management::rrm_management::dl_transform_to_static_slice_configura
         }
       }
       return dl;
+    case protocol::flex_slice_algorithm::SCN19:
+      throw std::invalid_argument("transformation from SCN19 not implemented");
     default:
       throw std::invalid_argument("transformation from unknown slice algorithm");
   }
@@ -948,6 +958,113 @@ flexran::app::management::rrm_management::dl_transform_to_nvs_slice_configuratio
       return dl;
     case protocol::flex_slice_algorithm::NVS:
       return c.dl();
+    default:
+      throw std::invalid_argument("transformation from unknown slice algorithm");
+  }
+}
+
+void flexran::app::management::rrm_management::verify_scn19_slice_configuration(
+    protocol::flex_slice_dl_ul_config& nc,
+    const std::shared_ptr<flexran::rib::enb_rib_info> bs,
+    const protocol::flex_slice_dl_ul_config& exist)
+{
+  const uint32_t bw = bs->get_enb_config().cell_config(0).dl_bandwidth();
+  const uint32_t RBGsize = bw == 100 ? 4 : (bw == 50 ? 3 : 2);
+  const uint32_t RBGs = (float) (bw + (bw % RBGsize)) / RBGsize;
+  const float mrate = bw == 100 ? 70.0f : (bw == 50 ? 35.0f : 17.5f);
+
+  auto f = [](const protocol::flex_slice& s) {
+    return s.has_id() && (s.has_label() || s.has_scheduler() || s.has_scn19());
+  };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), f))
+    throw std::invalid_argument("all slices need to have an ID and parameters");
+  for (protocol::flex_slice& s : *nc.mutable_slices()) {
+    if (s.scn19().has_dynamic() && s.scn19().dynamic().has_mbps_required() && !s.scn19().dynamic().has_mbps_reference())
+      s.mutable_scn19()->mutable_dynamic()->set_mbps_reference(mrate);
+    if (s.scn19().has_ondemand() && !s.scn19().ondemand().has_tau())
+      s.mutable_scn19()->mutable_ondemand()->set_tau(50);
+    if (s.scn19().has_ondemand() && !s.scn19().ondemand().has_log_delta())
+      s.mutable_scn19()->mutable_ondemand()->set_log_delta(1);
+  }
+
+  auto has_param = [](const protocol::flex_slice& s) {
+    return (s.scn19().has_dynamic()
+            && s.scn19().dynamic().has_mbps_required()
+            && s.scn19().dynamic().has_mbps_reference())
+        || (s.scn19().has_fixed()
+            && s.scn19().fixed().has_poslow()
+            && s.scn19().fixed().has_poshigh())
+        || (s.scn19().has_ondemand()
+            && s.scn19().ondemand().has_pct_reserved()
+            && s.scn19().ondemand().has_tau()
+            && s.scn19().ondemand().has_log_delta()); };
+  /* checks that if slice does not exist, needs to have full parameters */
+  auto p = [exist,has_param](const protocol::flex_slice& s) {
+    return std::any_of(exist.slices().begin(), exist.slices().end(),
+            [s] (const protocol::flex_slice& es) { return es.id() == s.id(); })
+           || has_param(s); };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), p))
+    throw std::invalid_argument("all slices need to have complete parameters");
+
+  float sum_req = 0.0f;
+  int rbg[25] = {};
+  for (auto &s: nc.slices()) {
+    if (s.scn19().has_dynamic()) {
+      const auto& dynamic = s.scn19().dynamic();
+      sum_req += dynamic.mbps_required() / dynamic.mbps_reference();
+    } else if (s.scn19().has_ondemand()) {
+      sum_req += s.scn19().ondemand().pct_reserved();
+    } else {
+      const auto& fixed = s.scn19().fixed();
+      sum_req += (float) (fixed.poshigh() + 1 - fixed.poslow()) / RBGs;
+      for (unsigned int i = fixed.poslow(); i <= fixed.poshigh(); i++) {
+        if (rbg[i])
+          throw std::invalid_argument("overlapping slices at RBG " + std::to_string(i) + " for slice " + std::to_string(s.id()));
+        rbg[i] = 1;
+      }
+    }
+  }
+  for (auto &s: exist.slices()) {
+    bool in_config = std::any_of(nc.slices().begin(), nc.slices().end(),
+          [s] (const protocol::flex_slice &cs) { return cs.id() == s.id(); });
+    if (in_config) /* if existing slices is reconfigured in config */
+      continue;
+    if (s.scn19().has_dynamic()) {
+      const auto& dynamic = s.scn19().dynamic();
+      sum_req += dynamic.mbps_required() / dynamic.mbps_reference();
+    } else if (s.scn19().has_ondemand()) {
+      sum_req += s.scn19().ondemand().pct_reserved();
+    } else {
+      const auto& fixed = s.scn19().fixed();
+      sum_req += (float) (fixed.poshigh() + 1 - fixed.poslow()) / RBGs;
+      for (unsigned int i = fixed.poslow(); i <= fixed.poshigh(); i++) {
+        if (rbg[i])
+          throw std::invalid_argument("overlapping slices at RBG " + std::to_string(i) + " for slice " + std::to_string(s.id()));
+        rbg[i] = 1;
+      }
+    }
+  }
+  if (sum_req > 1.0f)
+    throw std::invalid_argument("sum of slice resources exceeds 1.0f");
+}
+
+protocol::flex_slice_dl_ul_config
+flexran::app::management::rrm_management::dl_transform_to_scn19_slice_configuration(
+    const std::shared_ptr<flexran::rib::enb_rib_info> bs,
+    const protocol::flex_slice_config& c)
+{
+  _unused(bs);
+  protocol::flex_slice_dl_ul_config dl;
+  dl.set_algorithm(protocol::flex_slice_algorithm::SCN19);
+  switch (c.dl().algorithm()) {
+    case protocol::flex_slice_algorithm::None:
+      return dl;
+    case protocol::flex_slice_algorithm::SCN19:
+      return c.dl();
+    case protocol::flex_slice_algorithm::Static:
+      throw std::invalid_argument("transformation from Static not implemented yet");
+    case protocol::flex_slice_algorithm::NVS:
+      throw std::invalid_argument("transformation from NVS not implemented yet");
     default:
       throw std::invalid_argument("transformation from unknown slice algorithm");
   }

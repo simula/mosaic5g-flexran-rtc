@@ -65,6 +65,7 @@ enum flex_slice_algorithm {
   None = 0;
   Static = 1;
   NVS = 2;
+  SCN19 = 3;
 }
 
 message flex_slice_static {
@@ -83,6 +84,23 @@ message flex_slice_nvs {
   }
 }
 
+message flex_slice_scn19 {
+  message scn19_dynamic {
+    optional float Mbps_required = 1;
+    optional float Mbps_reference = 2;
+  }
+  message scn19_ondemand {
+    optional float pct_reserved = 1;
+    optional uint32 tau = 2;
+    optional float log_delta = 3;
+  }
+  oneof type {
+    scn19_dynamic dynamic = 1;
+    flex_slice_static fixed = 2;
+    scn19_ondemand ondemand = 3;
+  }
+}
+
 message flex_slice {
 	optional uint32 id = 1;
   optional string label = 2;
@@ -90,6 +108,7 @@ message flex_slice {
   oneof params {
     flex_slice_static static = 10;
     flex_slice_nvs nvs = 11;
+    flex_slice_scn19 scn19 = 12;
   }
 }
 

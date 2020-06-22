@@ -49,19 +49,10 @@ namespace flexran {
       void yaml_compat(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void apply_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void apply_slice_config_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void remove_slice_config(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void remove_slice_config_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void change_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void change_ue_slice_assoc_short(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-
-      void instantiate_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void remove_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void associate_ue_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void remove_ue_list_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-      void remove_ue_vnetwork(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
       void cell_reconfiguration(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 

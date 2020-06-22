@@ -60,14 +60,6 @@ namespace flexran {
         static bool parse_imsi_list(const std::string& list,
             std::vector<uint64_t>& imsis, std::string& error_reason);
 
-        int instantiate_vnetwork(uint64_t bps, std::string& error_reason);
-        bool remove_vnetwork(uint32_t slice_id, std::string& error_reason);
-        bool associate_ue_vnetwork(uint32_t slice_id, const std::string& policy,
-            std::string& error_reason);
-        int remove_ue_vnetwork(const std::string& policy, std::string& error_reason);
-        int remove_ue_vnetwork(uint32_t slice_id);
-        void ue_add_update(uint64_t bs_id, flexran::rib::rnti_t rnti);
-
         void reconfigure_agent_string(uint64_t bs_id, std::string policy);
 
       private:

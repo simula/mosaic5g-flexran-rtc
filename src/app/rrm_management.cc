@@ -128,10 +128,20 @@ void flexran::app::management::rrm_management::apply_slice_config_policy(
   protocol::flex_slice_dl_ul_config *dl = slice_config.mutable_dl();
   if (!dl->has_algorithm())
     dl->set_algorithm(current.dl().algorithm());
-  if (dl->algorithm() == protocol::flex_slice_algorithm::Static)
-    verify_static_slice_configuration(*dl, current.dl());
-  if (dl->algorithm() == protocol::flex_slice_algorithm::NVS)
-    verify_nvs_slice_configuration(*dl, bs, current.dl());
+  if (dl->algorithm() == protocol::flex_slice_algorithm::Static) {
+    if (dl->slices_size() == 0)
+      *dl = dl_transform_to_static_slice_configuration(
+          bs, bs->get_enb_config().cell_config(0).slice_config());
+    else
+      verify_static_slice_configuration(*dl, current.dl());
+  }
+  if (dl->algorithm() == protocol::flex_slice_algorithm::NVS) {
+    if (dl->slices_size() == 0)
+      *dl = dl_transform_to_nvs_slice_configuration(
+          bs, bs->get_enb_config().cell_config(0).slice_config());
+    else
+      verify_nvs_slice_configuration(*dl, bs, current.dl());
+  }
 
   if (!slice_config.has_ul()) {
     auto *ul(new protocol::flex_slice_dl_ul_config);
@@ -142,6 +152,8 @@ void flexran::app::management::rrm_management::apply_slice_config_policy(
     ul->set_algorithm(current.ul().algorithm());
   if (ul->algorithm() == protocol::flex_slice_algorithm::Static)
     verify_static_slice_configuration(*ul, current.ul());
+  if (ul->algorithm() == protocol::flex_slice_algorithm::NVS)
+    throw std::invalid_argument("NVS not handled in uplink");
 
   if (dl->algorithm() == current.dl().algorithm()
       && ul->algorithm() == current.ul().algorithm()
@@ -636,13 +648,54 @@ void flexran::app::management::rrm_management::
   }
 }
 
-protocol::flex_slice_config flexran::app::management::rrm_management::
-    transform_to_static_slice_configuration(
+protocol::flex_slice_dl_ul_config
+flexran::app::management::rrm_management::dl_transform_to_static_slice_configuration(
+        const std::shared_ptr<flexran::rib::enb_rib_info> bs,
         const protocol::flex_slice_config& c)
 {
-  throw std::invalid_argument(std::string(__func__) + "() not implemented yet");
-  protocol::flex_slice_config nc;
-  return nc;
+  const uint32_t bw = bs->get_enb_config().cell_config(0).dl_bandwidth();
+  if (bw != 100 && bw != 50 && bw !=25)
+    throw std::invalid_argument("cannot transform slice configuration for BW "
+                                + std::to_string(bw));
+  const uint32_t RBGsize = bw == 100 ? 4 : (bw == 50 ? 3 : 2);
+  const uint32_t RBGs = (float) (bw + (bw % RBGsize)) / RBGsize;
+
+  protocol::flex_slice_dl_ul_config dl;
+  dl.set_algorithm(protocol::flex_slice_algorithm::Static);
+  switch (c.dl().algorithm()) {
+    case protocol::flex_slice_algorithm::None:
+      return dl;
+    case protocol::flex_slice_algorithm::Static:
+      return c.dl();
+    case protocol::flex_slice_algorithm::NVS: {
+        uint32_t start = 0;
+        for (const protocol::flex_slice& es: c.dl().slices()) {
+          const auto& nvs_ = es.nvs();
+          const float p = nvs_.has_pct_reserved() ?
+              nvs_.pct_reserved()
+              : nvs_.rate().mbps_required() / nvs_.rate().mbps_reference();
+          const uint32_t len = std::round(p * RBGs);
+          if (len == 0)
+            throw std::invalid_argument("cannot approximate percentage "
+                + std::to_string(p) + " in RBGs");
+
+          protocol::flex_slice_static *static_(new protocol::flex_slice_static);
+          static_->set_poslow(start);
+          static_->set_poshigh(start + len - 1);
+          auto *s = dl.add_slices();
+          s->set_allocated_static_(static_);
+          s->set_id(es.id());
+          if (es.has_label())
+            s->set_label(es.label());
+          if (es.has_scheduler())
+            s->set_scheduler(es.scheduler());
+          start += len + 1;
+        }
+      }
+      return dl;
+    default:
+      throw std::invalid_argument("transformation from unknown slice algorithm");
+  }
 }
 
 void flexran::app::management::rrm_management::verify_nvs_slice_configuration(
@@ -696,11 +749,43 @@ void flexran::app::management::rrm_management::verify_nvs_slice_configuration(
     throw std::invalid_argument("sum of slice resources exceeds 1.0f");
 }
 
-protocol::flex_slice_config
-flexran::app::management::rrm_management::transform_to_nvs_slice_configuration(
+protocol::flex_slice_dl_ul_config
+flexran::app::management::rrm_management::dl_transform_to_nvs_slice_configuration(
+    const std::shared_ptr<flexran::rib::enb_rib_info> bs,
     const protocol::flex_slice_config& c)
 {
-  throw std::invalid_argument(std::string(__func__) + "() not implemented yet");
-  protocol::flex_slice_config nc;
-  return nc;
+  const uint32_t bw = bs->get_enb_config().cell_config(0).dl_bandwidth();
+  if (bw != 100 && bw != 50 && bw !=25)
+    throw std::invalid_argument("cannot transform slice configuration for BW "
+                                + std::to_string(bw));
+  const uint32_t RBGsize = bw == 100 ? 4 : (bw == 50 ? 3 : 2);
+  const uint32_t RBGs = (bw + (bw % RBGsize)) / RBGsize;
+
+  protocol::flex_slice_dl_ul_config dl;
+  dl.set_algorithm(protocol::flex_slice_algorithm::NVS);
+  switch (c.dl().algorithm()) {
+    case protocol::flex_slice_algorithm::None:
+      return dl;
+    case protocol::flex_slice_algorithm::Static: {
+        for (const protocol::flex_slice& es: c.dl().slices()) {
+          const float p = (float) (es.static_().poshigh() + 1 - es.static_().poslow()) / RBGs;
+          LOG4CXX_INFO(flog::app, "H " << es.static_().poshigh() << " L " << es.static_().poslow() << " D "
+              << es.static_().poshigh() + 1 - es.static_().poslow() << " P " << p << " RBGs " << RBGs);
+          protocol::flex_slice_nvs *nvs_(new protocol::flex_slice_nvs);
+          nvs_->set_pct_reserved(p);
+          auto *s = dl.add_slices();
+          s->set_allocated_nvs(nvs_);
+          s->set_id(es.id());
+          if (es.has_label())
+            s->set_label(es.label());
+          if (es.has_scheduler())
+            s->set_scheduler(es.scheduler());
+        }
+      }
+      return dl;
+    case protocol::flex_slice_algorithm::NVS:
+      return c.dl();
+    default:
+      throw std::invalid_argument("transformation from unknown slice algorithm");
+  }
 }

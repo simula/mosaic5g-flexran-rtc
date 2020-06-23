@@ -103,69 +103,56 @@ void flexran::app::management::rrm_management::reconfigure_agent_string(
   req_manager_.send_message(bs_id, config_message);
 }
 
-bool flexran::app::management::rrm_management::apply_slice_config_policy(
-    uint64_t bs_id, const std::string& policy, std::string& error_reason)
+void flexran::app::management::rrm_management::apply_slice_config_policy(
+    const std::string& bs_, const std::string& policy)
 {
-  if (!rib_.get_bs(bs_id)) {
-    error_reason = "BS does not exist";
-    LOG4CXX_ERROR(flog::app, "BS " << bs_id << " does not exist");
-    return false;
-  }
+  uint64_t bs_id = rib_.parse_bs_id(bs_);
+  if (bs_id == 0)
+    throw std::invalid_argument("BS " + bs_ + " does not exist");
 
   protocol::flex_slice_config slice_config;
-  google::protobuf::util::Status ret;
-  ret = google::protobuf::util::JsonStringToMessage(policy, &slice_config,
+  auto ret = google::protobuf::util::JsonStringToMessage(policy, &slice_config,
       google::protobuf::util::JsonParseOptions());
   if (ret != google::protobuf::util::Status::OK) {
-    error_reason = "ProtoBuf parser error";
-    LOG4CXX_ERROR(flog::app,
-        "error while parsing ProtoBuf slice_config message:" << ret.ToString());
-    return false;
+    LOG4CXX_ERROR(flog::app, "error while parsing ProtoBuf message:" << ret.ToString());
+    throw std::invalid_argument("Protobuf parser error");
   }
 
-  // enforce every DL/UL slice has an ID and well formed parameters
-  for (int i = 0; i < slice_config.dl_size(); i++) {
-    if (!verify_dl_slice_config(slice_config.dl(i), error_reason)) {
-      error_reason += " in DL slice configuration at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-  }
-  for (int i = 0; i < slice_config.ul_size(); i++) {
-    if (!verify_ul_slice_config(slice_config.ul(i), error_reason)) {
-      error_reason += " in UL slice configuration at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-  }
+  const auto bs = rib_.get_bs(bs_id);
+  const auto& current = bs->get_enb_config().cell_config(0).slice_config();
 
-  // enforce that the sum percentage is equal or below 100 percent
-  if (!verify_global_slice_percentage(bs_id, slice_config, error_reason)) {
-    LOG4CXX_ERROR(flog::app, error_reason);
-    return false;
+  if (!slice_config.has_dl()) {
+    auto *dl(new protocol::flex_slice_dl_ul_config);
+    slice_config.set_allocated_dl(dl);
   }
+  protocol::flex_slice_dl_ul_config *dl = slice_config.mutable_dl();
+  if (!dl->has_algorithm())
+    dl->set_algorithm(current.dl().algorithm());
+  if (dl->algorithm() == protocol::flex_slice_algorithm::Static)
+    verify_static_slice_configuration(*dl, current.dl());
 
-  // no UL slice is allowed to have the same firstRb as any other (in fact,
-  // together with the percentage value it is computed that they don't
-  // overlap). Therefore, if we have one new slice without a firstRb value, try
-  // to add firstRb by checking a "free" region. This is to keep the short
-  // version of the slice configuration end point working and we therefore
-  // check that this slice carries nothing except an ID */
-  if (slice_config.ul_size() == 1
-      && slice_config.ul(0).id() != 0
-      && !slice_config.ul(0).has_label()
-      && !slice_config.ul(0).has_percentage()
-      && !slice_config.ul(0).has_isolation()
-      && !slice_config.ul(0).has_priority()
-      && !slice_config.ul(0).has_first_rb()
-      && !slice_config.ul(0).has_maxmcs()
-      && slice_config.ul(0).sorting_size() == 0
-      && !slice_config.ul(0).has_accounting()
-      && !slice_config.ul(0).has_scheduler_name()
-      && try_add_first_rb(bs_id, *slice_config.mutable_ul(0)))
-    LOG4CXX_WARN(flog::app, "no firstRb value detected, added "
-        << slice_config.ul(0).first_rb() << " so that it does not clash in "
-        << "the BS. You can override this by specifying a firstRb value.");
+  if (!slice_config.has_ul()) {
+    auto *ul(new protocol::flex_slice_dl_ul_config);
+    slice_config.set_allocated_ul(ul);
+  }
+  protocol::flex_slice_dl_ul_config *ul = slice_config.mutable_ul();
+  if (!ul->has_algorithm())
+    ul->set_algorithm(current.ul().algorithm());
+  if (ul->algorithm() == protocol::flex_slice_algorithm::Static)
+    verify_static_slice_configuration(*ul, current.ul());
+
+  if (dl->algorithm() == current.dl().algorithm()
+      && ul->algorithm() == current.ul().algorithm()
+      && dl->slices_size() == 0 && ul->slices_size() == 0
+      && !dl->has_scheduler() && !ul->has_scheduler())
+    return;
+
+  if ((dl->algorithm() == protocol::flex_slice_algorithm::None && dl->slices_size() > 0)
+      || (ul->algorithm() == protocol::flex_slice_algorithm::None && ul->slices_size() > 0))
+    throw std::invalid_argument("no slice algorithm, but slices present");
+
+  bool algo_change = current.dl().algorithm() != dl->algorithm()
+                     || current.ul().algorithm() != ul->algorithm();
 
   protocol::flex_cell_config cell_config;
   cell_config.mutable_slice_config()->CopyFrom(slice_config);
@@ -177,123 +164,121 @@ bool flexran::app::management::rrm_management::apply_slice_config_policy(
   LOG4CXX_INFO(flog::app, "sent new configuration to BS " << bs_id
       << ":\n" << pol_corrected);
 
-  return true;
+  if (!algo_change || bs->get_ue_configs().ue_config_size() == 0)
+    return;
+  LOG4CXX_INFO(flog::app, "ue_config_size() " << bs->get_ue_configs().ue_config_size());
+  /* if there is an algorithm change, try to preserve the UE-slice association:
+   * Go through all UEs and check whether the slice exists, then associate */
+  protocol::flex_ue_config_reply ue_config_reply;
+  for (const auto& ue : bs->get_ue_configs().ue_config()) {
+    uint32_t did = ue.has_dl_slice_id() ? ue.dl_slice_id() : 0;
+    uint32_t uid = ue.has_ul_slice_id() ? ue.ul_slice_id() : 0;
+    if (!std::any_of(dl->slices().begin(), dl->slices().end(),
+          [did] (const protocol::flex_slice& s) { return s.id() == did; }))
+      did = 0;
+    if (!std::any_of(ul->slices().begin(), ul->slices().end(),
+          [uid] (const protocol::flex_slice& s) { return s.id() == uid; }))
+      uid = 0;
+    if (did != 0 || uid != 0) { // only send if it makes sense
+      auto *c = ue_config_reply.add_ue_config();
+      c->set_rnti(ue.rnti());
+      c->set_dl_slice_id(did);
+      c->set_ul_slice_id(uid);
+    }
+  }
+  push_ue_config_reconfiguration(bs_id, ue_config_reply);
+  std::string ue_policy;
+  google::protobuf::util::MessageToJsonString(ue_config_reply, &ue_policy, opt);
+  LOG4CXX_INFO(flog::app, "sent new UE configuration to BS "
+      << bs_id << ":\n" << ue_policy);
 }
 
-bool flexran::app::management::rrm_management::remove_slice(uint64_t bs_id,
-    const std::string& policy, std::string& error_reason)
+void flexran::app::management::rrm_management::remove_slice(
+    const std::string& bs, const std::string& policy)
 {
-  if (!rib_.get_bs(bs_id)) {
-    error_reason = "BS does not exist";
-    LOG4CXX_ERROR(flog::app, "BS " << bs_id << " does not exist");
-    return false;
-  }
+  uint64_t bs_id = rib_.parse_bs_id(bs);
+  if (bs_id == 0)
+    throw std::invalid_argument("BS " + bs + " does not exist");
 
   protocol::flex_slice_config slice_config;
   google::protobuf::util::Status ret;
   ret = google::protobuf::util::JsonStringToMessage(policy, &slice_config,
       google::protobuf::util::JsonParseOptions());
   if (ret != google::protobuf::util::Status::OK) {
-    error_reason = "ProtoBuf parser error";
-    LOG4CXX_ERROR(flog::app,
-        "error while parsing ProtoBuf slice_config message:" << ret.ToString());
-    return false;
+    LOG4CXX_ERROR(flog::app, "error while parsing ProtoBuf message:" << ret.ToString());
+    throw std::invalid_argument("Protobuf parser error");
   }
 
-  // enforce every DL/UL slice has an ID and well formed parameters
-  for (int i = 0; i < slice_config.dl_size(); i++) {
-    if (!verify_dl_slice_removal(slice_config.dl(i), error_reason)) {
-      error_reason += " in DL slice configuration at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-    if (!rib_.get_bs(bs_id)->has_dl_slice(slice_config.dl(i).id())) {
-      error_reason = "DL slice " + std::to_string(slice_config.dl(i).id())
-          + " does not exist";
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-  }
-  for (int i = 0; i < slice_config.ul_size(); i++) {
-    if (!verify_ul_slice_removal(slice_config.ul(i), error_reason)) {
-      error_reason += " in UL slice configuration at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-    if (!rib_.get_bs(bs_id)->has_ul_slice(slice_config.ul(i).id())) {
-      error_reason = "UL slice " + std::to_string(slice_config.ul(i).id())
-          + " does not exist";
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
-    }
-  }
+  slice_config.mutable_dl()->clear_algorithm();
+  slice_config.mutable_ul()->clear_algorithm();
+  auto f = [](const protocol::flex_slice& s) { return s.has_id(); };
+  if (!std::all_of(slice_config.dl().slices().begin(), slice_config.dl().slices().end(), f)
+      || !std::all_of(slice_config.ul().slices().begin(), slice_config.ul().slices().end(), f))
+    throw std::invalid_argument("all slices must have an ID and no params");
+  for (auto& s: *slice_config.mutable_dl()->mutable_slices())
+    s.clear_static_();
+  for (auto& s: *slice_config.mutable_ul()->mutable_slices())
+    s.clear_static_();
 
   protocol::flex_cell_config cell_config;
   cell_config.mutable_slice_config()->CopyFrom(slice_config);
   push_cell_config_reconfiguration(bs_id, cell_config);
-  LOG4CXX_INFO(flog::app, "sent remove slice command to BS " << bs_id
-      << ":\n" << policy << "\n");
 
-  return true;
+  std::string pol_corrected;
+  google::protobuf::util::JsonPrintOptions opt;
+  opt.add_whitespace = true;
+  google::protobuf::util::MessageToJsonString(slice_config, &pol_corrected, opt);
+  LOG4CXX_INFO(flog::app, "sent remove slice command to BS " << bs_id
+      << ":\n" << pol_corrected << "\n");
 }
 
-bool flexran::app::management::rrm_management::change_ue_slice_association(
-    uint64_t bs_id, const std::string& policy, std::string& error_reason)
+void flexran::app::management::rrm_management::change_ue_slice_association(
+    const std::string& bs, const std::string& policy)
 {
-  if (!rib_.get_bs(bs_id)) {
-    error_reason = "BS does not exist";
-    LOG4CXX_ERROR(flog::app, "BS " << bs_id << " does not exist");
-    return false;
-  }
+  uint64_t bs_id = rib_.parse_bs_id(bs);
+  if (bs_id == 0)
+    throw std::invalid_argument("BS " + bs + " does not exist");
 
   protocol::flex_ue_config_reply ue_config_reply;
   google::protobuf::util::Status ret;
   ret = google::protobuf::util::JsonStringToMessage(policy, &ue_config_reply,
       google::protobuf::util::JsonParseOptions());
   if (ret != google::protobuf::util::Status::OK) {
-    error_reason = "ProtoBuf parser error";
-    LOG4CXX_ERROR(flog::app,
-        "error while parsing ProtoBuf ue_config_reply message:" << ret.ToString());
-    return false;
+    LOG4CXX_ERROR(flog::app, "error while parsing ProtoBuf message:" << ret.ToString());
+    throw std::invalid_argument("Protobuf parser error");
   }
 
   // enforce UE configaration
-  if (ue_config_reply.ue_config_size() == 0) {
-    error_reason = "Missing UE configuration";
-    LOG4CXX_ERROR(flog::app,
-        "the ue_config_reply message must contain a UE configuration");
-    return false;
-  }
+  if (ue_config_reply.ue_config_size() == 0)
+    throw std::invalid_argument("missing UE configuration");
   // enforce UE configuration has both RNTI and UL or DL slice ID
   for (int i = 0; i < ue_config_reply.ue_config_size(); i++) {
+    std::string error_reason;
     if (!verify_ue_slice_assoc_msg(ue_config_reply.ue_config(i), error_reason)) {
       error_reason += " in UE-slice association at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
+      throw std::invalid_argument(error_reason);
     }
     if (ue_config_reply.ue_config(i).has_dl_slice_id()
         && !rib_.get_bs(bs_id)->has_dl_slice(ue_config_reply.ue_config(i).dl_slice_id())) {
       error_reason = "DL slice "
           + std::to_string(ue_config_reply.ue_config(i).dl_slice_id())
           + " does not exist";
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
+      throw std::invalid_argument(error_reason);
     }
     if (ue_config_reply.ue_config(i).has_ul_slice_id()
         && !rib_.get_bs(bs_id)->has_ul_slice(ue_config_reply.ue_config(i).ul_slice_id())) {
       error_reason = "UL slice "
           + std::to_string(ue_config_reply.ue_config(i).ul_slice_id())
           + " does not exist";
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
+      throw std::invalid_argument(error_reason);
     }
   }
 
   for (int i = 0; i < ue_config_reply.ue_config_size(); i++) {
+    std::string error_reason;
     if (!verify_rnti_imsi(bs_id, ue_config_reply.mutable_ue_config(i), error_reason)) {
       error_reason += " in UE-slice association at index " + std::to_string(i);
-      LOG4CXX_ERROR(flog::app, error_reason);
-      return false;
+      throw std::invalid_argument(error_reason);
     }
   }
 
@@ -304,8 +289,6 @@ bool flexran::app::management::rrm_management::change_ue_slice_association(
   google::protobuf::util::MessageToJsonString(ue_config_reply, &pol_corrected, opt);
   LOG4CXX_INFO(flog::app, "sent new UE configuration to BS "
       << bs_id << ":\n" << pol_corrected);
-
-  return true;
 }
 
 bool flexran::app::management::rrm_management::apply_cell_config_policy(
@@ -377,8 +360,8 @@ void flexran::app::management::rrm_management::push_ue_config_reconfiguration(
   req_manager_.send_message(bs_id, config_message);
 }
 
-bool flexran::app::management::rrm_management::verify_dl_slice_config(
-    const protocol::flex_dl_slice& s, std::string& error_message)
+bool flexran::app::management::rrm_management::verify_slice_config(
+    const protocol::flex_slice& s, std::string& error_message)
 {
   if (!s.has_id()) {
     error_message = "Missing slice ID";
@@ -388,44 +371,11 @@ bool flexran::app::management::rrm_management::verify_dl_slice_config(
     error_message = "Slice ID must be within [0,255]";
     return false;
   }
-  /* label is enum */
-  if (s.has_percentage() && (s.percentage() < 1 || s.percentage() > 100)) {
-    error_message = "DL percentage must be within [1,100]";
-    return false;
-  }
-  /* isolation can only be true or false */
-  if (s.has_priority() && s.priority() > 20) {
-    error_message = "priority must be within [0,20]";
-    return false;
-  }
-  if (s.has_position_low() && s.position_low() > 25) {
-    error_message = "position_low must be within [0,25] (RBG)";
-    return false;
-  }
-  if (s.has_position_high() && s.position_high() > 25) {
-    error_message = "position_high must be within [0,25] (RBG)";
-    return false;
-  }
-  if (s.has_position_low() && s.has_position_high()
-      && s.position_low() >= s.position_high()) {
-    error_message = "position_low must be smaller than position_high";
-    return false;
-  }
-  if (s.has_maxmcs() && s.maxmcs() > 28) {
-    error_message = "DL maxmcs must be within [0,28]";
-    return false;
-  }
-  /* sorting is enum */
-  /* accounting is enum */
-  if (s.has_scheduler_name()) {
-    error_message = "setting another scheduler is not supported";
-    return false;
-  }
   return true;
 }
 
-bool flexran::app::management::rrm_management::verify_dl_slice_removal(
-    const protocol::flex_dl_slice& s, std::string& error_message)
+bool flexran::app::management::rrm_management::verify_slice_removal(
+    const protocol::flex_slice& s, std::string& error_message)
 {
   if (!s.has_id()) {
     error_message = "Missing slice ID";
@@ -437,79 +387,6 @@ bool flexran::app::management::rrm_management::verify_dl_slice_removal(
   }
   if (s.id() == 0) {
     error_message = "DL Slice 0 can not be deleted";
-    return false;
-  }
-  if (!s.has_percentage() || s.percentage() != 0) {
-    error_message = "Slice removal requires percentage to be set to 0";
-    return false;
-  }
-  return true;
-}
-
-bool flexran::app::management::rrm_management::verify_ul_slice_config(
-    const protocol::flex_ul_slice& s, std::string& error_message)
-{
-  if (!s.has_id()) {
-    error_message = "Missing slice ID";
-    return false;
-  }
-  if (s.id() > 255) {
-    error_message = "Slice ID must be within [0,255]";
-    return false;
-  }
-  /* label is enum */
-  if (s.has_percentage() && (s.percentage() < 1 || s.percentage() > 100)) {
-    error_message = "percentage must be within [1,100]";
-    return false;
-  }
-  /* isolation can only be true or false */
-  if (s.has_priority()) {
-    error_message = "slice priority is not supported";
-    return false;
-  }
-  if (s.has_first_rb() && s.first_rb() > 99) {
-    error_message = "first_rb must be within [0,99] (RB)";
-    return false;
-  }
-  /*if (s.has_length_rb()
-      && (s.length_rb() < 1 || s.length_rb() > 100)) {
-    error_message = "length_rb must be within [1,100] (RB)";
-    return false;
-  }
-  if (s.has_length_rb() && s.has_first_rb() && s.length_rb() + s.first_rb() > 100) {
-    error_message = "length_rb must be within [1,100-first_rb] (RB)";
-    return false;
-  }*/
-  if (s.has_maxmcs() && s.maxmcs() > 20) {
-    error_message = "UL maxmcs must be within [0,20]";
-    return false;
-  }
-  /* sorting is enum */
-  /* accounting is enum */
-  if (s.has_scheduler_name()) {
-    error_message = "setting another scheduler is not supported";
-    return false;
-  }
-  return true;
-}
-
-bool flexran::app::management::rrm_management::verify_ul_slice_removal(
-    const protocol::flex_ul_slice& s, std::string& error_message)
-{
-  if (!s.has_id()) {
-    error_message = "Missing slice ID";
-    return false;
-  }
-  if (s.id() > 255) {
-    error_message = "Slice ID must be within [1,255]";
-    return false;
-  }
-  if (s.id() == 0) {
-    error_message = "UL Slice 0 can not be deleted";
-    return false;
-  }
-  if (!s.has_percentage() || s.percentage() != 0) {
-    error_message = "Slice removal requires percentage to be set to 0";
     return false;
   }
   return true;
@@ -524,8 +401,7 @@ bool flexran::app::management::rrm_management::verify_global_slice_percentage(
     return false;
   }
   const protocol::flex_slice_config& ex = h->get_enb_config().cell_config(0).slice_config();
-  return verify_global_dl_slice_percentage(ex, c, error_message)
-      && verify_global_ul_slice_percentage(ex, c, error_message);
+  return verify_global_dl_slice_percentage(ex, c, error_message);
 }
 
 bool flexran::app::management::rrm_management::verify_global_dl_slice_percentage(
@@ -533,38 +409,12 @@ bool flexran::app::management::rrm_management::verify_global_dl_slice_percentage
     const protocol::flex_slice_config& update, std::string& error_message)
 {
   std::map<int, int> slice_pct;
-  for (int i = 0; i < existing.dl_size(); i++)
-    slice_pct[existing.dl(i).id()] = existing.dl(i).percentage();
-  for (int i = 0; i < update.dl_size(); i++)
-    // the BS will copy the values from slice 0 if not specified, so do we
-    slice_pct[update.dl(i).id()] = update.dl(i).has_percentage() ?
-        update.dl(i).percentage() : slice_pct[0];
+  return false;
   int sum = 0;
   for (const auto &p: slice_pct)
     sum += p.second;
   if (sum > 100) {
     error_message = "resulting DL slice sum percentage exceeds 100";
-    return false;
-  }
-  return true;
-}
-
-bool flexran::app::management::rrm_management::verify_global_ul_slice_percentage(
-    const protocol::flex_slice_config& existing,
-    const protocol::flex_slice_config& update, std::string& error_message)
-{
-  std::map<int, int> slice_pct;
-  for (int i = 0; i < existing.ul_size(); i++)
-    slice_pct[existing.ul(i).id()] = existing.ul(i).percentage();
-  for (int i = 0; i < update.ul_size(); i++)
-    // the BS will copy the values from slice 0 if not specified, so do we
-    slice_pct[update.ul(i).id()] = update.ul(i).has_percentage() ?
-        update.ul(i).percentage() : slice_pct[0];
-  int sum = 0;
-  for (const auto &p: slice_pct)
-    sum += p.second;
-  if (sum > 100) {
-    error_message = "resulting UL slice sum percentage exceeds 100";
     return false;
   }
   return true;
@@ -798,19 +648,48 @@ bool flexran::app::management::rrm_management::parse_rnti_imsi(
   return rib_.get_bs(bs_id)->parse_rnti_imsi(rnti_imsi_s, rnti);
 }
 
-bool flexran::app::management::rrm_management::try_add_first_rb(
-    uint64_t bs_id, protocol::flex_ul_slice& slice)
+void flexran::app::management::rrm_management::
+    verify_static_slice_configuration(
+      const protocol::flex_slice_dl_ul_config& nc,
+      const protocol::flex_slice_dl_ul_config& exist)
 {
-  // this function is dumb: it simply assumes that all existing slices are
-  // adjacent and only one is added. Therefore, it picks the highest first_Rb,
-  // adds N_RB * percentage and adds this to the existing slice.
-  auto h = rib_.get_bs(bs_id);
-  if (h == nullptr) return false;
-  const protocol::flex_slice_config& ex = h->get_enb_config().cell_config(0).slice_config();
-  if (ex.ul_size() < 1) return false;
-  const int N_RB = h->get_enb_config().cell_config(0).ul_bandwidth();
-  const int pct = ex.ul(0).percentage();
-  const int first_rb = ex.ul(ex.ul_size() - 1).first_rb();
-  slice.set_first_rb(first_rb + pct * N_RB / 100);
-  return true;
+  if (nc.has_scheduler())
+    throw std::invalid_argument("cannot have a single scheduler");
+
+  /* do all slices have an ID and (correct) parameters? */
+  auto f = [](const protocol::flex_slice& s) {
+    return s.has_id() && (s.has_label() || s.has_scheduler() ||s.has_static_());
+  };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), f))
+    throw std::invalid_argument("all slices need to have an ID and parameters");
+
+  /* checks that if slice does not exist, needs to have full parameters */
+  auto p = [exist](const protocol::flex_slice& s) {
+    return std::any_of(exist.slices().begin(), exist.slices().end(),
+            [s] (const protocol::flex_slice& es) { return es.id() == s.id(); })
+           || (s.has_static_() && s.static_().has_poslow() && s.static_().has_poshigh()); };
+  if (!std::all_of(nc.slices().begin(), nc.slices().end(), p))
+    throw std::invalid_argument("all new slices need to have complete parameters");
+
+  int rbg[25] = {};
+  for (auto &s: nc.slices()) {
+    if (!s.has_static_())
+      continue;
+    for (unsigned int i = s.static_().poslow(); i <= s.static_().poshigh(); i++) {
+      if (rbg[i])
+        throw std::invalid_argument("overlapping slices at RBG " + std::to_string(i) + " for slice " + std::to_string(s.id()));
+      rbg[i] = 1;
+    }
+  }
+  for (auto &s: exist.slices()) {
+    bool in_config = std::any_of(nc.slices().begin(), nc.slices().end(),
+          [s] (const protocol::flex_slice &cs) { return cs.id() == s.id(); });
+    if (in_config) /* if existing slices is reconfigured in config */
+      continue;
+    for (unsigned int i = s.static_().poslow(); i <= s.static_().poshigh(); i++) {
+      if (rbg[i])
+        throw std::invalid_argument("overlapping slices at RBG " + std::to_string(i) + " for existing slice " + std::to_string(s.id()));
+      rbg[i] = 1;
+    }
+  }
 }

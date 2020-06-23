@@ -440,90 +440,78 @@ void flexran::north_api::rrm_calls::apply_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  uint64_t bs_id = request.hasParam(":id") ?
-      rrm_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      rrm_app->get_last_bs();
-  if (bs_id == 0) {
-    response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
-    return;
-  }
-
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
   std::string policy = request.body();
   if (policy.length() == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+        "{ \"error\": \"empty request body\" }\n", MIME(Application, Json));
     return;
   }
 
-  std::string error_reason;
-  if (!rrm_app->apply_slice_config_policy(bs_id, policy, error_reason)) {
+  try {
+    rrm_app->apply_slice_config_policy(bs, policy);
+  } catch (const std::invalid_argument& e) {
+    LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
+          << "(): " << e.what());
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+        "{ \"error:\": \"" + std::string(e.what()) + "\"}\n", MIME(Application, Json));
     return;
   }
 
-  response.send(Pistache::Http::Code::Ok, "");
+  response.send(Pistache::Http::Code::Ok, "{ \"status\": \"Ok\" }\n");
 }
 
 void flexran::north_api::rrm_calls::remove_slice_config(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  uint64_t bs_id = request.hasParam(":id") ?
-      rrm_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      rrm_app->get_last_bs();
-  if (bs_id == 0) {
-    response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
-    return;
-  }
-
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
   std::string policy = request.body();
   if (policy.length() == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+        "{ \"error\": \"empty request body\" }\n", MIME(Application, Json));
     return;
   }
 
-  std::string error_reason;
-  if (!rrm_app->remove_slice(bs_id, policy, error_reason)) {
+  try {
+    rrm_app->remove_slice(bs, policy);
+  } catch (const std::invalid_argument& e) {
+    LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
+          << "(): " << e.what());
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+        "{ \"error:\": \"" + std::string(e.what()) + "\"}\n", MIME(Application, Json));
     return;
   }
 
-  response.send(Pistache::Http::Code::Ok, "");
+  response.send(Pistache::Http::Code::Ok, "{ \"status\": \"Ok\" }\n");
 }
 
 void flexran::north_api::rrm_calls::change_ue_slice_assoc(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response)
 {
-  uint64_t bs_id = request.hasParam(":id") ?
-      rrm_app->parse_enb_agent_id(request.param(":id").as<std::string>()) :
-      rrm_app->get_last_bs();
-  if (bs_id == 0) {
-    response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"can not find BS\" }", MIME(Application, Json));
-    return;
-  }
-
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
   std::string policy = request.body();
   if (policy.length() == 0) {
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+        "{ \"error\": \"empty request body\" }\n", MIME(Application, Json));
     return;
   }
 
-  std::string error_reason;
-  if (!rrm_app->change_ue_slice_association(bs_id, policy, error_reason)) {
+  try {
+    rrm_app->change_ue_slice_association(bs, policy);
+  } catch (const std::invalid_argument& e) {
+    LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
+          << "(): " << e.what());
     response.send(Pistache::Http::Code::Bad_Request,
-        "{ \"error\": \"" + error_reason + "\" }", MIME(Application, Json));
+        "{ \"error:\": \"" + std::string(e.what()) + "\"}\n", MIME(Application, Json));
     return;
   }
 
-  response.send(Pistache::Http::Code::Ok, "");
+  response.send(Pistache::Http::Code::Ok, "{ \"status\": \"Ok\" }\n");
 }
 
 void flexran::north_api::rrm_calls::yaml_compat(

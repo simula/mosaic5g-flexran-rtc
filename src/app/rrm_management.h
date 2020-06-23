@@ -43,12 +43,9 @@ namespace flexran {
         rrm_management(rib::Rib& rib, const core::requests_manager& rm,
             event::subscription& sub);
 
-        bool apply_slice_config_policy(uint64_t bs_id, const std::string& policy,
-            std::string& error_reason);
-        bool remove_slice(uint64_t bs_id, const std::string& policy,
-            std::string& error_reason);
-        bool change_ue_slice_association(uint64_t bs_id, const std::string& policy,
-            std::string& error_reason);
+        void apply_slice_config_policy(const std::string& bs, const std::string& policy);
+        void remove_slice(const std::string& bs, const std::string& policy);
+        void change_ue_slice_association(const std::string& bs, const std::string& policy);
         bool apply_cell_config_policy(uint64_t bs_id, const std::string& policy,
             std::string& error_reason);
 
@@ -68,13 +65,9 @@ namespace flexran {
             const protocol::flex_cell_config& cell_config);
         void push_ue_config_reconfiguration(uint64_t bs_id,
             const protocol::flex_ue_config_reply& ue_config);
-        static bool verify_dl_slice_config(const protocol::flex_dl_slice& s,
+        static bool verify_slice_config(const protocol::flex_slice& s,
             std::string& error_message);
-        static bool verify_dl_slice_removal(const protocol::flex_dl_slice& s,
-            std::string& error_message);
-        static bool verify_ul_slice_config(const protocol::flex_ul_slice& s,
-            std::string& error_message);
-        static bool verify_ul_slice_removal(const protocol::flex_ul_slice& s,
+        static bool verify_slice_removal(const protocol::flex_slice& s,
             std::string& error_message);
         bool verify_global_slice_percentage(uint64_t bs_id,
             const protocol::flex_slice_config& c, std::string& error_message);
@@ -82,15 +75,15 @@ namespace flexran {
             const protocol::flex_slice_config& existing,
             const protocol::flex_slice_config& update,
             std::string& error_message);
-        bool verify_global_ul_slice_percentage(
-            const protocol::flex_slice_config& existing,
-            const protocol::flex_slice_config& update,
-            std::string& error_message);
         static bool verify_ue_slice_assoc_msg(const protocol::flex_ue_config& c,
             std::string& error_message);
         bool verify_rnti_imsi(uint64_t bs_id, protocol::flex_ue_config *c,
             std::string& error_message);
-        bool try_add_first_rb(uint64_t bs_id, protocol::flex_ul_slice& slice);
+
+        void verify_static_slice_configuration(
+            const protocol::flex_slice_dl_ul_config& c,
+            const protocol::flex_slice_dl_ul_config& exist);
+
         static bool verify_cell_config_for_restart(const protocol::flex_cell_config& c,
             std::string& error_message);
 	

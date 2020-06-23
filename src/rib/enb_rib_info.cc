@@ -432,9 +432,11 @@ bool flexran::rib::enb_rib_info::get_rnti(uint64_t imsi, rnti_t& rnti) const
 bool flexran::rib::enb_rib_info::has_dl_slice(uint32_t slice_id, uint16_t cell_id) const
 {
   std::lock_guard<std::mutex> lg(eNB_config_mutex_);
-  const protocol::flex_slice_config& s = eNB_config_.cell_config(cell_id).slice_config();
-  for (int i = 0; i < s.dl_size(); i++) {
-    if (s.dl(i).id() == slice_id) {
+  if (!eNB_config_.cell_config(cell_id).slice_config().has_dl())
+    return false;
+  const protocol::flex_slice_dl_ul_config& s = eNB_config_.cell_config(cell_id).slice_config().dl();
+  for (int i = 0; i < s.slices_size(); i++) {
+    if (s.slices(i).id() == slice_id) {
       return true;
     }
   }
@@ -444,15 +446,19 @@ bool flexran::rib::enb_rib_info::has_dl_slice(uint32_t slice_id, uint16_t cell_i
 uint32_t flexran::rib::enb_rib_info::num_dl_slices(uint16_t cell_id) const
 {
   std::lock_guard<std::mutex> lg(eNB_config_mutex_);
-  return eNB_config_.cell_config(cell_id).slice_config().dl_size();
+  if (!eNB_config_.cell_config(cell_id).slice_config().has_dl())
+    return 0;
+  return eNB_config_.cell_config(cell_id).slice_config().dl().slices_size();
 }
 
 bool flexran::rib::enb_rib_info::has_ul_slice(uint32_t slice_id, uint16_t cell_id) const
 {
   std::lock_guard<std::mutex> lg(eNB_config_mutex_);
-  const protocol::flex_slice_config& s = eNB_config_.cell_config(cell_id).slice_config();
-  for (int i = 0; i < s.ul_size(); i++) {
-    if (s.ul(i).id() == slice_id) {
+  if (!eNB_config_.cell_config(cell_id).slice_config().has_ul())
+    return false;
+  const protocol::flex_slice_dl_ul_config& s = eNB_config_.cell_config(cell_id).slice_config().ul();
+  for (int i = 0; i < s.slices_size(); i++) {
+    if (s.slices(i).id() == slice_id) {
       return true;
     }
   }
@@ -462,7 +468,9 @@ bool flexran::rib::enb_rib_info::has_ul_slice(uint32_t slice_id, uint16_t cell_i
 uint32_t flexran::rib::enb_rib_info::num_ul_slices(uint16_t cell_id) const
 {
   std::lock_guard<std::mutex> lg(eNB_config_mutex_);
-  return eNB_config_.cell_config(cell_id).slice_config().ul_size();
+  if (!eNB_config_.cell_config(cell_id).slice_config().has_ul())
+    return 0;
+  return eNB_config_.cell_config(cell_id).slice_config().ul().slices_size();
 }
 
 /*

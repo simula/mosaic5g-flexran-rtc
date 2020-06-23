@@ -1,0 +1,25 @@
+{
+  "dl": {
+    "algorithm": "Static",
+    "slices": [
+      {
+        "id": 0,
+        "label": "neu",
+        "static": {
+          "posLow": 4,
+          "posHigh": 12
+        }
+      },
+      {
+        "id": 2,
+        "static": {
+          "posLow": 0,
+          "posHigh": 3
+        }
+      }
+    ]
+  },
+  "ul": {
+    "algorithm": "None"
+  }
+}

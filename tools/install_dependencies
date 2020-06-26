@@ -4,7 +4,6 @@ function install_pistache {
     echo "Installing pistache"
     git clone https://github.com/oktal/pistache.git
     cd pistache || exit
-    git checkout 2ef937c434810858e05d446e97acbdd6cc1a5a36
     mkdir build
     cd build
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..

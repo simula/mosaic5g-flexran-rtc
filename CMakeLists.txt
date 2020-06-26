@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 
 project (rt_controller VERSION 2.2.1 LANGUAGES CXX)
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 14)
 
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)

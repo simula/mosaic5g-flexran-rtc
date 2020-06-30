@@ -31,10 +31,98 @@ void flexran::north_api::plmn_calls::register_calls(Pistache::Rest::Description&
 {
   auto mme_calls = desc.path("/mme");
 
+  /**
+   * @api {post} /mme/enb/:id? Add a new MME
+   * @apiName AddMme
+   * @apiGroup PlmnManagement
+   * @apiParam (URL parameter ) {Number} id The ID of the agent for which to
+   * add the MME. This can be one of the following: -1 (last added agent), the
+   * eNB ID (in hex or decimal) or the internal agent ID which can be obtained
+   * through a `stats` call. Numbers smaller than 1000 are parsed as the agent
+   * ID.
+   * @apiParam (JSON parameter) {Object[]} mme A list of (objects of) MME IP
+   * addresses to connect to. Only one MME can be configured at a time.
+   * @apiParam (mme parameters) {String} s1Ip The IP address of the MME to
+   * connect to.
+   *
+   * @apiDescription This API endpoint triggers the base station to connect to
+   * a new MME (and therefore, to a new core network).  The list of PLMNs
+   * should be configured such that the PLMN(s) served by this new CN are
+   * present in the RAN (either through eNB configuration, or dynamically
+   * through the <a href="#api-PlmnManagement-PushPLMNs">corresponding
+   * north-bound call</a>). Note that a registration with a subset of the PLMNs
+   * (e.g., to hide a PLMN from the CN) is not possible.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -XPOST localhost:9999/mme/enb/ --data-binary @mme.json
+   *
+   * @apiParamExample {json} Request-Example:
+   *    {
+   *      "mme": [
+   *        {
+   *          "s1Ip": "192.168.12.4"
+   *        }
+   *      ]
+   *    }
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Missing or wrong parameters, reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "MME at IP 192.168.12.4 already present" }
+   */
   mme_calls.route(desc.post("/enb/:id?"),
                   "Post an MME configuration")
            .bind(&flexran::north_api::plmn_calls::add_mme, this);
 
+  /**
+   * @api {delete} /mme/enb/:id? Remove an MME
+   * @apiName RemoveMme
+   * @apiGroup PlmnManagement
+   * @apiParam (URL parameter ) {Number} id The ID of the agent for which to
+   * remove the MME. This can be one of the following: -1 (last added agent),
+   * the eNB ID (in hex or decimal) or the internal agent ID which can be
+   * obtained through a `stats` call. Numbers smaller than 1000 are parsed as
+   * the agent ID.
+   * @apiParam (JSON parameter) {Object[]} mme A list of (objects of) MME IP
+   * addresses to be removed. Only one MME can be configured at a time.
+   * @apiParam (mme parameters) {String} s1Ip The IP address of the MME to
+   * be removed.
+   *
+   * @apiDescription This API endpoint triggers the base station to disconnect
+   * from one MME (and therefore, from one core network).  Note that it is
+   * advisable to not disconnect when a UE is still connected. The controller
+   * does not check whether UEs are still connected and will forward the
+   * message regardless!
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -XDELETE localhost:9999/mme/enb/ --data-binary @mme.json
+   *
+   * @apiParamExample {json} Request-Example:
+   *    {
+   *      "mme": [
+   *        {
+   *          "s1Ip": "192.168.12.4"
+   *        }
+   *      ]
+   *    }
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Missing or wrong parameters, reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "No MME at IP 192.168.12.4 present" }
+   */
   mme_calls.route(desc.del("/enb/:id?"),
                   "Remove an MME")
            .bind(&flexran::north_api::plmn_calls::remove_mme, this);

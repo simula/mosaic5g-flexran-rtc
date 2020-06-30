@@ -32,9 +32,12 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
   auto rrm_calls = desc.path("");
 
   /**
-   * @api {post} /slice/enb/:id? Post a slice configuration
-   * @apiName ApplySliceConfiguration
+   * @api {post} /slice/enb/:id? _Deprecated Slice Configuration
+   * @apiName DeprApplySliceConfiguration
    * @apiGroup SliceConfiguration
+   * @apiDeprecated This description is deprecated and only for informational,
+   * "historic" purposes. See <a
+   * href="#api-SliceConfiguration-ApplySliceConfiguration">here instead</a>.
    *
    * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
    * to change the slice configuration. This can be one of the following: -1
@@ -139,7 +142,36 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (JSON UL part parameters) {String="schedule_ulsch_rnti"} [schedulerName]
    * The name of the scheduler to be loaded. Can not be changed currently.
    *
-   * @apiDescription This API endpoint posts a new slice configuration to an
+   * @apiDescription This description is out-dated and a new format has been
+   * adopted. In the new endpoint, a number of the old parameters are not
+   * available anymore, while new ones have been added. In particular, the new
+   * system is capable of supporting arbitrary slice algorithms (they will be
+   * added gradually over time), and the actual scheduling algorithm can be
+   * set per slice.  On the other hand, the following parameters cannot be set
+   * anymore or have changed:
+   *
+   * * `intersliceShareActive`: governed whether slices shared resources. Now
+   * depends on the slice algorithm.
+   * * `intrasliceShareActive`: governed whether user scheduling shared
+   * resources. Now depends on the user scheduling algorithm.
+   * * `percentage`: static slicing has a minimum granularity of a RBG (DL)/RB
+   * (UL). As such, a percentage was misleading, and the lower/upper bounds of a
+   * slice have to be set manually.
+   * * `isolation`: defined whether this slices shares resources. Now depends
+   * on the slice algorithm.
+   * * `priority`: defined the priority of a slice during slice resource
+   * sharing. Now depends on the slice algorithm.
+   * * `maxmcs`: defined a maximum MCS. Now depends on the user scheduler.
+   * Different schedulers might be defined that would apply a maximum MCS.
+   * * `sorting`: sorting of users within a slice. Now depends on the user
+   * scheduler.
+   * * `accounting`: how resources are attributed to users. `POL_FAIR` is
+   * closest to `round_robin_dl`, `POL_GREEDY` is closest to
+   * `maximum_throughput_wbcqi_dl` together with `CR_LC` sorting.
+   * * `firstRb`: a starting position of a slice in UL. Has been superseded
+   * by `posLow`. a call and sufficient time to verify the actions have been taken.
+   *
+   * Original description: This API endpoint posts a new slice configuration to an
    * underlying agent, specified as a JSON file with the format of the
    * `sliceConfig` as contained in the `cellConfig` of an agent configuration
    * (for a description of the parameters, see below).  It can be used to
@@ -149,8 +181,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * present.  The caller should take care that the sum of slice percentages
    * (i.e. of all present and added slices) should not exceed 100 and no UL
    * slices overlap (a UL slice starts at `firstRb` and extends over
-   * `percentage` * bandwidth RBs. The `stats` call should always be used after
-   * a call and sufficient time to verify the actions have been taken.
+   * `percentage` * bandwidth RBs. The `stats` call should always be used
+   * after triggering this endpoint and sufficient time to verify the actions
+   * have been taken.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -206,6 +239,148 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    *    HTTP/1.1 400 BadRequest
    *    { "error": "Protobuf parser error" }
    */
+  /**
+   * @api {post} /slice/enb/:id? Post a slice configuration
+   * @apiName ApplySliceConfiguration
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
+   * to change the slice configuration. This can be one of the following: -1
+   * (last added agent), the eNB ID (in hex or decimal) or the internal agent
+   * ID which can be obtained through a `stats` call. Numbers smaller than 1000
+   * are parsed as the agent ID.
+   *
+   * @apiParam (JSON parameters) {Object} [dl] The slicing/scheduler
+   * configuration in DL.
+   * @apiParam (JSON parameters) {Object} [ul] The slicing/scheduler
+   * configuration in UL.
+   *
+   * @apiParam (DL Parameters) {String=None,Static} [algorithm] The DL
+   * slicing algorithm (where `None` means no slicing).
+   * @apiParam (DL Parameters) {Object[]} [slices] A list of slices to set or
+   * modify. Not compatible with `None` (no slicing algorithm).
+   * @apiParam (DL Parameters) {Number{1-255}} slices[id] Mandatory ID of this DL
+   * slice.
+   * @apiParam (DL Parameters) {String} [slices[label]] An optional label.
+   * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use for this slice.
+   * @apiParam (DL Parameters) {Object} [slices[static]] The parameters for the
+   * `Static` slicing algorithm. See "DL Static Slicing".
+   * @apiParam (DL Static Slicing) {Number} [static[posLow]] The lower
+   * (inclusive) starting resource block group (RBG) for this slice. It should
+   * not overlap with any other existing or new slice. See "DL Static Slicing"
+   * @apiParam (DL Static Slicing) {Number} [static[posHigh]] The upper
+   * (inclusive!) starting resource block group (RBG) for this slice. It should
+   * not overlap with any other existing or new slice.
+   * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
+   *
+   * @apiParam (UL Parameters) {String=None,Static} [algorithm] The UL
+   * slicing algorithm (where `None` means no slicing algorithm).
+   * @apiParam (UL Parameters) {Object[]} [slices] A list of slices to set or
+   * modify. Not compatible with `None` (no slicing algorithm).
+   * @apiParam (UL Parameters) {Number{1-255}} slices[id] Mandatory ID of this UL
+   * slice.
+   * @apiParam (UL Parameters) {String} [slices[label]] An optional label.
+   * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use for this slice.
+   * @apiParam (UL Parameters) {Object} [slices[static]] The parameters for the
+   * `Static` slicing algorithm. See "UL Static Slicing".
+   * @apiParam (UL Static Slicing) {Number} [static[posLow]] The lower
+   * (inclusive) starting resource block (RB) for this slice. It should not
+   * overlap with any other existing or new slice.
+   * @apiParam (UL Static Slicing) {Number} [static[posHigh]] The upper
+   * (inclusive!) starting resource block (RB) for this slice. It should
+   * not overlap with any other existing or new slice.
+   * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
+   *
+   * @apiDescription This API endpoint posts a new slice configuration to an
+   * underlying agent, specified as a JSON file with the format of the
+   * `sliceConfig` as contained in the `cellConfig` of an agent configuration
+   * (for a description of the parameters, see below), or the scheduler to use
+   * if no slicing algorithm is chosen (`None`).  It can be used to
+   * create arbitrary slices with an arbitrary ID or to change slices by
+   * specifying an ID for an existing slice. In the request, a slice ID must be
+   * present, as well as the slice parameters. The label is optional, and if no
+   * scheduler is given, the scheduler that was active when enabling slicing
+   * will be used. The `stats` call should always be used after triggering this
+   * endpoint and sufficient time to verify the actions have been taken. Note
+   * that the `scheduler` (within `dl`/`ul`) and the `slices` parameters are
+   * mutually exclusive, since the first only applies for no slicing algorithm
+   * (`None`), whereas the latter only applies if a slicing algorithm has been
+   * chosen.
+   *
+   * This API call has changed as of July 2020. For a description of how the
+   * old parameters can be reproduced in the new call, see <a
+   * href="#api-SliceConfiguration-DeprApplySliceConfiguration">Deprecated
+   * Slice Configuration</a>
+   *
+   * Remarks on the `Static` slicing algorithm: this algorithm does not provide
+   * any sharing. Note that `posLow`/`posHigh` are in terms of resource block
+   * groups (RBG) in DL and resource blocks (RB) in UL. Furthermore, it is not
+   * checked that the channel bandwidth can actually accommodate this slice
+   * (`posLow=100` and `posHigh=110` are a valid entry, but they will never
+   * work, since LTE has a maximum bandwidth of 100RBs). Please refer to the
+   * `stats` call to check the amount of resource blocks as well as the
+   * resource block group size which will tell the applicable RB/RBG settings.
+   * Please also note that OAI reserves the first and last 1, 2, or 3 RBs (for
+   * bandwidths 25, 50, or 100RBs, respectively) for PUCCH, meaning that these
+   * first/last RBs should be spared out/they won't be given to the slice.
+   * Also, the minimum RB size in UL is 3!
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/slice/enb/-1 --data-binary "@file"
+   *
+   * @apiParamExample {json} Static Slicing in DL:
+   *     {
+   *       "dl": {
+   *         "algorithm": "Static",
+   *         "slices": [
+   *           {
+   *             "id": 0,
+   *             "static": {
+   *               "posLow": 4,
+   *               "posHigh": 12
+   *             }
+   *           },
+   *           {
+   *             "id": 2,
+   *             "static": {
+   *               "posLow": 0,
+   *               "posHigh": 3
+   *             }
+   *           }
+   *         ]
+   *       },
+   *       "ul": {
+   *         "algorithm": "None"
+   *       }
+   *     }
+   *
+   * @apiParamExample {json} PF scheduler in DL, no slicing:
+   *     {
+   *       "dl": {
+   *         "scheduler": "proportional_fair_wbcqi_dl"
+   *       }
+   *     }
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find agent" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "missing slice ID" }
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "Protobuf parser error" }
+   */
   rrm_calls.route(desc.post("/slice/enb/:id?"),
                   "Post a new slice configuration")
            .bind(&flexran::north_api::rrm_calls::apply_slice_config, this);
@@ -223,8 +398,9 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiDescription This API endpoint deletes slices as specified in the JSON
    * data in the body specified as a JSON file with the format of the
    * `sliceConfig` as contained in the `cellConfig` of a agent configuration
-   * for a given agent.  In particular, a valid slice ID must present and the
-   * percentage value must be zero. Slice 0 can not be removed.
+   * for a given agent.  A valid slice ID must present. Slice 0 can not be
+   * removed. To remove the slice algorithm, consider posting the `None` slice
+   * algorithm instead.
    *
    * @apiVersion v0.1.0
    * @apiPermission None
@@ -233,18 +409,13 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    *
    * @apiParamExample {json} Request-Example:
    *    {
-   *      "dl": [
-   *        {
-   *          "id": 3,
-   *          "percentage": 0
-   *        }
-   *      ],
-   *      "ul": [
-   *        {
-   *          "id": 3,
-   *          "percentage": 0
-   *        }
-   *      ]
+   *      "dl": {
+   *        "slices": [
+   *          {
+   *            "id": 3,
+   *          }
+   *        ]
+   *      }
    *    }
    *
    * @apiSuccessExample Success-Response:
@@ -298,8 +469,8 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * `ueConfig` as contained in the agent configuration.  It can be used to
    * changed the association of UEs using their current RNTI or IMSI. In the
    * request, a slice ID and RNTI or IMSI must be present. The `stats` call
-   * should always be used after a call and sufficient time to verify the
-   * actions have been taken.
+   * should always be used after triggering this endpoint and sufficient time
+   * to verify the actions have been taken.
    *
    * @apiVersion v0.1.0
    * @apiPermission None

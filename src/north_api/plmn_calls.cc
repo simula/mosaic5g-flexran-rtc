@@ -129,6 +129,62 @@ void flexran::north_api::plmn_calls::register_calls(Pistache::Rest::Description&
 
   auto plmn_calls = desc.path("/plmn");
 
+  /**
+   * @api {post} /plmn/enb/:id? Push PLMNs
+   * @apiName PushPLMNs
+   * @apiGroup PlmnManagement
+   * @apiParam (URL parameter ) {Number} id The ID of the agent for which to
+   * push the new PLMNs. This can be one of the following: -1 (last added
+   * agent), the eNB ID (in hex or decimal) or the internal agent ID which can
+   * be obtained through a `stats` call. Numbers smaller than 1000 are parsed
+   * as the agent ID.
+   * @apiParam (JSON parameter) {Object[]} plmnId A list of PLMN IDs (as also
+   * shown in the stats call).
+   * @apiParam (plmnId parameters) {Number{100-999}} mcc The new mobile country code.
+   * @apiParam (plmnId parameters) {Number{10-999}} mnc The new mobile network code.
+   * @apiParam (plmnId parameters) {Number{2-3}} mncLength The length of the
+   * `mnc` (needs to match).
+   *
+   * @apiDescription This API endpoint pushes a new set of PLMNs that are
+   * broadcasted by the base station. The old PLMNs will be overwritten. Please
+   * note that it is advisable to disconnect from MMEs that will not be served
+   * anymore.
+   *
+   * @apiDescription This API endpoint pushes a new set of PLMNs that are
+   * broadcasted by the base station. The old PLMNs will be overwritten. Please
+   * note that it is advisable to disconnect from MMEs that will not be served
+   * anymore.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -XPOST localhost:9999/plmn/enb --data-binary @plmn.json
+   *
+   * @apiParamExample {json} Request-Example:
+   *    {
+   *      "plmnId": [
+   *        {
+   *          "mcc": 208,
+   *          "mnc": 95,
+   *          "mncLength": 2
+   *        },
+   *        {
+   *          "mcc": 208,
+   *          "mnc": 94,
+   *          "mncLength": 2
+   *        }
+   *      ]
+   *    }
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Missing or wrong parameters, reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "can not find BS" }
+   */
   plmn_calls.route(desc.post("/enb/:id?"),
                    "Post a new set of PLMNs")
             .bind(&flexran::north_api::plmn_calls::change_plmn, this);

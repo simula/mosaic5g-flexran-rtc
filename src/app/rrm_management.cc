@@ -131,7 +131,7 @@ void flexran::app::management::rrm_management::apply_slice_config_policy(
   if (dl->algorithm() == protocol::flex_slice_algorithm::Static)
     verify_static_slice_configuration(*dl, current.dl());
   if (dl->algorithm() == protocol::flex_slice_algorithm::NVS)
-    verify_nvs_slice_configuration(*dl, current.dl());
+    verify_nvs_slice_configuration(*dl, bs, current.dl());
 
   if (!slice_config.has_ul()) {
     auto *ul(new protocol::flex_slice_dl_ul_config);
@@ -646,21 +646,54 @@ protocol::flex_slice_config flexran::app::management::rrm_management::
 }
 
 void flexran::app::management::rrm_management::verify_nvs_slice_configuration(
-      const protocol::flex_slice_dl_ul_config& nc,
+      protocol::flex_slice_dl_ul_config& nc,
+      const std::shared_ptr<flexran::rib::enb_rib_info> bs,
       const protocol::flex_slice_dl_ul_config& exist)
 {
+  const uint32_t bw = bs->get_enb_config().cell_config(0).dl_bandwidth();
+  const float mrate = bw == 100 ? 70.0f : (bw == 50 ? 35.0f : 17.5f);
+
   auto f = [](const protocol::flex_slice& s) {
-    return s.has_id() && s.has_nvs();
+    return s.has_id() && (s.has_label() || s.has_scheduler() || s.has_nvs());
   };
   if (!std::all_of(nc.slices().begin(), nc.slices().end(), f))
     throw std::invalid_argument("all slices need to have an ID and parameters");
-  auto p = [](const protocol::flex_slice& s) {
+  for (protocol::flex_slice& s : *nc.mutable_slices()) {
+    if (s.nvs().has_rate() && s.nvs().rate().has_mbps_required() && !s.nvs().rate().has_mbps_reference())
+      s.mutable_nvs()->mutable_rate()->set_mbps_reference(mrate);
+  }
+  auto has_param = [](const protocol::flex_slice& s) {
     return s.nvs().has_pct_reserved()
       || (s.nvs().has_rate()
           && s.nvs().rate().has_mbps_required()
           && s.nvs().rate().has_mbps_reference()); };
+  /* checks that if slice does not exist, needs to have full parameters */
+  auto p = [exist,has_param](const protocol::flex_slice& s) {
+    return std::any_of(exist.slices().begin(), exist.slices().end(),
+            [s] (const protocol::flex_slice& es) { return es.id() == s.id(); })
+           || has_param(s); };
   if (!std::all_of(nc.slices().begin(), nc.slices().end(), p))
     throw std::invalid_argument("all slices need to have complete parameters");
+
+  float sum_req = 0.0f;
+  for (auto &s: nc.slices()) {
+    if (s.nvs().has_rate())
+      sum_req += s.nvs().rate().mbps_required() / s.nvs().rate().mbps_reference();
+    else if (s.nvs().has_pct_reserved())
+      sum_req += s.nvs().pct_reserved();
+  }
+  for (auto &s: exist.slices()) {
+    bool in_config = std::any_of(nc.slices().begin(), nc.slices().end(),
+          [s] (const protocol::flex_slice &cs) { return cs.id() == s.id(); });
+    if (in_config) /* if existing slices is reconfigured in config */
+      continue;
+    if (s.nvs().has_rate())
+      sum_req += s.nvs().rate().mbps_required() / s.nvs().rate().mbps_reference();
+    else if (s.nvs().has_pct_reserved())
+      sum_req += s.nvs().pct_reserved();
+  }
+  if (sum_req > 1.0f)
+    throw std::invalid_argument("sum of slice resources exceeds 1.0f");
 }
 
 protocol::flex_slice_config

@@ -77,7 +77,8 @@ namespace flexran {
             const protocol::flex_slice_config& c);
 
         void verify_nvs_slice_configuration(
-            const protocol::flex_slice_dl_ul_config& c,
+            protocol::flex_slice_dl_ul_config& c,
+            const std::shared_ptr<flexran::rib::enb_rib_info> bs,
             const protocol::flex_slice_dl_ul_config& exist);
         protocol::flex_slice_config transform_to_nvs_slice_configuration(
             const protocol::flex_slice_config& c);

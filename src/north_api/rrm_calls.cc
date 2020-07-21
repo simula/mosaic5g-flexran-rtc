@@ -255,41 +255,41 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (JSON parameters) {Object} [ul] The slicing/scheduler
    * configuration in UL.
    *
-   * @apiParam (dl parameters) {String=None,Static} [algorithm] The DL
+   * @apiParam (DL Parameters) {String=None,Static} [algorithm] The DL
    * slicing algorithm (where `None` means no slicing).
-   * @apiParam (dl parameters) {Object[]} [slices] A list of slices to set or
+   * @apiParam (DL Parameters) {Object[]} [slices] A list of slices to set or
    * modify. Not compatible with `None` (no slicing algorithm).
-   * @apiParam (dl parameters) {Number{1-255}} slices[id] Mandatory ID of this DL
+   * @apiParam (DL Parameters) {Number{1-255}} slices[id] Mandatory ID of this DL
    * slice.
-   * @apiParam (dl parameters) {String} [slices[label]] An optional label.
-   * @apiParam (dl parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use for this slice.
-   * @apiParam (dl parameters) {Object} [slices[static]] The parameters for the
+   * @apiParam (DL Parameters) {String} [slices[label]] An optional label.
+   * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use for this slice.
+   * @apiParam (DL Parameters) {Object} [slices[static]] The parameters for the
    * `Static` slicing algorithm.
-   * @apiParam (dl parameters) {Number} [static[posLow]] The lower
+   * @apiParam (DL Parameters) {Number} [static[posLow]] The lower
    * (inclusive) starting resource block group (RBG) for this slice. It should
    * not overlap with any other existing or new slice.
-   * @apiParam (dl parameters) {Number} [static[posHigh]] The upper
+   * @apiParam (DL Parameters) {Number} [static[posHigh]] The upper
    * (inclusive!) starting resource block group (RBG) for this slice. It should
    * not overlap with any other existing or new slice.
-   * @apiParam (dl parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
+   * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
    *
-   * @apiParam (ul parameters) {String=None,Static} [algorithm] The UL
+   * @apiParam (UL Parameters) {String=None,Static} [algorithm] The UL
    * slicing algorithm (where `None` means no slicing algorithm).
-   * @apiParam (ul parameters) {Object[]} [slices] A list of slices to set or
+   * @apiParam (UL Parameters) {Object[]} [slices] A list of slices to set or
    * modify. Not compatible with `None` (no slicing algorithm).
-   * @apiParam (ul parameters) {Number{1-255}} slices[id] Mandatory ID of this UL
+   * @apiParam (UL Parameters) {Number{1-255}} slices[id] Mandatory ID of this UL
    * slice.
-   * @apiParam (ul parameters) {String} [slices[label]] An optional label.
-   * @apiParam (ul parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use for this slice.
-   * @apiParam (ul parameters) {Object} [slices[static]] The parameters for the
+   * @apiParam (UL Parameters) {String} [slices[label]] An optional label.
+   * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use for this slice.
+   * @apiParam (UL Parameters) {Object} [slices[static]] The parameters for the
    * `Static` slicing algorithm.
-   * @apiParam (ul parameters) {Number} [static[posLow]] The lower
+   * @apiParam (UL Parameters) {Number} [static[posLow]] The lower
    * (inclusive) starting resource block (RB) for this slice. It should not
    * overlap with any other existing or new slice.
-   * @apiParam (ul parameters) {Number} [static[posHigh]] The upper
+   * @apiParam (UL Parameters) {Number} [static[posHigh]] The upper
    * (inclusive!) starting resource block (RB) for this slice. It should
    * not overlap with any other existing or new slice.
-   * @apiParam (ul parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
+   * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
    *
    * @apiDescription This API endpoint posts a new slice configuration to an
    * underlying agent, specified as a JSON file with the format of the

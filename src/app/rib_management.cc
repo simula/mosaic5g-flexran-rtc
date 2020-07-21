@@ -39,7 +39,7 @@ void flexran::app::management::rib_management::tick(uint64_t ms)
 {
   _unused(ms);
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-  for (uint64_t bs_id: rib_.get_available_base_stations()) {
+  for (uint64_t bs_id: rib_.get_available_base_stations()) {   
     send_enb_config_request(bs_id);
     send_ue_config_request(bs_id);
     send_lc_config_request(bs_id);

@@ -16,6 +16,7 @@ add_library(RTC_APP_LIB
     rib_management.cc
     recorder.cc
     plmn_management.cc
+    netstore_loader.cc
     rrm_management.cc
     band_check.cc
 #   flexible_scheduler.cc

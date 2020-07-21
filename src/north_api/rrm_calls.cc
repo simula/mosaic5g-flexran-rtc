@@ -255,7 +255,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (JSON parameters) {Object} [ul] The slicing/scheduler
    * configuration in UL.
    *
-   * @apiParam (DL Parameters) {String=None,Static} [algorithm] The DL
+   * @apiParam (DL Parameters) {String=None,Static,NVS} [algorithm] The DL
    * slicing algorithm (where `None` means no slicing).
    * @apiParam (DL Parameters) {Object[]} [slices] A list of slices to set or
    * modify. Not compatible with `None` (no slicing algorithm).
@@ -271,6 +271,18 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (DL Static Slicing) {Number} static[posHigh] The upper
    * (inclusive!) starting resource block group (RBG) for this slice. It should
    * not overlap with any other existing or new slice.
+   * @apiParam (DL Parameters) {Object} [slices[nvs]] The parameters for the
+   * `NVS` slicing algorithm, see "DL NVS Slicing".
+   * @apiParam (DL NVS Slicing) {Number} [nvs[pctReserved]] The percentage of
+   * reserved resources of the slice.
+   * @apiParam (DL NVS Slicing) {Object} [nvs[rate]] The reserved rate for
+   * this slice.
+   * @apiParam (DL NVS Slicing) {Number} rate[Mbps_required] The rate that
+   * should be reserved for this slice.
+   * @apiParam (DL NVS Slicing) {Number} [rate[Mbps_reference]] The reference
+   * rate for this slice, i.e., the rate that such slice should achieve if it
+   * was always scheduled. Required over reference rate is the percentage this
+   * slice is guaranteed to receive.
    * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
    *
    * @apiParam (UL Parameters) {String=None,Static} [algorithm] The UL
@@ -325,6 +337,10 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * first/last RBs should be spared out/they won't be given to the slice.
    * Also, the minimum RB size in UL is 3!
    *
+   * Remarks on the `NVS` slicing algorithm: it is implemented following the
+   * <a href="https://www.doi.org/10.1109/tnet.2011.2179063">NVS paper</a>. The
+   * current implementation only supports DL.
+   *
    * @apiVersion v0.1.0
    * @apiPermission None
    * @apiExample Example usage:
@@ -360,6 +376,30 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    *     {
    *       "dl": {
    *         "scheduler": "proportional_fair_wbcqi_dl"
+   *       }
+   *     }
+   *
+   * @apiParamExample {json} NVS slicing in DL
+   *     {
+   *       "dl": {
+   *         "algorithm": "NVS",
+   *         "slices": [
+   *           {
+   *             "id": 0,
+   *             "nvs": {
+   *               "pctReserved": 0.02
+   *             }
+   *           },
+   *           {
+   *             "id": 2,
+   *             "nvs": {
+   *               "rate": {
+   *                 "Mbps_required": 17.34,
+   *                 "Mbps_reference": 17.7
+   *               }
+   *             }
+   *           }
+   *         ]
    *       }
    *     }
    *

@@ -283,7 +283,7 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (ul parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use for this slice.
    * @apiParam (ul parameters) {Object} [slices[static]] The parameters for the
    * `Static` slicing algorithm.
-   * @apiParam (ul parameters) {Number} [static][posLow]] The lower
+   * @apiParam (ul parameters) {Number} [static[posLow]] The lower
    * (inclusive) starting resource block (RB) for this slice. It should not
    * overlap with any other existing or new slice.
    * @apiParam (ul parameters) {Number} [static[posHigh]] The upper

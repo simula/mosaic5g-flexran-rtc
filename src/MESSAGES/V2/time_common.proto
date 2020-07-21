@@ -1,31 +1,43 @@
 syntax = "proto2";
 package protocol;
 
+/**
+ * HARQ status message
+ */
 enum flex_harq_status {
      FLHS_ACK = 0;
      FLHS_NACK = 1;
      FLHS_DTX = 2;
 }
 
+/**
+ * Packet reception status 
+ */
 enum flex_reception_status {
      FLRS_OK = 0;
      FLRS_NOT_OK = 1;
      FLRS_NOT_VALID = 2;
 }
 
+/**
+ * Downlink transmission info 
+ */
 message flex_dl_info {
-	optional uint32 rnti = 1;
-	optional uint32 harq_process_id = 2;
-	repeated uint32 harq_status = 3;
-	optional uint32 serv_cell_index = 4;
+	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier    
+	optional uint32 harq_process_id = 2; // process identifier of HARQ
+	repeated uint32 harq_status = 3; // HARQ status 
+	optional uint32 serv_cell_index = 4; // serving cell index 
 }
 
+/**
+ * Uplink transmission info 
+ */
 message flex_ul_info {
-	optional uint32 rnti = 1;
-	repeated uint32 ul_reception = 2;
-	optional uint32 reception_status = 3;
-	optional uint32 tpc = 4;
-	optional uint32 serv_cell_index = 5;
-	optional uint32 rssi = 6;
+	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier    
+	repeated uint32 ul_reception = 2; // uplink reeption info
+	optional uint32 reception_status = 3; // uplink reception status 
+	optional uint32 tpc = 4; // transmit power control info
+	optional uint32 serv_cell_index = 5;// serving cell index 
+	optional uint32 rssi = 6; // received signal strength indicator 
 }
 

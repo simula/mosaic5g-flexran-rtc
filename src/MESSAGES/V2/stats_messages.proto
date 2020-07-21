@@ -4,59 +4,63 @@ package protocol;
 //import "header.proto";
 import "stats_common.proto";
 
-//
-// Bodies of statistics report requests
-//
-
+/**
+* Bodies of statistics report requests
+*/
 message flex_complete_stats_request {
-	optional flex_stats_report_freq report_frequency = 1;
-	optional uint32 sf = 2;
-	optional uint32 cell_report_flags = 3;
-	optional uint32 ue_report_flags = 4;
-  // The following two fields are used for representational purposes at the
-  // northbound of the controller. For historical reasons, the agent expects
-  // the flags as a uint32, though, which should be sent.
-  repeated flex_cell_stats_type cell_reports = 5;
-  repeated flex_ue_stats_type ue_reports = 6;
+	optional flex_stats_report_freq report_frequency = 1; // stats report frequency 
+	optional uint32 sf = 2; // subframe number 
+	optional uint32 cell_report_flags = 3; // flag to request cell report 
+	optional uint32 ue_report_flags = 4;  // flag to request UE report 
+       repeated flex_cell_stats_type cell_reports = 5; // cell status type/flag used for representational purposes at the northbound of the controller. 
+       repeated flex_ue_stats_type ue_reports = 6; // UE status type/flag used for representational purposes at the northbound of the controller. 
 }
 
+/**
+* cell stats request
+*/
 message flex_cell_stats_request {
-	repeated uint32 cell = 1;
-	optional uint32 flags = 2;
+	repeated uint32 cell = 1; // ID of the eNB/gNB
+	optional flex_cell_stats_type flags = 2; // cell stats type. One of FLCST_*
 }
 
+/**
+* UE stats request
+*/
 message flex_ue_stats_request {
-	repeated uint32 rnti = 1;
-	optional uint32 flags = 2;
+	repeated uint32 rnti = 1; // UE Radio Network Temporary Identifier     
+	optional flex_ue_stats_type flags = 2; // UE stats type. One of FLUST_*
 }
 
-//
 // Bodies of statistics reports
-//
 
-// The full statistics report for a specific cell
+/**
+* The full statistics report for a specific cell
+*/
 message flex_cell_stats_report {
-	optional uint32 carrier_index = 1;
-	optional uint32 flags = 2;
-	optional flex_noise_interference_report noise_inter_report = 3;
+	optional uint32 carrier_index = 1; // eNB carrier index 
+	optional flex_cell_stats_type flags = 2; // cell stats type. One of FLCST_*
+	optional flex_noise_interference_report noise_inter_report = 3; // Cell noise to interference report 
 }
 
-// Statistics report for a specific UE
+/**
+* Statistics report for a specific UE
+*/
 message flex_ue_stats_report {
-	optional uint32 rnti = 1;
-	optional uint32 flags = 2;
-	repeated uint32 bsr = 3;
-	optional uint32 phr = 4;
-	repeated flex_rlc_bsr rlc_report = 5;
-	optional uint32 pending_mac_ces = 6;
-	optional flex_dl_cqi_report dl_cqi_report = 7;
-	optional flex_paging_buffer_report pbr = 8;
-	optional flex_ul_cqi_report ul_cqi_report = 9;
-	optional flex_rrc_measurements rrc_measurements = 10;
-    optional flex_pdcp_stats pdcp_stats = 11;
-    optional flex_mac_stats mac_stats = 12;
-    repeated flex_gtp_stats gtp_stats = 13;
-    optional flex_s1ap_ue s1ap_stats = 14;
+	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier     
+	optional uint32 flags = 2;// UE stats type. One of FLUST_*
+	repeated uint32 bsr = 3; // UE buffer status report 
+	optional uint32 phr = 4; // UE power headroom
+	repeated flex_rlc_bsr rlc_report = 5; // UE RLC report 
+	optional uint32 pending_mac_ces = 6;// UE pendinf MAC control elements 
+	optional flex_dl_cqi_report dl_cqi_report = 7; // UE downlink CQI report 
+	optional flex_paging_buffer_report pbr = 8; // UE paging buffer report 
+	optional flex_ul_cqi_report ul_cqi_report = 9; // UE uplink CQI report 
+	optional flex_rrc_measurements rrc_measurements = 10; // UE RRC measurements 
+        optional flex_pdcp_stats pdcp_stats = 11; // PDCP stats 
+        optional flex_mac_stats mac_stats = 12; // MAC stats
+        repeated flex_gtp_stats gtp_stats = 13; // GTP stats
+        optional flex_s1ap_ue s1ap_stats = 14; // S1AP stats
 }
 
 //
@@ -64,14 +68,18 @@ message flex_ue_stats_report {
 //
 
 
-//Types of statistics requested by the controller
+/**
+* Types of statistics requested by the controller
+*/
 enum flex_stats_type {
      FLST_COMPLETE_STATS = 0;
      FLST_CELL_STATS = 1;
      FLST_UE_STATS = 2;
 }
 
-// Report frequency for the requested statistics
+/**
+* Report frequency for the requested statistics
+*/
 enum flex_stats_report_freq {
      FLSRF_ONCE = 0;
      FLSRF_PERIODICAL = 1;
@@ -79,12 +87,16 @@ enum flex_stats_report_freq {
      FLSRF_OFF = 3;
 }
 
-// Flags for cell statistics
+/**
+* Flags for cell statistics
+*/
 enum flex_cell_stats_type {
      FLCST_NOISE_INTERFERENCE = 1;
 }
 
-// Flags for UE-related statistics
+/**
+ * Flags for UE-related statistics
+*/
 enum flex_ue_stats_type {
      FLUST_BSR = 1;
      FLUST_PHR = 2;
@@ -94,7 +106,6 @@ enum flex_ue_stats_type {
      FLUST_PBS = 32;
      FLUST_UL_CQI = 64;
      FLUST_MAC_STATS = 128;
-
      FLUST_PDCP_STATS = 1024;     
      FLUST_GTP_STATS = 2048;
      FLUST_S1AP_STATS = 4096;
@@ -103,9 +114,9 @@ enum flex_ue_stats_type {
     
 }
 
-//
-// Northbound interface-related message
-//
+/**
+* Request complete state, northbound interface-related message
+*/
 message flex_complete_stats_request_repeated {
   repeated flex_complete_stats_request reports = 1;
 }

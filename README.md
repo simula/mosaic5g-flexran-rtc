@@ -20,16 +20,6 @@ the script only provides support for Ubuntu 16.04 and 18.04 (other Ubuntu
 versions might or might not work). For other Linux distributions, please install
 these packages manually using your package manager.
 
-The optional nodejs and apidoc used to create the apidoc documentation (see
-also the [FlexRAN apidoc documentation](http://mosaic-5g.io/apidocs/flexran/))
-is not automatically installed. To install and run apidoc, use:
-```bash
-$ sudo apt install npm nodejs-legacy # Ubuntu 16.04
-$ sudo apt install npm node-gyp nodejs nodejs-dev libssl1.0-dev # Ubuntu 18.04
-$ sudo npm install apidoc -g
-$ apidoc -i src/ -o ./docs -f ".*\\.cc$" -f ".*\\.h$"
-```
-
 ## How to build
 
 To compile, issue the command:
@@ -70,4 +60,28 @@ To run, issue one of the commands:
 $ ./run_flexran_rtc.sh
 $ sudo ./build/rt_controller -c log_config/basic_log
 $ ./build/rt_controller -h   # retrieve help
+```
+
+## How to build documentation
+
+North-bound REST API endpoint documentation is created from code using
+[apidoc](https://apidocjs.com/) (see also the [online FlexRAN apidoc
+documentation](http://mosaic-5g.io/apidocs/flexran/)).  The optional nodejs and
+apidoc packages used to create the documentation are not automatically
+installed. To install and run apidoc, issue the following from the
+`flexran-rtc` directory:
+```bash
+$ sudo apt install npm nodejs-legacy # Ubuntu 16.04
+$ sudo apt install npm node-gyp nodejs nodejs-dev libssl1.0-dev # Ubuntu 18.04
+$ sudo npm install apidoc -g
+$ apidoc -i src/ -o ./docs -f ".*\\.cc$" -f ".*\\.h$"
+```
+
+Protobuf documentation is created from the FlexRAN protocol specification using
+[protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc). It can be run
+using docker (the container is removed afterwards) using the following command.
+The documentation will be in `/tmp/index.html`. See the protoc-gen-doc
+documentation for other formats.
+```bash
+$ docker run --rm -v /tmp:/out -v ~/flexran-rtc/src/MESSAGES/V2:/protos pseudomuto/protoc-gen-doc --doc_opt=html,index.html
 ```

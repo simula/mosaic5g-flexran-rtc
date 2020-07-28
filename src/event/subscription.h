@@ -72,6 +72,11 @@ namespace flexran {
           uint64_t period, uint64_t start = 0);
       bs2::connection subscribe_task_tick_extended(const task_cb::extended_slot_type& cb,
           uint64_t period, uint64_t start = 0);
+
+      bs2::connection subscribe_control_del_req(
+          const msg_cb<protocol::flex_control_delegation_request>::slot_type& cb);
+      bs2::connection subscribe_control_del_req_extended(
+          const msg_cb<protocol::flex_control_delegation_request>::extended_slot_type& cb);
       
     private:
       bs_cb bs_add_;
@@ -83,6 +88,8 @@ namespace flexran {
 
       task_cb task_tick_;
       std::atomic<uint64_t> last_tick_; // used to calculate offsets
+
+      msg_cb<protocol::flex_control_delegation_request> control_del_req_;
     };
   }
 }

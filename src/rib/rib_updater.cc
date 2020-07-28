@@ -384,6 +384,8 @@ void flexran::rib::rib_updater::handle_control_delegation_request(int agent_id,
     warn_unknown_agent_bs(__func__, agent_id);
     return;
   }
+
+  event_sub_.control_del_req_(bs_id, control_del_req_msg);
 }
 
 void flexran::rib::rib_updater::trigger_bs_config(uint64_t bs_id)

@@ -106,3 +106,17 @@ flexran::event::subscription::subscribe_task_tick_extended(const task_cb::extend
            };
   return task_tick_.connect_extended(f);
 }
+
+bs2::connection
+flexran::event::subscription::subscribe_control_del_req(
+    const msg_cb<protocol::flex_control_delegation_request>::slot_type& cb)
+{
+  return control_del_req_.connect(cb);
+}
+
+bs2::connection
+flexran::event::subscription::subscribe_control_del_req_extended(
+    const msg_cb<protocol::flex_control_delegation_request>::extended_slot_type& cb)
+{
+  return control_del_req_.connect_extended(cb);
+}

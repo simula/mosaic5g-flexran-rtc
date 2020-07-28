@@ -28,6 +28,7 @@
 #include <boost/signals2.hpp>
 namespace bs2 = boost::signals2;
 #include "rib_common.h"
+#include "flexran.pb.h"
 
 namespace flexran {
   namespace event {
@@ -46,6 +47,13 @@ namespace flexran {
     /// inaccurate due to skipped milliseconds)
     typedef bs2::signal_type<void(uint64_t),
         bs2::keywords::mutex_type<bs2::dummy_mutex>>::type task_cb;
+
+
+    /// Single-thread callback for arbitrary protobuf message
+    /// Argument is BS ID and the actual message
+    template <typename ProtobufMsg>
+    using msg_cb = typename bs2::signal_type<void(uint64_t, ProtobufMsg),
+        bs2::keywords::mutex_type<bs2::dummy_mutex>>::type;
   }
 }
 

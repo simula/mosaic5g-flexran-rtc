@@ -10,6 +10,7 @@ add_library(RTC_NORTH_API_LIB
     stats_manager_calls.cc
     rrc_triggering_calls.cc
     recorder_calls.cc
+    netstore_loader_calls.cc
 )
 if(ELASTIC_SEARCH_SUPPORT)
   target_sources(RTC_NORTH_API_LIB PRIVATE elastic_calls.cc)

@@ -145,6 +145,9 @@ void flexran::rib::rib_updater::dispatch_message(std::shared_ptr<flexran::networ
   case protocol::flexran_message::kDisconnectMsg:
     handle_disconnect(tm->getTag(), in_message.disconnect_msg());
     break;
+  case protocol::flexran_message::kControlDelReqMsg:
+    handle_control_delegation_request(tm->getTag(), in_message.control_del_req_msg());
+    break;
   default:
     LOG4CXX_WARN(flog::rib, "UNKNOWN MESSAGE from Agent " << tm->getTag());
     break;
@@ -371,6 +374,16 @@ void flexran::rib::rib_updater::handle_disconnect(int agent_id,
     warn_unknown_agent_bs(__func__, agent_id);
   }
   net_xface_.release_connection(agent_id);
+}
+
+void flexran::rib::rib_updater::handle_control_delegation_request(int agent_id,
+      const protocol::flex_control_delegation_request& control_del_req_msg)
+{
+  uint64_t bs_id = rib_.get_bs_id(agent_id);
+  if (bs_id == 0) {
+    warn_unknown_agent_bs(__func__, agent_id);
+    return;
+  }
 }
 
 void flexran::rib::rib_updater::trigger_bs_config(uint64_t bs_id)

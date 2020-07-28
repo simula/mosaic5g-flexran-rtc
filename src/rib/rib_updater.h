@@ -91,6 +91,9 @@ namespace flexran {
       void handle_disconnect(int agent_id,
           const protocol::flex_disconnect& disconnect_msg);
 
+      void handle_control_delegation_request(int agent_id,
+          const protocol::flex_control_delegation_request& control_del_req_msg);
+
       void trigger_bs_config(uint64_t bs_id);
 
       void warn_unknown_agent_bs(const std::string& function, int agent_id);

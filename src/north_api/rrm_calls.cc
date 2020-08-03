@@ -283,6 +283,33 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * rate for this slice, i.e., the rate that such slice should achieve if it
    * was always scheduled. Required over reference rate is the percentage this
    * slice is guaranteed to receive.
+   * @apiParam (DL Parameters) {Object} [slices[scn19]] The parameters for the
+   * `SCN19` slicing algorithm, see "DL SCN19 Slicing".
+   * @apiParam (DL SCN19 Slicing) {Object} [scn19[dynamic]] The reserved rate
+   * for this slice.
+   * @apiParam (DL SCN19 Slicing) {Number} dynamic[Mbps_required] The rate that
+   * should be reserved for this slice.
+   * @apiParam (DL SCN19 Slicing) {Number} [dynamic[Mbps_reference]] The reference
+   * rate for this slice, i.e., the rate that such slice should achieve when it
+   * is scheduled. Required over reference rate is the percentage this
+   * slice is guaranteed to receive.
+   * @apiParam (DL SCN19 Slicing) {Object} [scn19[fixed]] The parameters for a
+   * fixed slice which is isolated in frequency from other slices.
+   * @apiParam (DL SCN19 Slicing) {Number} fixed[posLow] The lower
+   * (inclusive) starting resource block group (RBG) for this slice. It should
+   * not overlap with any other fixed slice.
+   * @apiParam (DL SCN19 Slicing) {Number} fixed[posHigh] The upper
+   * (inclusive!) resource block group (RBG) for this slice.
+   * @apiParam (DL SCN19 Slicing) {Object} [scn19[ondemand]] The parameters for
+   * an on-demand slice that is preferentially scheduled over other slices.
+   * @apiParam (DL SCN19 Slicing) {Number{0-1}} ondemand[pct_reserved] Percentage
+   * of resources that are reserved for this slice.
+   * @apiParam (DL SCN19 Slicing) {Number=50} [ondemand[tau]] Time window (in
+   * TTIs) over which the percentage is enforced. If it is larger, finer
+   * percentages are possible, since it is calculated over more RBGs.
+   * @apiParam (DL SCN19 Slicing) {Number=1} [ondemand[log_delta]] The
+   * `$\frac{\log\delta_k}{\Delta_k}$ parameter. It is multiplied with the
+   * slice weight, and can be used as a priority (higher is better).
    * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
    *
    * @apiParam (UL Parameters) {String=None,Static} [algorithm] The UL
@@ -340,6 +367,13 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * Remarks on the `NVS` slicing algorithm: it is implemented following the
    * <a href="https://www.doi.org/10.1109/tnet.2011.2179063">NVS paper</a>. The
    * current implementation only supports DL.
+   *
+   * Remarks on the `SCN19` slicing algorithm: it is implemented following a
+   * <a href="https://www.doi.org/10.1109/GLOBECOM38437.2019.9013258">paper
+   * from Schmidt et al.</a> It has a special "on-demand" slice type to
+   * preferentially schedule users in order to assure low scheduling latency
+   * while maximising the multiplexing gain (e.g., unlike static slice
+   * allocation).
    *
    * @apiVersion v0.1.0
    * @apiPermission None

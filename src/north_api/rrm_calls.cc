@@ -265,10 +265,10 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use for this slice.
    * @apiParam (DL Parameters) {Object} [slices[static]] The parameters for the
    * `Static` slicing algorithm. See "DL Static Slicing".
-   * @apiParam (DL Static Slicing) {Number} [static[posLow]] The lower
+   * @apiParam (DL Static Slicing) {Number} static[posLow] The lower
    * (inclusive) starting resource block group (RBG) for this slice. It should
    * not overlap with any other existing or new slice. See "DL Static Slicing"
-   * @apiParam (DL Static Slicing) {Number} [static[posHigh]] The upper
+   * @apiParam (DL Static Slicing) {Number} static[posHigh] The upper
    * (inclusive!) starting resource block group (RBG) for this slice. It should
    * not overlap with any other existing or new slice.
    * @apiParam (DL Parameters) {String="round_robin_dl","proportional_fair_wbcqi_dl","maximum_throughput_wbcqi_dl"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).
@@ -283,10 +283,10 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
    * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use for this slice.
    * @apiParam (UL Parameters) {Object} [slices[static]] The parameters for the
    * `Static` slicing algorithm. See "UL Static Slicing".
-   * @apiParam (UL Static Slicing) {Number} [static[posLow]] The lower
+   * @apiParam (UL Static Slicing) {Number} static[posLow] The lower
    * (inclusive) starting resource block (RB) for this slice. It should not
    * overlap with any other existing or new slice.
-   * @apiParam (UL Static Slicing) {Number} [static[posHigh]] The upper
+   * @apiParam (UL Static Slicing) {Number} static[posHigh] The upper
    * (inclusive!) starting resource block (RB) for this slice. It should
    * not overlap with any other existing or new slice.
    * @apiParam (UL Parameters) {String="round_robin_ul"} [slices[scheduler]] The scheduler to use in case of no slicing algorithm. Only compatible with `None` (no slicing algorithm).

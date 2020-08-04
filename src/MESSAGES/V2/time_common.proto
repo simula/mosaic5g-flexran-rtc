@@ -23,21 +23,21 @@ enum flex_reception_status {
  * Downlink transmission info 
  */
 message flex_dl_info {
-	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier    
-	optional uint32 harq_process_id = 2; // process identifier of HARQ
-	repeated uint32 harq_status = 3; // HARQ status 
-	optional uint32 serv_cell_index = 4; // serving cell index 
+	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier.    
+	optional uint32 harq_process_id = 2; // Process identifier of HARQ.
+	repeated uint32 harq_status = 3; // HARQ status. 
+	optional uint32 serv_cell_index = 4; // Serving cell index. 
 }
 
 /**
  * Uplink transmission info 
  */
 message flex_ul_info {
-	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier    
-	repeated uint32 ul_reception = 2; // uplink reeption info
-	optional uint32 reception_status = 3; // uplink reception status 
-	optional uint32 tpc = 4; // transmit power control info
-	optional uint32 serv_cell_index = 5;// serving cell index 
-	optional uint32 rssi = 6; // received signal strength indicator 
+	optional uint32 rnti = 1; // UE Radio Network Temporary Identifier.    
+	repeated uint32 ul_reception = 2; // Uplink reeption info.
+	optional uint32 reception_status = 3; // Uplink reception status. 
+	optional uint32 tpc = 4; // Transmit power control info.
+	optional uint32 serv_cell_index = 5;// Serving cell index. 
+	optional uint32 rssi = 6; // Received signal strength indicator. 
 }
 

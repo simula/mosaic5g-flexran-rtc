@@ -6,18 +6,18 @@ package protocol;
  * Cell System information (SI) config 
 */
 message flex_si_config {
-       optional uint32 sfn = 1;                // System frame number 
-       optional uint32 sib1_length = 2;		// The length of SIB1 in bytes
-       optional uint32 si_window_length = 3; 	// The scheduling window for all SIs in SF
-       repeated flex_si_message si_message = 4;	// List of SI messages to be sent. The index identifies the type of an SI message, i.e. 0 - SIB1, 1..31 - SIx, 32..63 - PCCH
+       optional uint32 sfn = 1;                // System frame number. 
+       optional uint32 sib1_length = 2;		// The length of SIB1 in bytes.
+       optional uint32 si_window_length = 3; 	// The scheduling window for all SIs in SF.
+       repeated flex_si_message si_message = 4;	// List of SI messages to be sent. The index identifies the type of an SI message, i.e. 0 - SIB1, 1..31 - SIx, 32..63 - PCCH.
 }
 
 /**
  * System information message 
 */
 message flex_si_message {
-	optional uint32 periodicity = 1;		// Periodicity of SI msg in radio frames
-	optional uint32 length = 2;			// The length of the SI message in bytes
+	optional uint32 periodicity = 1;		// Periodicity of SI message in radio frames.
+	optional uint32 length = 2;			// The length of the SI message in bytes.
 }
 
 /**
@@ -91,8 +91,8 @@ enum flex_slice_algorithm {
  * Static slice algorithm parameters
  */
 message flex_slice_static {
-  optional uint32 posLow = 1;  // lower (inclusive) end of the slice (DL: RBG, UL: RBG)
-  optional uint32 posHigh = 2; // upper (inclusive) end
+  optional uint32 posLow = 1;  // Lower (inclusive) end of the slice (DL: RBG, UL: RBG).
+  optional uint32 posHigh = 2; // Upper (inclusive) end.
 }
 
 /**
@@ -103,12 +103,12 @@ message flex_slice_nvs {
    * NVS slice rate-type parameters
    */
   message nvs_rate {
-    optional float Mbps_required = 1;  // the rate reserved for this slice
-    optional float Mbps_reference = 2; // the minimum rate that should be achieved when scheduled, translating to minimum quality
+    optional float Mbps_required = 1;  // The rate reserved for this slice.
+    optional float Mbps_reference = 2; // The minimum rate that should be achieved when scheduled, translating to minimum quality.
   }
   oneof type {
-    nvs_rate rate = 1;      // rate parameter
-    float pct_reserved = 2; // capacity parameter, 0 to 1
+    nvs_rate rate = 1;      // Rate parameter.
+    float pct_reserved = 2; // Capacity parameter, 0 to 1.
   }
 }
 
@@ -116,12 +116,12 @@ message flex_slice_nvs {
  * Description of a slice, with generic and slice algorithm-specific parameters
  */
 message flex_slice {
-	optional uint32 id = 1;    // arbitrary ID (there must be a slice 0)
-  optional string label = 2; // arbitrary label
-  optional string scheduler = 3; // scheduler to use for this slice
+	optional uint32 id = 1;    // Arbitrary ID (there must be a slice 0).
+  optional string label = 2; // Arbitrary label.
+  optional string scheduler = 3; // Scheduler to use for this slice.
   oneof params {
-    flex_slice_static static = 10; // static slicing parameters for static algorithm
-    flex_slice_nvs nvs = 11;       // NVS slicing parameters for NVS algorithm
+    flex_slice_static static = 10; // Static slicing parameters for static algorithm.
+    flex_slice_nvs nvs = 11;       // NVS slicing parameters for NVS algorithm.
   }
 }
 
@@ -129,9 +129,9 @@ message flex_slice {
  * Configuration of slicing, in UL or DL
  */
 message flex_slice_dl_ul_config {
-  optional flex_slice_algorithm algorithm = 1; // the slice algorithm to use
-  repeated flex_slice slices = 2; // list of slices
-  optional string scheduler = 3;  // scheduler to use if no slicing
+  optional flex_slice_algorithm algorithm = 1; // The slice algorithm to use.
+  repeated flex_slice slices = 2; // List of slices.
+  optional string scheduler = 3;  // Scheduler to use if no slicing.
 }
 
 // UE config related structures and enums
@@ -140,63 +140,63 @@ message flex_slice_dl_ul_config {
 * Discontinous reception (DRX) config message 
 */
 message flex_drx_config {
-	optional uint32 on_duration_timer = 1;		// Timer in terms of number of SF. See TS 36.321
-	optional uint32 drx_inactivity_timer = 2;	// Timer in terms of number of SF. See TS 36.321
-	optional uint32 drx_retransmission_timer = 3;	// Timer in terms of number of SF. See TS 36.321
-	optional uint32 long_drx_cycle = 4;		// Long DRX Cycle  in terms of number of SF. See TS 36.321
-	optional uint32 long_drx_cycle_start_offset = 5;// Long DRX cycle offset in terms of number of S. FSee TS 36.321
+	optional uint32 on_duration_timer = 1;		// Timer in terms of number of SF. See TS 36.321.
+	optional uint32 drx_inactivity_timer = 2;	// Timer in terms of number of SF. See TS 36.321.
+	optional uint32 drx_retransmission_timer = 3;	// Timer in terms of number of SF. See TS 36.321.
+	optional uint32 long_drx_cycle = 4;		// Long DRX Cycle  in terms of number of SF. See TS 36.321.
+	optional uint32 long_drx_cycle_start_offset = 5;// Long DRX cycle offset in terms of number of S. FSee TS 36.321.
 	optional uint32 short_drx_cycle = 6;		// Short DRX clcyel in terms of number of SF.
-	optional uint32 drx_short_cycle_timer = 7;	// Short DRX cycle timer in terms of number of SF. See TS 36.321
+	optional uint32 drx_short_cycle_timer = 7;	// Short DRX cycle timer in terms of number of SF. See TS 36.321.
 }
 
 /**
 * Semi-persistent scheduling (SPS) config message 
 */
 message flex_sps_config {
-	optional uint32 semi_persistent_sched_interval_UL = 1; // SPS UL scheduling interval in SF
-	optional uint32 semi_persistent_sched_interval_DL = 2; // SPS DL scheduling interval in SF
-	optional uint32 num_of_conf_sps_proc = 3;	   // Number of SPS HARQ processes. See TS 36.321
-	repeated uint32 n1_PUCCH_AN_persistent_element = 4;// See TS36.213. Ignored when config is used, as part of FLPT_SET_UE_CONFIG
-	optional uint32 implicit_release_after = 5;   // number of empty transmissions before release of SPS
+	optional uint32 semi_persistent_sched_interval_UL = 1; // SPS UL scheduling interval in SF.
+	optional uint32 semi_persistent_sched_interval_DL = 2; // SPS DL scheduling interval in SF.
+	optional uint32 num_of_conf_sps_proc = 3;	   // Number of SPS HARQ processes. See TS 36.321.
+	repeated uint32 n1_PUCCH_AN_persistent_element = 4;// See TS36.213. Ignored when config is used, as part of FLPT_SET_UE_CONFIG.
+	optional uint32 implicit_release_after = 5;   // Number of empty transmissions before release of SPS.
 }
 
 /**
 * Scheduling request config message 
 */
 message flex_sr_config {
-	optional flex_setup_release_action sr_action = 1;// Indicates if SR config should be changed or released. One of the FLSRA_* enum values
-	optional uint32 sched_interval = 2;		// SR scheduling interval in SF
-	optional uint32 dsr_trans_max = 3;		// See TS 36.213
+	optional flex_setup_release_action sr_action = 1;// Indicates if SR config should be changed or released. One of the FLSRA_* enum values.
+	optional uint32 sched_interval = 2;		// SR scheduling interval in SF.
+	optional uint32 dsr_trans_max = 3;		// See TS 36.213.
 }
 /**
 * Channel quality indicator config message 
 */
 message flex_cqi_config {
-	optional flex_setup_release_action cqi_action = 1;// Indicats if CQI changed or released. One of the FLSRA_* enum values
-	optional uint32 cqi_sched_interval = 2;		// CQI scheduling interval in SF
-	optional uint32 ri_sched_interval = 3;		// RI scheduling interval in SF
+	optional flex_setup_release_action cqi_action = 1;// Indicats if CQI changed or released. One of the FLSRA_* enum values.
+	optional uint32 cqi_sched_interval = 2;		// CQI scheduling interval in SF.
+	optional uint32 ri_sched_interval = 3;		// RI scheduling interval in SF.
 }
 
 /**
 * UE cpability message 
 */
 message flex_ue_capabilities {
-	optional uint32 half_duplex = 1;		// Boolean value. Only half duplex support. FDD operation
-	optional uint32 intra_SF_hopping = 2;		// Support for intra-subframe hopping. Boolean value
-	optional uint32 type2_sb_1 = 3;			// Support for type 2 hopping with n_sb > 1
-	optional uint32 ue_category = 4;                // indicate the UE category
-	optional uint32 res_alloc_type1 = 5;		// Boolean value. UE support for resource allocation type 1
+	optional uint32 half_duplex = 1;		// Boolean value. Only half duplex support. FDD operation.
+	optional uint32 intra_SF_hopping = 2;		// Support for intra-subframe hopping. Boolean value.
+	optional uint32 type2_sb_1 = 3;			// Support for type 2 hopping with n_sb > 1.
+	optional uint32 ue_category = 4;                // Indicate the UE category.
+	optional uint32 res_alloc_type1 = 5;		// Boolean value. UE support for resource allocation type 1.
 }
 
 /**
 * Secondary cell config message 
 */
 message flex_scell_config {
-	optional uint32 carrier_index = 1;		// Id of the carrier component
-	optional uint32 scell_index = 2;		// Index of this Scell (RRC SCellIndex)
-	optional uint32 use_ccs = 3;			// Boolean value. Indicates if cross-carrier scheduling is used by this SCell
-	optional uint32 sched_cell_index = 4;		// Index of the cell responsible for scheduling this SCell if cross-carrier scheduling is enabled
-	optional uint32 pdsch_start = 5;		// Starting OFDM symbol of PDSCH data region for this SCell
+	optional uint32 carrier_index = 1;		// ID of the carrier component.
+	optional uint32 scell_index = 2;		// Index of this Scell (RRC SCellIndex).
+	optional uint32 use_ccs = 3;			// Boolean value. Indicates if cross-carrier scheduling is used by this SCell.
+	optional uint32 sched_cell_index = 4;		// Index of the cell responsible for scheduling this SCell if cross-carrier scheduling is enabled.
+	optional uint32 pdsch_start = 5;		// Starting OFDM symbol of PDSCH data region for this SCell.
 }
 
 /**
@@ -246,15 +246,15 @@ enum flex_tdd_ack_nack_feedback_mode {
 * Logical channel config related structures and enums
 */
 message flex_lc_config {
-	optional uint32 lcid = 1;	// The logical channel id
-	optional uint32 lcg = 2;	// The logical channel group (0..3) the LC is mapped to
-	optional flex_lc_direction direction = 3;	// The LC direction. One of the FLLCD_* enum values
-	optional flex_qos_bearer_type qos_bearer_type = 4;// QoS GBR or NGBR bearer type. One of the FLQBT_* enum values
-	optional uint32 qci = 5;	// The QCI defined in TS 23.203, coded as defined in TS 36.413. One less than the actual QCI value
-	optional uint64 e_RAB_max_bitrate_UL = 6; // In bps, valid only for GBR traffic 
-	optional uint64 e_RAB_max_bitrate_DL = 7; // In bps, valid only for GBR traffic 
-	optional uint64 e_RAB_guaranteed_bitrate_UL = 8; // In bps, valid only for GBR traffic 
-	optional uint64 e_RAB_guaranteed_bitrate_DL = 9;  // In bps, valid only for GBR traffic 
+	optional uint32 lcid = 1;	// The logical channel ID.
+	optional uint32 lcg = 2;	// The logical channel group (0..3) the LC is mapped to.
+	optional flex_lc_direction direction = 3;	// The LC direction. One of the FLLCD_* enum values.
+	optional flex_qos_bearer_type qos_bearer_type = 4;// QoS GBR or NGBR bearer type. One of the FLQBT_* enum values.
+	optional uint32 qci = 5;	// The QCI defined in TS 23.203, coded as defined in TS 36.413. One less than the actual QCI value.
+	optional uint64 e_RAB_max_bitrate_UL = 6; // In bps, valid only for GBR traffic. 
+	optional uint64 e_RAB_max_bitrate_DL = 7; // In bps, valid only for GBR traffic. 
+	optional uint64 e_RAB_guaranteed_bitrate_UL = 8; // In bps, valid only for GBR traffic. 
+	optional uint64 e_RAB_guaranteed_bitrate_DL = 9;  // In bps, valid only for GBR traffic .
 }
 
 /**
@@ -288,113 +288,113 @@ enum flex_ue_state_change_type {
 * PLMN value 
 */ 
 message flex_plmn {
-        optional uint32 mcc = 1; // mobile conuntry code (MCC)
-        optional uint32 mnc = 2; // mobile network code (MNC)
-        optional uint32 mnc_length = 3; // length of MNC
+        optional uint32 mcc = 1; // Mobile Conuntry Code (MCC).
+        optional uint32 mnc = 2; // Mobile Network Code (MNC).
+        optional uint32 mnc_length = 3; // Length of MNC.
 }
 
 /**
 * UE measurement inforamtion
 */ 
 message flex_measurement_info {
-  optional int64 offset_freq_serving = 1; // arbitrary offset OFS, from TS
-  optional int64 offset_freq_neighbouring = 2;   // arbitrary offset OFN
-  repeated int64 cell_individual_offset = 3;   // arbitrary offset OCS + OCN
-  optional int64 filter_coefficient_rsrp = 4; // Parameter k for exponential moving average calculation coefficient a = 1/2^(k/4) of all measured RSRPs
-  optional int64 filter_coefficient_rsrq = 5;   // Parameter k for RSRQ filtering
-  optional flex_measurement_event event = 6;  // measurement event type 
+  optional int64 offset_freq_serving = 1; // Arbitrary offset OFS, from TS.
+  optional int64 offset_freq_neighbouring = 2;   // Arbitrary offset OFN.
+  repeated int64 cell_individual_offset = 3;   // Arbitrary offset OCS + OCN.
+  optional int64 filter_coefficient_rsrp = 4; // Parameter k for exponential moving average calculation coefficient a = 1/2^(k/4) of all measured RSRPs.
+  optional int64 filter_coefficient_rsrq = 5;   // Parameter k for RSRQ filtering.
+  optional flex_measurement_event event = 6;  // Measurement event type. 
 }
 
 /**
 *  UE Measurement event type 
 */ 
 message flex_measurement_event {
-  optional flex_per_event periodical = 1; // Periodical event 
-  optional flex_a1_event a1 = 2;          // A1 event: Serving cell becomes better than the threshold 
-  optional flex_a2_event a2 = 3;          // A2 event: Serving cell becomes worse than the threshold 
-  optional flex_a3_event a3 = 4;          // A3 event: Neighboring cell becomes offset better than the serving cell 
-  optional flex_a4_event a4 = 5;          // A4 event: Neighboring cell becomes offset better than the threshold
-  optional flex_a5_event a5 = 6;          // A5 event: Serving cell becomes worse than the threshold_1 and the Neighboring cell becomes better than the threshold_2
+  optional flex_per_event periodical = 1; // Periodical event. 
+  optional flex_a1_event a1 = 2;          // A1 event: Serving cell becomes better than the threshold. 
+  optional flex_a2_event a2 = 3;          // A2 event: Serving cell becomes worse than the threshold. 
+  optional flex_a3_event a3 = 4;          // A3 event: Neighboring cell becomes offset better than the serving cell. 
+  optional flex_a4_event a4 = 5;          // A4 event: Neighboring cell becomes offset better than the threshold.
+  optional flex_a5_event a5 = 6;          // A5 event: Serving cell becomes worse than the threshold_1 and the Neighboring cell becomes better than the threshold_2.
 }
 
 /**
 *  UE periodical measurement flag 
 */ 
 message flex_per_event {
-  optional int64 max_report_cells = 1; // maximum number of reporting cells 
+  optional int64 max_report_cells = 1; // Maximum number of reporting cells. 
 }
 
 /**
 *  A1 event type 
 */ 
 message flex_a1_event {
-  optional int64 threshold_rsrp = 1; // RSRP threshold value 
-  optional int64 hysteresis = 2;     // hysteresis indicating an acceptable range of RSRP flucuation for which the A1 event is not triggered 
-  optional int64 time_to_trigger = 3; // time after which an event will be triggered 
-  optional int64 max_report_cells = 4; // maximum number of reporting cells 
+  optional int64 threshold_rsrp = 1; // RSRP threshold value. 
+  optional int64 hysteresis = 2;     // Hysteresis indicating an acceptable range of RSRP fluctuation for which the A1 event is not triggered 
+  optional int64 time_to_trigger = 3; // Time after which an event will be triggered. 
+  optional int64 max_report_cells = 4; // Maximum number of reporting cells.
 }
 
 /**
 *  A2 event type 
 */ 
 message flex_a2_event {
-  optional int64 threshold_rsrp = 1; // RSRP threshold value 
-  optional int64 hysteresis = 2;     // hysteresis indicating an acceptable range of RSRP flucuation for which the A1 event is not triggered 
-  optional int64 time_to_trigger = 3; // time after which an event will be triggered 
-  optional int64 max_report_cells = 4; // maximum number of reporting cells 
+  optional int64 threshold_rsrp = 1; // RSRP threshold value.
+  optional int64 hysteresis = 2;     // Hysteresis indicating an acceptable range of RSRP fluctuation  for which the A1 event is not triggered. 
+  optional int64 time_to_trigger = 3; // Time after which an event will be triggered. 
+  optional int64 max_report_cells = 4; // Maximum number of reporting cells. 
 }
 
 /**
 *  A3 event type 
 */ 
 message flex_a3_event {
-  optional int64 a3_offset = 1; // A3 event offset
-  optional int32 report_on_leave = 2; //send report when leaving the serving cell 
-  optional int64 hysteresis = 3; // hysteresis indicating an acceptable range of RSRP flucuation for which the A1 event is not triggered 
-  optional int64 time_to_trigger = 4; // time after which an event will be triggered 
-  optional int64 max_report_cells = 5; // maximum number of reporting cells 
+  optional int64 a3_offset = 1; // A3 event offset.
+  optional int32 report_on_leave = 2; //Send report when leaving the serving cell. 
+  optional int64 hysteresis = 3; // Hysteresis indicating an acceptable range of RSRP fluctuation  for which the A1 event is not triggered. 
+  optional int64 time_to_trigger = 4; // Time after which an event will be triggered.
+  optional int64 max_report_cells = 5; // Maximum number of reporting cells. 
 }
 
 /**
 *  A4 event type 
 */
 message flex_a4_event {
-  optional int64 threshold_rsrp = 1; // RSRP threshold value 
-  optional int64 hysteresis = 2;     // hysteresis indicating an acceptable range of RSRP flucuation for which the A1 event is not triggered 
-  optional int64 time_to_trigger = 3; // time after which an event will be triggered 
-  optional int64 max_report_cells = 4; // maximum number of reporting cells 
+  optional int64 threshold_rsrp = 1; // RSRP threshold value. 
+  optional int64 hysteresis = 2;     // Hysteresis indicating an acceptable range of RSRP fluctuation  for which the A1 event is not triggered. 
+  optional int64 time_to_trigger = 3; // Time after which an event will be triggered. 
+  optional int64 max_report_cells = 4; // Maximum number of reporting cells. 
 }
 
 /**
 *  A5 event type 
 */
 message flex_a5_event {
-  optional int64 threshold_rsrp_1 = 1; // RSRP threshold_1 for serving cell
-  optional int64 threshold_rsrp_2 = 2; // RSRP threshold_2 for target/neighboring cells 
-  optional int64 hysteresis = 3;     // hysteresis indicating an acceptable range of RSRP flucuation for which the A1 event is not triggered 
-  optional int64 time_to_trigger = 4; // time after which an event will be triggered 
-  optional int64 max_report_cells = 5; // maximum number of reporting cells 
+  optional int64 threshold_rsrp_1 = 1; // RSRP threshold_1 for serving cell.
+  optional int64 threshold_rsrp_2 = 2; // RSRP threshold_2 for target/neighboring cells. 
+  optional int64 hysteresis = 3;     // Hysteresis indicating an acceptable range of RSRP fluctuation  for which the A1 event is not triggered. 
+  optional int64 time_to_trigger = 4; // Time after which an event will be triggered.
+  optional int64 max_report_cells = 5; // Maximum number of reporting cells. 
 }
 
 /**
 * globally unique MME identifier used for S1AP cell configuration
 */
 message flex_gummei {
-        optional flex_plmn plmn = 1; // PLMN value 
-        optional uint32 mme_group_id = 2; // MME group identifier 
-        optional uint32 mme_code = 3; // MME code 
+        optional flex_plmn plmn = 1; // PLMN value. 
+        optional uint32 mme_group_id = 2; // MME group identifier. 
+        optional uint32 mme_code = 3; // MME code. 
 }
 
 /**
 * S1AP MME information used for S1AP cell configuration
 */
 message flex_s1ap_mme {
-        optional string s1_ip = 1;                        // S1-MME IP of MME
-        optional string name = 2;                         // S1-MME name of MME
-        optional flex_mme_state state = 3;                // State of the MME
-        repeated flex_gummei served_gummeis = 4;          // GUMMEIs served by the MME
-        repeated flex_plmn requested_plmns = 5;           // PLMNs communicated to MME
-        optional uint32 rel_capacity = 6;                 // relative MME capacity, TS23.401
+        optional string s1_ip = 1;                        // S1-MME IP of MME.
+        optional string name = 2;                         // S1-MME name of MME.
+        optional flex_mme_state state = 3;                // State of the MME.
+        repeated flex_gummei served_gummeis = 4;          // GUMMEIs served by the MME.
+        repeated flex_plmn requested_plmns = 5;           // PLMNs communicated to MME.
+        optional uint32 rel_capacity = 6;                 // relative MME capacity, TS23.401.
 }
 
 /**

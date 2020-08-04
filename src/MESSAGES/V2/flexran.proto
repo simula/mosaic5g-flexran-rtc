@@ -14,29 +14,29 @@ import "config_common.proto";
  * All the messages presented here will also be defined in the Google Protocol Buffers format so that they can be cross-platform to ease development and experimentation.
 */
 message flexran_message {
-       optional flexran_direction msg_dir = 100; // FlexRAN message direction
+       optional flexran_direction msg_dir = 100; // FlexRAN message direction.
 	oneof msg {
-              flex_hello hello_msg = 1;  // FlexRAN protocol hello message
-              flex_echo_request echo_request_msg = 2; // FlexRAN protocol echo request message
-	      flex_echo_reply echo_reply_msg = 3; // FlexRAN Protocol echo reply message
-	      flex_stats_request stats_request_msg = 4; // eNB/gNB stats request message
-	      flex_stats_reply stats_reply_msg = 5; // eNB/gNB stats reply message
-	      flex_sf_trigger sf_trigger_msg = 6; // eNB/gNB subframe trigger message, sent from RAN agent/runtime to controller
-	      flex_ul_sr_info ul_sr_info_msg = 7; // eNB/gNB uplink scheduling request info messahe
-	      flex_enb_config_request enb_config_request_msg = 8; // eNB/gNB config request message
-	      flex_enb_config_reply enb_config_reply_msg = 9; // eNB/gNB config reply message
-	      flex_ue_config_request ue_config_request_msg = 10; // UE config request message
-	      flex_ue_config_reply ue_config_reply_msg = 11; // UE config reply message 
-	      flex_lc_config_request lc_config_request_msg = 12; // UE logical channel config request message
-	      flex_lc_config_reply lc_config_reply_msg = 13; // UE logical channel config reply message
-	      flex_dl_mac_config dl_mac_config_msg = 14; // UE MAC config message
-	      flex_ue_state_change ue_state_change_msg = 15; // UE state change message
-	      flex_control_delegation control_delegation_msg = 16; // FlexRAN control delegation message
-	      flex_agent_reconfiguration agent_reconfiguration_msg = 17; // Flexran agent/runtime reconfiguration message
-	      flex_rrc_triggering rrc_triggering = 18; // eNb/gNB RRC measurement triggering messages
-	      flex_ul_mac_config ul_mac_config_msg = 19; // UE uplink MAc config message
-              flex_disconnect disconnect_msg = 20; // FlexRAN protocol disconnect message
-              flex_ho_command ho_command = 21; // FlexRAN handover command 
+              flex_hello hello_msg = 1;  // FlexRAN protocol hello message.
+              flex_echo_request echo_request_msg = 2; // FlexRAN protocol echo request message.
+	      flex_echo_reply echo_reply_msg = 3; // FlexRAN Protocol echo reply message.
+	      flex_stats_request stats_request_msg = 4; // eNB/gNB stats request message.
+	      flex_stats_reply stats_reply_msg = 5; // eNB/gNB stats reply message.
+	      flex_sf_trigger sf_trigger_msg = 6; // eNB/gNB subframe trigger message, sent from RAN agent/runtime to controller.
+	      flex_ul_sr_info ul_sr_info_msg = 7; // eNB/gNB uplink scheduling request info message.
+	      flex_enb_config_request enb_config_request_msg = 8; // eNB/gNB config request message.
+	      flex_enb_config_reply enb_config_reply_msg = 9; // eNB/gNB config reply message.
+	      flex_ue_config_request ue_config_request_msg = 10; // UE config request message.
+	      flex_ue_config_reply ue_config_reply_msg = 11; // UE config reply message.
+	      flex_lc_config_request lc_config_request_msg = 12; // UE logical channel config request message.
+	      flex_lc_config_reply lc_config_reply_msg = 13; // UE logical channel config reply message.
+	      flex_dl_mac_config dl_mac_config_msg = 14; // UE MAC config message.
+	      flex_ue_state_change ue_state_change_msg = 15; // UE state change message.
+	      flex_control_delegation control_delegation_msg = 16; // FlexRAN control delegation message.
+	      flex_agent_reconfiguration agent_reconfiguration_msg = 17; // Flexran agent/runtime reconfiguration message.
+	      flex_rrc_triggering rrc_triggering = 18; // eNb/gNB RRC measurement triggering messages.
+	      flex_ul_mac_config ul_mac_config_msg = 19; // UE uplink MAc config message.
+              flex_disconnect disconnect_msg = 20; // FlexRAN protocol disconnect message.
+              flex_ho_command ho_command = 21; // FlexRAN handover command. 
 
 	}
 }
@@ -46,10 +46,10 @@ message flexran_message {
  */
 enum flexran_direction {
      //option allow_alias = true;
-     NOT_SET = 0;            // indicates unknown/unset value
-     INITIATING_MESSAGE = 1; // Indicates the first message from the sender
-     SUCCESSFUL_OUTCOME=2;   // Indicates a successful reception of the message by the receiver 
-     UNSUCCESSFUL_OUTCOME=3;   // Indicates an unsuccessful reception of the message by the receiver 
+     NOT_SET = 0;            // Indicates unknown/unset value.
+     INITIATING_MESSAGE = 1; // Indicates the first message from the sender.
+     SUCCESSFUL_OUTCOME=2;   // Indicates a successful reception of the message by the receiver. 
+     UNSUCCESSFUL_OUTCOME=3;   // Indicates an unsuccessful reception of the message by the receiver. 
 }
 
 /**
@@ -76,10 +76,10 @@ enum flexran_err {
 * BS capabilities in terms of functional split. Maintenance and discovery related messages.
 */ 
 enum flex_bs_capability {
-    LOPHY = 0; // low phy layer
-    HIPHY = 1; // high phy layer
-    LOMAC = 2; // low mac layer
-    HIMAC = 3; // high mac layer
+    LOPHY = 0; // Low phy layer
+    HIPHY = 1; // High phy layer
+    LOMAC = 2; // Low mac layer
+    HIMAC = 3; // High mac layer
     RLC   = 4; // RLC layer
     PDCP  = 5; // PDCP layer
     SDAP  = 6; // SDAP layer
@@ -92,11 +92,11 @@ enum flex_bs_capability {
 * BS functional split. Maintenance and discovery related messages.
 */ 
 enum flex_bs_split {
-  F1    = 0; // IF1/ F1 split,  CU(PDCP/RRC) and DU(RLC/MAC/PHY)
-  nFAPI = 1; // NFAPI split specificed by small-cell forum, MAC-PHY layer split
-  IF4   = 2; // Resource element mapping split   
-  IF4p5 = 3; // Frequency-domain split 
-  IF5   = 4; // Split of PHY and RF/RRH, equivalent to 3GPP option 8 split
+  F1    = 0; // IF1/ F1 split,  CU(PDCP/RRC) and DU(RLC/MAC/PHY).
+  nFAPI = 1; // NFAPI split specificed by small-cell forum, MAC-PHY layer split.
+  IF4   = 2; // Resource element mapping split.   
+  IF4p5 = 3; // Frequency-domain split. 
+  IF5   = 4; // Split of PHY and RF/RRH, equivalent to 3GPP option 8 split.
 }
 
 
@@ -104,17 +104,17 @@ enum flex_bs_split {
 * FlexRAN protocol hello message 
 */
 message flex_hello {
-    optional flex_header header = 1;  // FlexRAN protocol message header
-    optional uint64 bs_id = 2;        // Unique id to distinguish the eNB
-    repeated flex_bs_capability capabilities = 3; // BS capabilities 
-    repeated flex_bs_split splits = 4; // BS functional split option 
+    optional flex_header header = 1;  // FlexRAN protocol message header.
+    optional uint64 bs_id = 2;        // Unique ID to distinguish the eNB.
+    repeated flex_bs_capability capabilities = 3; // BS capabilities. 
+    repeated flex_bs_split splits = 4; // BS functional split option. 
 }
 
 /**
  * FlexRAN protocol echo request message  
  */
 message flex_echo_request {
-	optional flex_header header = 1; // FlexRAN protocol message header
+	optional flex_header header = 1; // FlexRAN protocol message header.
 	extensions 100 to 199;
 }
 
@@ -123,7 +123,7 @@ message flex_echo_request {
  * FlexRAN protocol echo reply message  
  */
 message flex_echo_reply {
-	optional flex_header header = 1; // FlexRAN protocol message header
+	optional flex_header header = 1; // FlexRAN protocol message header.
 	extensions 100 to 199;
 }
 
@@ -132,12 +132,12 @@ message flex_echo_reply {
 * Statistics request message for both cell and UE
 */
 message flex_stats_request {
-	optional flex_header header = 1; // FlexRAN protocol message header
-	optional flex_stats_type type = 2; // type of stats to request 
+	optional flex_header header = 1; // FlexRAN protocol message header.
+	optional flex_stats_type type = 2; // Type of stats to request 
 	oneof body {
-	      flex_complete_stats_request complete_stats_request = 3; // Request eNB/gNB to send a complete stats spanning the entire protocol stack 
-	      flex_cell_stats_request cell_stats_request = 4; // Request eNB/gNB to send cell stats spanning the entire protocol stack
-	      flex_ue_stats_request ue_stats_request = 5;  // Request eNB/gNB to send UE stats spanning the entire protocol stack
+	      flex_complete_stats_request complete_stats_request = 3; // Request eNB/gNB to send a complete stats spanning the entire protocol stac. 
+	      flex_cell_stats_request cell_stats_request = 4; // Request eNB/gNB to send cell stats spanning the entire protocol stack.
+	      flex_ue_stats_request ue_stats_request = 5;  // Request eNB/gNB to send UE stats spanning the entire protocol stack.
 	}
 }
 
@@ -183,7 +183,7 @@ message flex_enb_config_request {
  */
 message flex_enb_config_reply {
 	optional flex_header header = 1; // FlexRAN protocol message header
-	optional uint64 eNB_id = 2;		// Unique id to distinguish the eNB
+	optional uint64 eNB_id = 2;		// Unique ID to distinguish the eNB
 	repeated flex_cell_config cell_config = 3; // Cell main configuration parameteres  
         optional uint32 device_spec = 4; // device specific configuration
         optional flex_s1ap_config s1ap = 5; // S1AP configuration 

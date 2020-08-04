@@ -6,9 +6,9 @@ package protocol;
  * FlexRAN protocol message header 
  */
 message flex_header {
-	optional uint32 version = 1; // The protocol version used
-	optional uint32 type = 2; // The type of the PR message
-	optional uint32 xid = 4; // Transaction id to facilitate pairing between req and reply
+	optional uint32 version = 1; // The protocol version used.
+	optional uint32 type = 2; // The type of the PR message.
+	optional uint32 xid = 4; // Transaction id to facilitate pairing between req and reply.
 }
 
 /**
@@ -16,42 +16,42 @@ message flex_header {
  */
 enum flex_type {
      
-     FLPT_HELLO = 0; // Discovery and maintenance messages
-     FLPT_ECHO_REQUEST = 1; // Discovery and maintenance messages
-     FLPT_ECHO_REPLY = 2; // Discovery and maintenance messages
-     FLPT_DISCONNECT = 20; // Discovery and maintenance messages
+     FLPT_HELLO = 0; // Discovery and maintenance messages.
+     FLPT_ECHO_REQUEST = 1; // Discovery and maintenance messages.
+     FLPT_ECHO_REPLY = 2; // Discovery and maintenance messages.
+     FLPT_DISCONNECT = 20; // Discovery and maintenance messages.
 
      
-     FLPT_STATS_REQUEST = 3; // Statistics and measurement messages
-     FLPT_STATS_REPLY = 4; // Statistics and measurement messages
+     FLPT_STATS_REQUEST = 3; // Statistics and measurement messages.
+     FLPT_STATS_REPLY = 4; // Statistics and measurement messages.
      
     
-     FLPT_SF_TRIGGER = 5;  // Time indication messages
+     FLPT_SF_TRIGGER = 5;  // Time indication messages.
 
     
-     FLPT_UL_SR_INFO = 6; // Asynchronous messages
+     FLPT_UL_SR_INFO = 6; // Asynchronous messages.
 
     
-     FLPT_GET_ENB_CONFIG_REQUEST = 7;  // eNB configuration messages
-     FLPT_GET_ENB_CONFIG_REPLY = 8;  // eNB configuration messages
-     FLPT_GET_UE_CONFIG_REQUEST = 9;  // eNB configuration messages
-     FLPT_GET_UE_CONFIG_REPLY = 10;  // eNB configuration messages
-     FLPT_GET_LC_CONFIG_REQUEST = 11;  // eNB configuration messages
-     FLPT_GET_LC_CONFIG_REPLY = 12;  // eNB configuration messages
+     FLPT_GET_ENB_CONFIG_REQUEST = 7;  // eNB configuration messages.
+     FLPT_GET_ENB_CONFIG_REPLY = 8;  // eNB configuration messages.
+     FLPT_GET_UE_CONFIG_REQUEST = 9;  // eNB configuration messages.
+     FLPT_GET_UE_CONFIG_REPLY = 10;  // eNB configuration messages.
+     FLPT_GET_LC_CONFIG_REQUEST = 11;  // eNB configuration messages.
+     FLPT_GET_LC_CONFIG_REPLY = 12;  // eNB configuration messages.
 
-     FLPT_DL_MAC_CONFIG = 13;      //Controller command messages
+     FLPT_DL_MAC_CONFIG = 13;      //Controller command messages.
 
-     FLPT_UE_STATE_CHANGE = 14;     // UE state change messages
+     FLPT_UE_STATE_CHANGE = 14;     // UE state change messages.
 
-     FLPT_DELEGATE_CONTROL = 15;     // Control delegation messages
+     FLPT_DELEGATE_CONTROL = 15;     // Control delegation messages.
      
-     FLPT_RECONFIGURE_AGENT = 16;      // Agent/runtime reconfiguration message
+     FLPT_RECONFIGURE_AGENT = 16;      // Agent/runtime reconfiguration message.
      
-     FLPT_RRC_TRIGGERING = 17;         // RRC measurement report reconfiguration
+     FLPT_RRC_TRIGGERING = 17;         // RRC measurement report reconfiguration.
      
-     FLPT_UL_MAC_CONFIG = 18;       // MAC uplink configuration
+     FLPT_UL_MAC_CONFIG = 18;       // MAC uplink configuration.
 
-     FLPT_HO_COMMAND = 21;         // Handover command 
+     FLPT_HO_COMMAND = 21;         // Handover command. 
 
 
 }

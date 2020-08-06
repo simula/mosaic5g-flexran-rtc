@@ -102,6 +102,7 @@ int main(int argc, char* argv[]) {
   std::string caddr = "0.0.0.0";
 #ifdef REST_NORTHBOUND
   int north_port = 9999;
+  std::string north_addr = "0.0.0.0";
 #endif
   
   bool debug = false;
@@ -129,6 +130,8 @@ int main(int argc, char* argv[]) {
       ("help,h", "Prints this help message")
       ("nport,n", po::value<int>()->default_value(9999),
        "Port for northbound API calls")
+      ("naddress,s", po::value<std::string>()->default_value("0.0.0.0"),
+       "Address to bind for northbound API calls")
       ("port,p", po::value<int>()->default_value(2210),
        "Port for incoming agent connections")
       ("address,a", po::value<std::string>()->default_value("0.0.0.0"),
@@ -164,8 +167,8 @@ int main(int argc, char* argv[]) {
     caddr = opts["address"].as<std::string>();
 #ifdef REST_NORTHBOUND
     north_port = opts["nport"].as<int>();
+    north_addr = opts["naddress"].as<std::string>();
 #endif
-    
   } catch(std::exception& e) {
     std::cerr << "Error: " << e.what() << "\n";
     return 2;
@@ -243,9 +246,10 @@ int main(int argc, char* argv[]) {
   std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);
 
 #ifdef REST_NORTHBOUND
+  LOG4CXX_INFO(flog::core, "Listening on " << north_addr << ":" << north_port
+      << " for incoming" << " REST connections");
   // Set the port and the IP to listen for REST calls and initialize the call manager
-  Pistache::Port port(north_port);
-  Pistache::Address addr(Pistache::Ipv4::any(), port);
+  Pistache::Address addr(north_addr, north_port);
   flexran::north_api::manager::call_manager north_api(addr);
 
   flexran::north_api::plmn_calls plmn_calls(plmn_management);
@@ -267,8 +271,6 @@ int main(int argc, char* argv[]) {
   // networkThread return, north_api will be shut down too
   north_api.init(1);
   north_api.start();
-  LOG4CXX_INFO(flog::core, "Listening on port " << north_port << " for incoming"
-      << " REST connections");
 #endif
 
   // handle SIGINT and SIGUSR1 as end signals

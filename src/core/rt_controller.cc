@@ -99,6 +99,7 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[]) {
 
   int cport = 2210;
+  std::string caddr = "0.0.0.0";
 #ifdef REST_NORTHBOUND
   int north_port = 9999;
 #endif
@@ -129,7 +130,9 @@ int main(int argc, char* argv[]) {
       ("nport,n", po::value<int>()->default_value(9999),
        "Port for northbound API calls")
       ("port,p", po::value<int>()->default_value(2210),
-       "Port for incoming agent connections");
+       "Port for incoming agent connections")
+      ("address,a", po::value<std::string>()->default_value("0.0.0.0"),
+       "Address to bind for incoming agent connections");
     
     po::variables_map opts;
     po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -157,13 +160,14 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     
-    cport = opts["port"].as<int>(); 
+    cport = opts["port"].as<int>();
+    caddr = opts["address"].as<std::string>();
 #ifdef REST_NORTHBOUND
     north_port = opts["nport"].as<int>();
 #endif
     
   } catch(std::exception& e) {
-    std::cerr << "Error: Unrecognized parameter\n";
+    std::cerr << "Error: " << e.what() << "\n";
     return 2;
   } 
 
@@ -182,8 +186,9 @@ int main(int argc, char* argv[]) {
   LOG4CXX_WARN(flog::core, "Compiled with profiling support (send USR2 to controller)");
 #endif
     
-  LOG4CXX_INFO(flog::core, "Listening on port " << cport << " for incoming agent connections");
-  flexran::network::async_xface net_xface(cport);
+  LOG4CXX_INFO(flog::core, "Listening on " << caddr << ":" << cport
+      << " for incoming agent connections");
+  flexran::network::async_xface net_xface(caddr, cport);
   
   // Create the rib
   flexran::rib::Rib rib;

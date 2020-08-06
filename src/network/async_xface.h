@@ -39,8 +39,11 @@ namespace flexran {
     class connection_manager;
     class async_xface : public flexran::core::rt::rt_task {
     public:
-    async_xface(int port): rt_task(Policy::FIFO, 60),
-        endpoint_(boost::asio::ip::tcp::v4(), port), port_(port)  {}
+    async_xface(const std::string& addr, int port)
+      : rt_task(Policy::FIFO, 60),
+        endpoint_(boost::asio::ip::address_v4::from_string(addr), port),
+        port_(port),
+        addr_(addr) {}
       
       void run();
       void end();
@@ -71,7 +74,8 @@ namespace flexran {
 
       std::unique_ptr<connection_manager> manager_;
   
-      int port_;
+      const int port_;
+      const std::string addr_;
 
       mutable async_xface* self_ = this;   
     };

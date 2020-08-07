@@ -29,6 +29,8 @@
 #include "rib_common.h"
 
 #include <atomic>
+#include <regex>
+#include <iostream>
 
 namespace flexran {
 
@@ -53,10 +55,9 @@ namespace flexran {
         uint64_t get_last_bs() const;
         bool parse_rnti_imsi(uint64_t bs_id, const std::string& rnti_imsi_s,
             flexran::rib::rnti_t& rnti) const;
-
-        static bool parse_imsi_list(const std::string& list,
-            std::vector<uint64_t>& imsis, std::string& error_reason);
-
+        static bool parse_imsi_reg(const std::string& s,
+                                   std::vector<std::regex>& imsi_regex,
+                                   std::string& error_reason);
         void reconfigure_agent_string(uint64_t bs_id, std::string policy);
 
       private:
@@ -79,6 +80,10 @@ namespace flexran {
 	
         static int calculate_rbs_percentage(int bw, uint64_t bps);
         bool is_free_common_slice_id(int slice_id) const;
+
+        static std::string begin_end_space(const std::string& str);
+        static bool split(const std::string& s, std::vector<std::string>& list,
+                          std::string& error_reason);
 
         /// association IMSI -> slice_id
         std::map<uint64_t, uint32_t> ue_slice_;

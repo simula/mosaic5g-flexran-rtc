@@ -24,6 +24,8 @@
 
 #include <map>
 #include <cmath>
+#include <regex>
+
 
 #include <google/protobuf/util/json_util.h>
 
@@ -40,47 +42,80 @@ flexran::app::management::rrm_management::rrm_management(rib::Rib& rib,
 {
 }
 
-bool flexran::app::management::rrm_management::parse_imsi_list(
-    const std::string& list, std::vector<uint64_t>& imsis, std::string& error_reason)
-{
-  /* parses a in the form: [imsi1,imsi2,imsi3] */
-  int i = 0;
+std::string flexran::app::management::rrm_management::begin_end_space(
+    const std::string& str) {
+  int k = 0;
+  int l = str.length() - 1;
+  while (k < l && std::isspace(str.at(k))) k++;
+  while (l >= k && std::isspace(str.at(l))) l--;
+  return str.substr(k, l - k + 1);
+}
 
-  try {
-    while (std::isspace(list.at(i))) ++i;
-    if (list.at(i) != '[') {
-      error_reason = "expected '[' at position " + std::to_string(i);
-      goto error;
-    }
-    ++i;
-    while (true) {
-      while (std::isspace(list.at(i))) ++i;
-      if (list.at(i) == ']') break;
-      try {
-        imsis.push_back(std::stoul(list.substr(i)));
-      } catch (const std::invalid_argument& e) {
-        error_reason = "could not convert number at position " + std::to_string(i);
-        goto error;
-      }
-      while (std::isspace(list.at(i))) ++i;
-      while (std::isdigit(list.at(i))) ++i;
-      while (std::isspace(list.at(i))) ++i;
-      if (list.at(i) == ']') break;
-      if (list.at(i) != ',') {
-        error_reason = "expected ',' at position " + std::to_string(i);
-        goto error;
-      }
-      ++i;
-    }
-  } catch (const std::out_of_range& e) {
-    error_reason = "unexpected list end";
-    goto error;
+bool flexran::app::management::rrm_management::split(
+    const std::string& s,
+    std::vector<std::string>& list,
+    std::string& error_reason) {
+  std::string str = begin_end_space(s);
+  if (str.empty()) {
+    error_reason = "empty string";
+    return false;
   }
-
+  if (str[0] != '[') {
+    error_reason = "expected '['";
+    return false;
+  }
+  if (str[str.length() - 1] != ']') {
+    error_reason = "expected ']'";
+    return false;
+  }
+  str = str.substr(1, str.length() - 2);
+  size_t pos = 0;
+  do {
+    pos = str.find(",");
+    // get before the comma, or the end
+    const size_t end = pos == std::string::npos ? str.length() : pos;
+    std::string token = begin_end_space(str.substr(0, end));
+    // check for balanced ""
+    if ((token[0] == '\"' && token[token.length() - 1] != '\"')
+        || (token[0] != '\"' && token[token.length() - 1] == '\"')) {
+      error_reason = "unbalanced \"\"";
+      return false;
+    }
+    // take off "" if there is
+    if (token[0] == '\"' || token[token.length() - 1] == '\"')
+      token = token.substr(1, token.length() - 2);
+    if (std::any_of(token.begin(), token.end(),
+                    [](char c) { return isalpha(c); })) {
+      error_reason = "alpha character detected";
+      return false;
+    }
+    // add if non-empty string
+    if (!token.empty())
+      list.push_back(token);
+    str.erase(0, pos + 1);
+  } while (pos != std::string::npos);
   return true;
-error:
-  imsis.clear();
-  return false;
+}
+
+bool flexran::app::management::rrm_management::parse_imsi_reg(
+    const std::string& s,
+    std::vector<std::regex>& imsi_regex,
+    std::string& error_reason)
+{
+  std::vector<std::string> list;
+  if (!split(s, list, error_reason)) return false;
+  for (std::size_t i = 0; i < list.size(); i++) {
+    try {
+      //std::cout<<list[i]<<'\n';
+      std::regex reg(list[i], std::regex::grep);
+      imsi_regex.push_back(reg);
+    } catch (const std::regex_error& e) {
+      error_reason = "bad format of regex " + list[i];
+      imsi_regex.clear();
+      return false;
+    }
+  }
+  return true;
 }
 
 void flexran::app::management::rrm_management::reconfigure_agent_string(

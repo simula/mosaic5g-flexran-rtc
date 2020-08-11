@@ -24,38 +24,60 @@
 
 #include <cstring>
 #include <cstdlib>
-#include <iostream>
 
+#include "flexran_log.h"
 #include "protocol_message.h"
 
-void flexran::network::protocol_message::body_length(std::size_t new_length) {
+flexran::network::protocol_message::protocol_message(protocol_message&& other)
+  : dynamic_alloc_(other.dynamic_alloc_),
+    body_length_(other.body_length_)
+{
+  /* to improve efficiency: disable copy constructor and only move this
+   * protocol message. Disable dynamic_alloc_ in other so we don't free twice.
+   * I hope I got it right... */
+  other.dynamic_alloc_ = false;
+  if (dynamic_alloc_) {
+    data_ = other.data_;
+  } else {
+    data_ = stat_data_;
+    std::memcpy(data_, other.stat_data_, header_length + body_length_);
+  }
+}
+
+void flexran::network::protocol_message::set_body_length(std::size_t new_length) {
+  if (dynamic_alloc_)
+    delete [] data_;
+  if (new_length > max_normal_body_length) {
+    data_ = new unsigned char[header_length + new_length];
+    dynamic_alloc_ = true;
+  } else {
+    data_ = stat_data_;
+    dynamic_alloc_ = false;
+  }
   body_length_ = new_length;
-  if (body_length_ > max_body_length)
-    body_length_ = max_body_length;
 }
 
 void flexran::network::protocol_message::set_message(const char * buf, std::size_t size) {
-  body_length(size);
-  encode_header();
-  std::memcpy(data_ + header_length, buf, body_length_);
+  set_body_length(size);
+  encode_header(size);
+  std::memcpy(data_ + header_length, buf, size);
 }
 
 bool flexran::network::protocol_message::decode_header() {
-  body_length_ = (data_[0] << 24) |
-    (data_[1] << 16) |
-    (data_[2] << 8)  |
-    data_[3];
-  
-  if (body_length_ > max_body_length) {
-    body_length_ = 0;
-    return false;
-  }
+  int len = (data_[0] << 24) | (data_[1] << 16) | (data_[2] << 8) | data_[3];
+  set_body_length(len);
+  encode_header(len); /* re-encode header since it might be lost due to reallocation */
   return true;
 }
 
-void flexran::network::protocol_message::encode_header() {
-  data_[0] = (body_length_ >> 24) & 255;
-  data_[1] = (body_length_ >> 16) & 255;
-  data_[2] = (body_length_ >> 8) & 255;
-  data_[3] = body_length_ & 255;
+void flexran::network::protocol_message::encode_header(std::size_t size) {
+  data_[0] = (size >> 24) & 255;
+  data_[1] = (size >> 16) & 255;
+  data_[2] = (size >> 8) & 255;
+  data_[3] = size & 255;
+}
+
+flexran::network::protocol_message::~protocol_message() {
+  if (dynamic_alloc_)
+    delete [] data_;
 }

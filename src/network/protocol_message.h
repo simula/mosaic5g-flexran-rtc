@@ -35,10 +35,14 @@ namespace flexran {
       
     public:
       enum { header_length = 4 };
-      enum { max_body_length = 240000 };
+      enum { max_normal_body_length = 24000 };
       
     protocol_message()
-      : body_length_(0) {}
+      : data_(stat_data_),
+        dynamic_alloc_(false),
+        body_length_(0) {}
+      protocol_message(const protocol_message&) = delete;
+      protocol_message(protocol_message&& s);
       
       const char* data() const {
 	return (char *) data_;
@@ -64,16 +68,20 @@ namespace flexran {
 	return body_length_;
       }
       
-      void body_length(std::size_t new_length);
+      void set_body_length(std::size_t new_length);
       
       void set_message(const char * buf, std::size_t size);
       
       bool decode_header();
       
-      void encode_header();
+      void encode_header(std::size_t size);
+
+      ~protocol_message();
       
     private:
-      unsigned char data_[header_length + max_body_length];
+      unsigned char *data_;
+      unsigned char stat_data_[header_length + max_normal_body_length];
+      bool dynamic_alloc_;
       uint32_t body_length_;
       
     };

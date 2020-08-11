@@ -24,7 +24,7 @@
 
 #include "tagged_message.h"
 
-flexran::network::tagged_message::tagged_message(char * msg, std::size_t size, int tag):
+flexran::network::tagged_message::tagged_message(const char * msg, std::size_t size, int tag):
   size_(size), tag_(tag) {
   if (size <= max_normal_msg_size) {
     msg_contents_ = p_msg_;

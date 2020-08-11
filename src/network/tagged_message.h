@@ -38,7 +38,7 @@ namespace flexran {
       
     public:
       
-      tagged_message(char *msg, std::size_t size, int tag);
+      tagged_message(const char *msg, std::size_t size, int tag);
       
       tagged_message(std::size_t size, int tag);
       

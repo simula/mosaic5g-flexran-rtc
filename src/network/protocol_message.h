@@ -37,10 +37,11 @@ namespace flexran {
       enum { header_length = 4 };
       enum { max_normal_body_length = 24000 };
       
-    protocol_message()
-      : data_(stat_data_),
-        dynamic_alloc_(false),
-        body_length_(0) {}
+      protocol_message()
+        : data_(stat_data_),
+          dynamic_alloc_(false),
+          body_length_(0) {}
+      protocol_message(const char *buf, std::size_t size);
       protocol_message(const protocol_message&) = delete;
       protocol_message(protocol_message&& s);
       

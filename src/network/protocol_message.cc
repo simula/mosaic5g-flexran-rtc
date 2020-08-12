@@ -28,6 +28,14 @@
 #include "flexran_log.h"
 #include "protocol_message.h"
 
+flexran::network::protocol_message::protocol_message(const char *buf, std::size_t size)
+  : data_(stat_data_),
+    dynamic_alloc_(false),
+    body_length_(0)
+{
+  set_message(buf, size);
+}
+
 flexran::network::protocol_message::protocol_message(protocol_message&& other)
   : dynamic_alloc_(other.dynamic_alloc_),
     body_length_(other.body_length_)

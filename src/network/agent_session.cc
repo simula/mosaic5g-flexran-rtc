@@ -32,10 +32,7 @@ void flexran::network::agent_session::start() {
 
 void flexran::network::agent_session::deliver(std::shared_ptr<tagged_message> msg) {
   bool write_in_progress = !write_queue_.empty();
-  protocol_message data;
-  std::size_t size = msg->getSize();
-  data.set_message(msg->getMessageContents(), size);
-  write_queue_.emplace_back(std::move(data)); /* prevent copy constructor */
+  write_queue_.emplace_back(msg->getMessageContents(), msg->getSize());
   if (!write_in_progress) {
       do_write();
   }

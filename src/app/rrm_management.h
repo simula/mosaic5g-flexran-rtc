@@ -48,6 +48,10 @@ namespace flexran {
         void apply_slice_config_policy(const std::string& bs, const std::string& policy);
         void remove_slice(const std::string& bs, const std::string& policy);
         void change_ue_slice_association(const std::string& bs, const std::string& policy);
+        void auto_ue_slice_association(const std::string& bs,
+                                       const std::string& policy,
+                                       int32_t dl_slice_id,
+                                       int32_t ul_slice_id);
         bool apply_cell_config_policy(uint64_t bs_id, const std::string& policy,
             std::string& error_reason);
 
@@ -85,8 +89,11 @@ namespace flexran {
         static bool split(const std::string& s, std::vector<std::string>& list,
                           std::string& error_reason);
 
-        /// association IMSI -> slice_id
-        std::map<uint64_t, uint32_t> ue_slice_;
+        void ue_add_update_slice_assoc(uint64_t bs_id, flexran::rib::rnti_t rnti);
+        /// association IMSI -> DL slice_id
+        std::vector<std::pair<std::regex, uint32_t>> dl_ue_slice_;
+        /// association IMSI -> UL slice_id
+        std::vector<std::pair<std::regex, uint32_t>> ul_ue_slice_;
       };
     }
   }

@@ -40,6 +40,9 @@ flexran::app::management::rrm_management::rrm_management(rib::Rib& rib,
     const core::requests_manager& rm, event::subscription& sub)
   : component(rib, rm, sub)
 {
+  event_sub_.subscribe_ue_update(
+      boost::bind(&flexran::app::management::rrm_management::ue_add_update_slice_assoc,
+                  this, _1, _2));
 }
 
 std::string flexran::app::management::rrm_management::begin_end_space(
@@ -324,6 +327,131 @@ void flexran::app::management::rrm_management::change_ue_slice_association(
   google::protobuf::util::MessageToJsonString(ue_config_reply, &pol_corrected, opt);
   LOG4CXX_INFO(flog::app, "sent new UE configuration to BS "
       << bs_id << ":\n" << pol_corrected);
+}
+
+void flexran::app::management::rrm_management::auto_ue_slice_association(
+    const std::string& bs,
+    const std::string& policy,
+    int32_t dl_slice_id,
+    int32_t ul_slice_id)
+{
+  uint64_t bs_id = rib_.parse_bs_id(bs);
+  if (bs_id == 0)
+    throw std::invalid_argument("BS " + bs + " does not exist");
+  if (dl_slice_id >= 0 && !rib_.get_bs(bs_id)->has_dl_slice(dl_slice_id))
+    throw std::invalid_argument("no slice " + std::to_string(dl_slice_id) + " present");
+  if (ul_slice_id >= 0 && !rib_.get_bs(bs_id)->has_ul_slice(ul_slice_id))
+    throw std::invalid_argument("no slice " + std::to_string(ul_slice_id) + " present");
+
+  std::vector<std::regex> regs;
+  std::string error_reason;
+  bool ret = parse_imsi_reg(policy, regs, error_reason);
+  if (!ret)
+    throw std::invalid_argument("error while parsing regex list: " + error_reason);
+
+  if (dl_slice_id >= 0) {
+    dl_ue_slice_.erase(
+        std::remove_if(dl_ue_slice_.begin(), dl_ue_slice_.end(),
+                       [dl_slice_id](std::pair<std::regex, uint32_t> p) {
+                         return (uint32_t)dl_slice_id == p.second;
+                       }),
+        dl_ue_slice_.end());
+    LOG4CXX_INFO(flog::app, "Auto-associating to DL Slice ID " << dl_slice_id
+        << ": UEs matching any in " << policy);
+  }
+  if (ul_slice_id >= 0) {
+    ul_ue_slice_.erase(
+        std::remove_if(ul_ue_slice_.begin(), ul_ue_slice_.end(),
+                       [ul_slice_id](std::pair<std::regex, uint32_t> p) {
+                         return (uint32_t)ul_slice_id == p.second;
+                       }),
+        ul_ue_slice_.end());
+    LOG4CXX_INFO(flog::app, "Auto-associating to UL Slice ID " << ul_slice_id
+        << ": UEs matching any in " << policy);
+  }
+
+  protocol::flex_ue_config_reply c;
+  for (auto r: regs) {
+    if (dl_slice_id >= 0)
+      dl_ue_slice_.emplace_back(r, dl_slice_id);
+    if (ul_slice_id >= 0)
+      ul_ue_slice_.emplace_back(r, ul_slice_id);
+    for (const protocol::flex_ue_config& ue : rib_.get_bs(bs_id)->get_ue_configs().ue_config()) {
+      if (!ue.has_imsi())
+        continue;
+      if (!std::regex_search(std::to_string(ue.imsi()), r))
+        continue;
+      auto *uec = c.add_ue_config();
+      uec->set_rnti(ue.rnti());
+      if (dl_slice_id >= 0) {
+        uec->set_dl_slice_id(dl_slice_id);
+        LOG4CXX_INFO(flog::app, "auto-associate RNTI " << ue.rnti()
+            << " IMSI " << ue.imsi()
+            << " to UL Slice ID " << dl_slice_id);
+      }
+      if (ul_slice_id >= 0) {
+        uec->set_ul_slice_id(ul_slice_id);
+        LOG4CXX_INFO(flog::app, "auto-associate RNTI " << ue.rnti()
+            << " IMSI " << ue.imsi()
+            << " to UL Slice ID " << ul_slice_id);
+      }
+    }
+  }
+  if (c.ue_config_size() > 0)
+    push_ue_config_reconfiguration(bs_id, c);
+}
+
+void flexran::app::management::rrm_management::ue_add_update_slice_assoc(
+    uint64_t bs_id,
+    flexran::rib::rnti_t rnti)
+{
+  /* check given UE: if it is in ue_slice_ but not in the slice it is supposed
+   * to be, we change its association */
+  std::shared_ptr<flexran::rib::enb_rib_info> bs = rib_.get_bs(bs_id);
+  if (!bs) return;
+
+  /* find UE and verify it has IMSI & slice IDs */
+  const auto ue_it = std::find_if(
+      bs->get_ue_configs().ue_config().begin(),
+      bs->get_ue_configs().ue_config().end(),
+      [rnti] (const protocol::flex_ue_config& c) { return c.rnti() == rnti; }
+  );
+  if (ue_it == bs->get_ue_configs().ue_config().end()) return;
+  if (!ue_it->has_imsi()) return;
+
+  protocol::flex_ue_config_reply c;
+  c.add_ue_config()->set_rnti(rnti);;
+  if (ue_it->has_dl_slice_id()) {
+    for (std::pair<std::regex, uint32_t> p : dl_ue_slice_) {
+      std::regex& r = p.first;
+      uint32_t slice = p.second;
+      if (!std::regex_search(std::to_string(ue_it->imsi()), r))
+        continue;
+      /* if current and desired slice IDs don't match, change it */
+      if (ue_it->dl_slice_id() == slice)
+        continue;
+      c.mutable_ue_config(0)->set_dl_slice_id(slice);
+      LOG4CXX_INFO(flog::app, "auto-associate RNTI " << rnti
+          << " IMSI " << ue_it->imsi()
+          << " to DL Slice ID " << slice);
+    }
+  }
+  if (ue_it->has_ul_slice_id()) {
+    for (std::pair<std::regex, uint32_t> p : ul_ue_slice_) {
+      std::regex& r = p.first;
+      uint32_t slice = p.second;
+      if (!std::regex_search(std::to_string(ue_it->imsi()), r))
+        continue;
+      /* if current and desired slice IDs don't match, change it */
+      if (ue_it->ul_slice_id() == slice)
+        continue;
+      c.mutable_ue_config(0)->set_ul_slice_id(slice);
+      LOG4CXX_INFO(flog::app, "auto-associate RNTI " << rnti
+          << " IMSI " << ue_it->imsi()
+          << " to UL Slice ID " << slice);
+    }
+  }
+  push_ue_config_reconfiguration(bs_id, c);
 }
 
 bool flexran::app::management::rrm_management::apply_cell_config_policy(

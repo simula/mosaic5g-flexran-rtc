@@ -511,6 +511,56 @@ void flexran::north_api::rrm_calls::register_calls(Pistache::Rest::Description& 
            .bind(&flexran::north_api::rrm_calls::change_ue_slice_assoc, this);
 
   /**
+   * @api {post} /auto_ue_slice_assoc/enb/:id?/slice/:slice_id/:dir? Automate the UE-slice association
+   * @apiName AutoAssociateUESlice
+   * @apiGroup SliceConfiguration
+   *
+   * @apiParam (URL parameter) {Number} [id=-1] The ID of the agent for which
+   * to change the slice configuration. This can be one of the following: -1
+   * (last added agent), the eNB ID (in hex or decimal) or the internal agent
+   * ID which can be obtained through a `stats` call. Numbers smaller than 1000
+   * are parsed as the agent ID.
+   * @apiParam (URL parameter) {Number} slice_id The slice that UEs shall be
+   * associated to.
+   * @apiParam (URL parameter) {String="both","dl","ul"} [dir="both"] The slice
+   * that UEs shall be associated to.
+   *
+   * @apiParam (JSON parameter) {String[]} json A simple JSON list of regexes
+   * matching IMSIs as string. For backwards-compatibility, also recognizes
+   * IMSIs as numbers.
+   *
+   * @apiDescription This API saves a list of IMSIs or regular expressions
+   * matching on IMSIs in order to auto-associate those to a particular slice
+   * when they connect. It is checked that the base station has a slice with
+   * the given slice ID. Whenever a UE whose IMSI is known (this might not
+   * always be the case, go to flight mode and exit to get it reliably) is not
+   * in the slice it was associated to, it will automatically be associated to
+   * this slice. When associating a new list to a slice which already has an
+   * association list, that list will be removed.
+   *
+   * @apiVersion v0.1.0
+   * @apiPermission None
+   * @apiExample Example usage:
+   *    curl -X POST http://127.0.0.1:9999/auto_ue_slice_assoc/enb/-1/slice/3/dl --data-binary "@imsi_list.json"
+   *
+   * @apiParamExample {json} Request-Example:
+   *    [ "^20895" ]
+   *
+   * @apiSuccessExample Success-Response:
+   *    HTTP/1.1 200 OK
+   *
+   * @apiError BadRequest Mal-formed request or missing/wrong parameters,
+   * reported as JSON.
+   *
+   * @apiErrorExample Error-Response:
+   *    HTTP/1.1 400 BadRequest
+   *    { "error": "no slices found" }
+   */
+  rrm_calls.route(desc.post("/auto_ue_slice_assoc/enb/:id?/slice/:slice_id/:dir?"),
+                  "Associate a list of IMSIs to a particular slice")
+           .bind(&flexran::north_api::rrm_calls::auto_ue_slice_assoc, this);
+
+  /**
    * @api {post} /conf/enb/:id? Change the cell configuration (restart)
    * @apiName CellReconfiguration
    * @apiGroup CellConfigurationPolicy
@@ -706,6 +756,50 @@ void flexran::north_api::rrm_calls::yaml_compat(
   rrm_app->reconfigure_agent_string(bs_id, request.body());
   response.send(Pistache::Http::Code::Ok,
                 "Set the policy to BS " + std::to_string(bs_id) + "\n");
+}
+
+void flexran::north_api::rrm_calls::auto_ue_slice_assoc(
+    const Pistache::Rest::Request& request,
+    Pistache::Http::ResponseWriter response)
+{
+  std::string bs = "-1";
+  if (request.hasParam(":id")) bs = request.param(":id").as<std::string>();
+  const uint32_t slice_id = request.param(":slice_id").as<uint32_t>();
+  std::string dir = "both";
+  if (request.hasParam(":dir")) dir = request.param(":dir").as<std::string>();
+  int32_t dl_slice_id = -1;
+  int32_t ul_slice_id = -1;
+  if (dir == "both") {
+    dl_slice_id = slice_id;
+    ul_slice_id = slice_id;
+  } else if (dir == "dl") {
+    dl_slice_id = slice_id;
+  } else if (dir == "ul") {
+    ul_slice_id = slice_id;
+  } else {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"unrecognized direction '" + dir + "'\" }",
+        MIME(Application, Json));
+  }
+
+  std::string policy = request.body();
+  if (policy.length() == 0) {
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error\": \"empty request body\" }", MIME(Application, Json));
+    return;
+  }
+
+  try {
+    rrm_app->auto_ue_slice_association(bs, policy, dl_slice_id, ul_slice_id);
+  } catch (const std::invalid_argument& e) {
+    LOG4CXX_ERROR(flog::app, "encountered error while processing " << __func__
+          << "(): " << e.what());
+    response.send(Pistache::Http::Code::Bad_Request,
+        "{ \"error:\": \"" + std::string(e.what()) + "\"}\n", MIME(Application, Json));
+    return;
+  }
+
+  response.send(Pistache::Http::Code::Ok, "{ \"status\": \"Ok\" }\n");
 }
 
 void flexran::north_api::rrm_calls::cell_reconfiguration(

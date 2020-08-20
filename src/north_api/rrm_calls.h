@@ -54,6 +54,8 @@ namespace flexran {
 
       void change_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+      void auto_ue_slice_assoc(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
       void cell_reconfiguration(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:

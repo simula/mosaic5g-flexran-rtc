@@ -1,0 +1,6 @@
+{
+  "params" : {
+    "regex": { "str": "^20894" },
+    "slice_dl": { "integer": 3 }
+  }
+}

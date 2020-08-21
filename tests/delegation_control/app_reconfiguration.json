@@ -1,0 +1,7 @@
+{
+  "params" : {
+    "mystring": { "str": "eins" },
+    "yourparam": { "integer": 1 },
+    "myparam": { "floating": 1.123 }
+  }
+}

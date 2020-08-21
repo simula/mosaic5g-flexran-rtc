@@ -611,7 +611,7 @@ void flexran::app::management::rrm_management::
   if (!std::all_of(nc.slices().begin(), nc.slices().end(), p))
     throw std::invalid_argument("all new slices need to have complete parameters");
 
-  int rbg[25] = {};
+  int rbg[110] = {};
   for (auto &s: nc.slices()) {
     if (!s.has_static_())
       continue;

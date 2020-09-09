@@ -75,6 +75,9 @@ flexran::app::management::netstore_loader::netstore_loader(
 {
   curl_global_init(CURL_GLOBAL_DEFAULT);
   curl_multi_ = curl_multi_init();
+  event_sub_.subscribe_control_del_req(boost::bind(
+      &flexran::app::management::netstore_loader::process_control_del_req, this,
+      _1, _2));
 }
 
 flexran::app::management::netstore_loader::~netstore_loader()
@@ -313,4 +316,24 @@ void flexran::app::management::netstore_loader::push_app_reconfiguration(
       << ": reconfiguration message for app " << object_name
       << " with action " << action);
   req_manager_.send_message(bs_id, m);
+}
+
+void flexran::app::management::netstore_loader::process_control_del_req(
+    uint64_t bs,
+    const protocol::flex_control_delegation_request &msg)
+{
+  const std::string &id = msg.name();
+  const uint32_t xid = msg.header().xid();
+  const protocol::flex_control_delegation_type type = msg.delegation_type();
+  send_rest_request("localhost:8080/list");
+  LOG4CXX_INFO(flog::app, __func__ << "(): BS " << bs << " requested object '" << id << "'");
+  tick_list_ = event_sub_.subscribe_task_tick(
+      boost::bind(&flexran::app::management::netstore_loader::process_list,
+                  this,
+                  _1,
+                  id,
+                  xid,
+                  type),
+      10,
+      0);
 }

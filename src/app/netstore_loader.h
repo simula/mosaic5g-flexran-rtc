@@ -76,6 +76,9 @@ namespace flexran {
             std::string object_name,
             std::string action,
             const ::google::protobuf::Map<std::string, protocol::flex_agent_reconfiguration_param > *params);
+
+       void process_control_del_req(
+           uint64_t bs, const protocol::flex_control_delegation_request& msg);
       };
     }
   }

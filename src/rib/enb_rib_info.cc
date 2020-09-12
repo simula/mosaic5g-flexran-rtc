@@ -79,6 +79,8 @@ void flexran::rib::enb_rib_info::update_eNB_config(
       dst->MergeFrom(src);
     }
     eNB_config_.mutable_s1ap()->CopyFrom(enb_config_update.s1ap());
+    eNB_config_.mutable_loadedapps()->CopyFrom(enb_config_update.loadedapps());
+    eNB_config_.mutable_loadedmacobjects()->CopyFrom(enb_config_update.loadedmacobjects());
   }
   eNB_config_mutex_.unlock();
   update_liveness();

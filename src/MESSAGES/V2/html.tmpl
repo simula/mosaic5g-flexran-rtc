@@ -10,8 +10,8 @@
   
   <style>
     body {
-        
-      margin: 1em auto;
+     
+      margin: 0.3em auto;
       color: #222;
       font-family: "Ubuntu", sans-serif;
       padding-bottom: 4em;
@@ -194,10 +194,11 @@
     z-index: 1;
     top: 0;
     left: 0;
-    background: #eee;
+    background: #fff;
     padding: 8px 0;
     overflow: auto;
     height: 100%;
+	border-right: 1px solid #aaa;
     }
 
     .sidenav a {
@@ -219,7 +220,7 @@ line-height:1.4;
 }
 
 .main {
-margin-left:310px;
+margin-left:305px;
 }
 @media screen and (max-width: 759px) {
 .sidenav , .main {
@@ -230,8 +231,38 @@ margin-left:310px;
   .main {
   margin-left:20px;
   }
-
+  .sidenav #title2 {
+  display:block;
+  text-align:center;
+  }
+ .main #title {
+   display:none;
+  text-align:center;
+  }
+    .main .top {
+display:none;
 }
+ .main .top2 {
+display:block;
+}
+}
+@media screen and (min-width: 760px) {
+ .sidenav #title2 {
+  display:none;
+  text-align:center;
+  }
+ .main #title {
+   display:block;
+  text-align:center;
+  }
+  .main .top {
+display:block;
+}
+ .main .top2 {
+display:none;
+}
+}
+
   </style>
 
   <!-- User custom CSS -->
@@ -244,7 +275,7 @@ margin-left:310px;
 
   <div class="sidenav">
  
-
+<h1 id="title2">FlexRAN Protocol Specification</h1>
     <h2 style="text-align:center">Table of Contents</h2>
 
     <div id="toc-container">
@@ -444,7 +475,9 @@ margin-left:310px;
     {{end}}
 
     {{if .HasExtensions}}
-    <h3 id="{{$file_name}}-extensions">File-level Extensions</h3><div style="overflow-x:auto;">
+    <h3 id="{{$file_name}}-extensions">File-level Extensions</h3>
+	
+	<div style="overflow-x:auto;">
     <table class="extension-table" style="    margin-bottom: 10px;
     margin-top: 10px;">
       <thead>
@@ -474,7 +507,10 @@ margin-left:310px;
 
     {{range .Services}}
     <h3 id="{{.FullName}}">{{.Name}}</h3>
-    {{p .Description}}<a href="#title" style="float:right">Top</a><div style="overflow-x:auto;">
+	<a href="#title" style="float:right;margin-right:10px;" class="top">Top</a>
+	<a href="#title2" style="float:right;margin-right:25px;" class="top2">Top</a>
+    {{p .Description}}<div style="overflow-x:auto;">
+
     <table class="enum-table" style=" margin-bottom: 10px;
     margin-top: 10px;">
       <thead>
@@ -503,7 +539,8 @@ margin-left:310px;
     {{- range .MethodOptions}}
     {{$option := .}}
     {{if eq . "google.api.http"}}
-    <h4>Methods with HTTP bindings</h4><div style="overflow-x:auto;">
+    <h4>Methods with HTTP bindings</h4>
+	<div style="overflow-x:auto;">
     <table style="    margin-bottom: 10px;
     margin-top: 10px;">
       <thead>
@@ -529,7 +566,8 @@ margin-left:310px;
       </tbody>
     </table></div>
     {{else}}
-    <h4>Methods with {{.}} option</h4><div style="overflow-x:auto;">
+    <h4>Methods with {{.}} option</h4>
+	<div style="overflow-x:auto;">
     <table style="    margin-bottom: 10px;
     margin-top: 10px;">
       <thead>
@@ -556,7 +594,9 @@ margin-left:310px;
 
     <h2 id="scalar-value-types">Scalar Value Types</h2>
 	
-	<a href="#title" style="float:right">Top</a><div style="overflow-x:auto;">
+	<a href="#title" style="float:right;margin-right:10px;" class="top">Top</a>
+	<a href="#title2" style="float:right;margin-right:25px;" class="top2">Top</a>
+	<div style="overflow-x:auto;">
     <table class="scalar-value-types-table" style="margin-top:10px;">
       <thead>
         <tr>

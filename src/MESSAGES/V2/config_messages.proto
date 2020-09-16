@@ -64,7 +64,7 @@ message flex_slice_config {
 message flex_ue_config {
 	optional uint32 rnti = 1;            // UE Radio Network Temporary Identifier.      
 	optional flex_drx_config drx_config = 2;	// The DRX configuration (Optional).
-	optional uint32 time_alignment_timer = 3;	// Timer in SF. Control the synchronization. Status of the UE, not the actual advance procedure. See TS 36.321.
+	optional uint32 time_alignment_timer = 3;	// Timer in SF. Control the synchronization. Status of the UE, not the actual advancement procedure. See TS 36.321.
 	optional flex_meas_gap_config_pattern meas_gap_config_pattern = 4; // Measurement gap configuration. One of the FLMGCP_* enum values.  See TS 36.133.
 	optional uint32 meas_gap_config_sf_offset = 5;	// Measurement gap offset if applicable.
 	optional flex_sps_config sps_config = 6;	    	// The SPS configuration (Optional).

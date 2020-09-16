@@ -8,7 +8,7 @@ package protocol;
 message flex_header {
 	optional uint32 version = 1; // The protocol version used.
 	optional uint32 type = 2; // The type of the PR message.
-	optional uint32 xid = 4; // Transaction id to facilitate pairing between req and reply.
+	optional uint32 xid = 4; // Transaction ID to facilitate pairing between req and reply.
 }
 
 /**

@@ -104,11 +104,11 @@ message flex_slice_nvs {
    */
   message nvs_rate {
     optional float Mbps_required = 1;  // The rate reserved for this slice.
-    optional float Mbps_reference = 2; // The minimum rate that should be achieved when scheduled, translating to minimum quality.
+    optional float Mbps_reference = 2; // The minimum rate that should be achieved when scheduled, translating into minimum quality.
   }
   oneof type {
     nvs_rate rate = 1;      // Rate parameter.
-    float pct_reserved = 2; // Capacity parameter, 0 to 1.
+    float pct_reserved = 2; // Capacity parameter 0 to 1.
   }
 }
 
@@ -172,7 +172,7 @@ message flex_sr_config {
 * Channel quality indicator config message 
 */
 message flex_cqi_config {
-	optional flex_setup_release_action cqi_action = 1;// Indicats if CQI changed or released. One of the FLSRA_* enum values.
+	optional flex_setup_release_action cqi_action = 1;// Indicates if CQI changed or released. One of the FLSRA_* enum values.
 	optional uint32 cqi_sched_interval = 2;		// CQI scheduling interval in SF.
 	optional uint32 ri_sched_interval = 3;		// RI scheduling interval in SF.
 }
@@ -329,7 +329,7 @@ message flex_per_event {
 */ 
 message flex_a1_event {
   optional int64 threshold_rsrp = 1; // RSRP threshold value. 
-  optional int64 hysteresis = 2;     // Hysteresis indicating an acceptable range of RSRP fluctuation for which the A1 event is not triggered 
+  optional int64 hysteresis = 2;     // Hysteresis indicating an acceptable range of RSRP fluctuation for which the A1 event is not triggered.
   optional int64 time_to_trigger = 3; // Time after which an event will be triggered. 
   optional int64 max_report_cells = 4; // Maximum number of reporting cells.
 }
@@ -394,7 +394,7 @@ message flex_s1ap_mme {
         optional flex_mme_state state = 3;                // State of the MME.
         repeated flex_gummei served_gummeis = 4;          // GUMMEIs served by the MME.
         repeated flex_plmn requested_plmns = 5;           // PLMNs communicated to MME.
-        optional uint32 rel_capacity = 6;                 // relative MME capacity, TS23.401.
+        optional uint32 rel_capacity = 6;                 // Relative MME capacity, TS23.401.
 }
 
 /**

@@ -134,7 +134,7 @@ message flex_msb_cqi {
 message flex_dl_csi {
 	optional uint32 serv_cell_index = 1; // Serving cell index. 
 	optional uint32 ri = 2; // Rank indicator. 
-	optional flex_csi_type type = 3; // Xhannel Status Information.
+	optional flex_csi_type type = 3; // Channel Status Information.
 	oneof report {
 	      flex_csi_p10 p10csi = 4;
 	      flex_csi_p11 p11csi = 5;
@@ -293,16 +293,16 @@ message flex_pdcp_stats {
 	optional uint32 pkt_tx_sn = 3; // Sequence number of the last transmit packet. 
 	optional uint32 pkt_tx_w = 4; // Number of transmitted packets within a window.
 	optional uint32 pkt_tx_bytes_w = 5;  // Total bytes of transmitted packets within a window.
-	optional uint32 pkt_tx_aiat = 7; // Aggregtaed inter-arrival time of the transmitted packets.
-	optional uint32 pkt_tx_aiat_w = 8; // Aggregtaed inter-arrival time of the transmitted packets within a window. 
+	optional uint32 pkt_tx_aiat = 7; // Aggregated inter-arrival time of the transmitted packets.
+	optional uint32 pkt_tx_aiat_w = 8; // Aggregated inter-arrival time of the transmitted packets within a window. 
 	
 	optional uint32 pkt_rx = 9; // Number of the received packets.
 	optional uint32 pkt_rx_bytes = 10; // Total bytes of the received packets.
 	optional uint32 pkt_rx_sn = 11; // Sequence number of the last received packet. 
 	optional uint32 pkt_rx_w = 12; // Number of the received packets within a window.
 	optional uint32 pkt_rx_bytes_w = 13; // Total bytes of the received packets within a window.
-	optional uint32 pkt_rx_aiat = 14; // Aggregtaed inter-arrival time of the received packets.
-	optional uint32 pkt_rx_aiat_w = 15; // Aggregtaed inter-arrival time of the received packets within a window. 
+	optional uint32 pkt_rx_aiat = 14; // Aggregated inter-arrival time of the received packets.
+	optional uint32 pkt_rx_aiat_w = 15; // Aggregated inter-arrival time of the received packets within a window. 
         optional uint32 pkt_rx_oo = 16; // Number of the out-of-ordered received packets. 
 	
 	optional uint64 sfn=17;	 // Frame number 

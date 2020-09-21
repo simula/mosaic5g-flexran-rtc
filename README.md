@@ -83,6 +83,5 @@ using docker (the container is removed afterwards) using the following command.
 The documentation will be in `/tmp/index.html`. See the protoc-gen-doc
 documentation for other formats.
 ```bash
-$ docker run --rm -v /tmp:/out -v ~/mosaic5g/flexran/src/MESSAGES/V2:/protos pseudomuto/protoc-gen-doc --doc_opt=/protos/html.tmpl,index.html
-
+$ docker run --rm -v /tmp:/out -v ~/flexran-rtc/src/MESSAGES/V2:/protos -v ~/flexran-rtc/:/template pseudomuto/protoc-gen-doc --doc_opt=/template/html.tmpl,index.html
 ```

@@ -56,11 +56,11 @@ namespace flexran {
        bs2::connection tick_retrieve_;
 
        void process_list(uint64_t tick,
-                         const std::string& id,
+                         const std::string id,
                          uint32_t xid,
                          protocol::flex_control_delegation_type type);
        void process_retrieve(uint64_t tick,
-                             const std::string& id,
+                             const std::string id,
                              uint32_t xid,
                              protocol::flex_control_delegation_type type);
        void push_code(uint64_t bs_id,

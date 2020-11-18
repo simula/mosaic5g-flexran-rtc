@@ -115,7 +115,7 @@ CURL *flexran::app::management::netstore_loader::curl_create_transfer(
 
 void flexran::app::management::netstore_loader::process_retrieve(
     uint64_t tick,
-    const std::string &id,
+    const std::string id,
     uint32_t xid,
     protocol::flex_control_delegation_type type)
 {
@@ -161,7 +161,7 @@ void flexran::app::management::netstore_loader::process_retrieve(
 
 void flexran::app::management::netstore_loader::process_list(
     uint64_t tick,
-    const std::string &id,
+    const std::string id,
     uint32_t xid,
     protocol::flex_control_delegation_type type)
 {

@@ -53,7 +53,7 @@ void flexran::rib::rib_updater::print_prof_results(std::chrono::duration<double>
     std::cout << "agent " << a.second->agent_id << " BS " << a.second->bs_id
         << " rx packets " << a.second->rx_packets
         << " rx_bytes " << a.second->rx_bytes
-        << " ~Mbps " << static_cast<double>(a.second->rx_bytes) / us << std::endl;
+        << " ~Mbps " << static_cast<double>(a.second->rx_bytes) * 8 / us << std::endl;
     a.second->rx_bytes = 0;
     a.second->rx_packets = 0;
   }

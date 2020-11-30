@@ -51,7 +51,8 @@ TEST_CASE("test binary serialization and deserialization", "[recorder]")
     }
     std::map<uint64_t, alog::bs_dump> m;
     const uint64_t bs_id = dist64(mt);
-    m.insert(std::make_pair(bs_id, alog::bs_dump{a, b, c, harq}));
+    const auto t = std::chrono::system_clock::now();
+    m.insert(std::make_pair(bs_id, alog::bs_dump{t, a, b, c, harq}));
     v.push_back(m);
   }
 

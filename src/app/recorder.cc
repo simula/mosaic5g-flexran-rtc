@@ -34,6 +34,7 @@
 
 bool flexran::app::log::bs_dump::operator==(const bs_dump& other) const
 {
+  if (time != other.time) return false;
   if (ue_mac_harq_infos.size() != other.ue_mac_harq_infos.size()) return false;
   for (auto it = ue_mac_harq_infos.begin(), oit = other.ue_mac_harq_infos.begin();
         it != ue_mac_harq_infos.end(); it++, oit++) {
@@ -83,8 +84,8 @@ bool flexran::app::log::recorder::start_meas(uint64_t duration,
 
   /* write dummy data to hopefully fill caches (twice, intentionally) */
   for (uint64_t bs_id: rib_.get_available_base_stations()) {
-    record_chunk(bs_id);
-    record_chunk(bs_id);
+    record_chunk(std::chrono::system_clock::now(), bs_id);
+    record_chunk(std::chrono::system_clock::now(), bs_id);
   }
 
   /* ID corresponds to record start date, but first check if we can have the
@@ -143,8 +144,9 @@ void flexran::app::log::recorder::tick(const bs2::connection& conn, uint64_t ms)
 
   std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   std::map<uint64_t, flexran::app::log::bs_dump> m;
+  const auto now = std::chrono::system_clock::now();
   for (uint64_t bs_id: rib_.get_available_base_stations()) {
-    m.insert(std::make_pair(bs_id, record_chunk(bs_id)));
+    m.insert(std::make_pair(bs_id, record_chunk(now, bs_id)));
   }
   dump_->push_back(m);
   std::chrono::duration<float, std::micro> dur = std::chrono::steady_clock::now() - start;
@@ -160,7 +162,9 @@ void flexran::app::log::recorder::tick(const bs2::connection& conn, uint64_t ms)
   }
 }
 
-flexran::app::log::bs_dump flexran::app::log::recorder::record_chunk(uint64_t bs_id)
+flexran::app::log::bs_dump flexran::app::log::recorder::record_chunk(
+    const std::chrono::time_point<std::chrono::system_clock> t,
+    uint64_t bs_id)
 {
   std::vector<mac_harq_info_t> ue_mac_harq_infos;
   const protocol::flex_ue_config_reply& ue_configs = rib_.get_bs(bs_id)->get_ue_configs();
@@ -176,6 +180,7 @@ flexran::app::log::bs_dump flexran::app::log::recorder::record_chunk(uint64_t bs
   }
 
   return flexran::app::log::bs_dump {
+    t,
     rib_.get_bs(bs_id)->get_enb_config(),
     rib_.get_bs(bs_id)->get_ue_configs(),
     rib_.get_bs(bs_id)->get_lc_configs(),
@@ -227,16 +232,20 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
     job_type type,
     const std::map<uint64_t, bs_dump>& dump_chunk)
 {
-  /* TODO use flexran::rib::Rib::format_statistics_to_json() when time stamps
-   * for single chunks are collected */
-  s << "{";
-
+  if (dump_chunk.empty())
+    return;
+  /* we don't know what BSs (with which ID) have been persisted, so below when
+   * creating the JSONs, save the first bs_id we encounter so we can look that
+   * one up for the time stamp */
+  uint64_t bs_id = 0;
+  std::string confs;
   if (type != job_type::stats) {
     std::vector<std::string> enb_configurations;
     enb_configurations.reserve(dump_chunk.size());
     std::transform(dump_chunk.begin(), dump_chunk.end(), std::back_inserter(enb_configurations),
-        [] (const std::pair<uint64_t, bs_dump>& p)
+        [&bs_id] (const std::pair<uint64_t, bs_dump>& p)
         {
+          if (bs_id == 0) bs_id = p.first;
           const bs_dump& bd = p.second;
           std::string enb_config, ue_config, lc_config;
           google::protobuf::util::MessageToJsonString(bd.enb_config, &enb_config,
@@ -249,27 +258,28 @@ void flexran::app::log::recorder::write_json_chunk(std::ostream& s,
               p.first, "\"null\"", enb_config, ue_config, lc_config);
         }
     );
-    s << flexran::rib::Rib::format_enb_configurations_to_json(enb_configurations);
+    confs = flexran::rib::Rib::format_enb_configurations_to_json(enb_configurations);
   }
 
-  if (type == job_type::all) {
-    s << ",";
-  }
-
+  std::string stats;
   if (type != job_type::enb) {
     std::vector<std::string> ue_stats;
     ue_stats.reserve(ue_stats.size());
     std::transform(dump_chunk.begin(), dump_chunk.end(), std::back_inserter(ue_stats),
-        [] (const std::pair<uint64_t, bs_dump>& p)
+        [&bs_id] (const std::pair<uint64_t, bs_dump>& p)
         {
-          const uint64_t bs_id = p.first;
+          if (bs_id == 0) bs_id = p.first;
+          const uint64_t id = p.first;
           std::vector<std::string> ue_stats = get_ue_stats(p.second.ue_mac_harq_infos);
-          return flexran::rib::enb_rib_info::format_mac_stats_to_json(bs_id, ue_stats);
+          return flexran::rib::enb_rib_info::format_mac_stats_to_json(id, ue_stats);
         }
     );
-    s << flexran::rib::Rib::format_mac_stats_to_json(ue_stats);
+    stats = flexran::rib::Rib::format_mac_stats_to_json(ue_stats);
   }
-  s << "}";
+
+  // chunks have the same time point, so take the first one for serialization
+  const auto now = dump_chunk.at(bs_id).time;
+  s << flexran::rib::Rib::format_statistics_to_json(now, confs, stats);
 }
 
 std::vector<std::string> flexran::app::log::recorder::get_ue_stats(
@@ -327,6 +337,8 @@ void flexran::app::log::recorder::write_binary_chunk(std::ostream& s,
   for (auto it = dump_chunk.begin(); it != dump_chunk.end(); it++) {
     s.write(reinterpret_cast<const char *>(&it->first), sizeof(uint64_t));
     const bs_dump& bd = it->second;
+    const long ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(bd.time).time_since_epoch().count();
+    s.write(reinterpret_cast<const char *>(&ns), sizeof(ns));
     if (!write_flexran_message(s, bd.enb_config)) {
       LOG4CXX_ERROR(flog::app, "error while writing binary flex_enb_config_reply");
       return;
@@ -397,6 +409,9 @@ flexran::app::log::recorder::read_binary_chunk(std::istream &s)
   for (uint16_t i = 0; i < n; i++) {
     uint64_t bs_id;
     s.read(reinterpret_cast<char *>(&bs_id), sizeof(uint64_t));
+    long ns;
+    s.read(reinterpret_cast<char *>(&ns), sizeof(ns));
+    std::chrono::time_point<std::chrono::system_clock> t{std::chrono::nanoseconds{ns}};
     protocol::flex_enb_config_reply enb_config;
     protocol::flex_ue_config_reply ue_config;
     protocol::flex_lc_config_reply lc_config;
@@ -418,6 +433,7 @@ flexran::app::log::recorder::read_binary_chunk(std::istream &s)
 
     dump_chunk.emplace(bs_id,
         flexran::app::log::bs_dump {
+          t,
           enb_config,
           ue_config,
           lc_config,

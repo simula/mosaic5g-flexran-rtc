@@ -47,15 +47,18 @@ namespace flexran {
 
       class bs_dump {
       public:
-        bs_dump(const protocol::flex_enb_config_reply& a,
+        bs_dump(const std::chrono::time_point<std::chrono::system_clock> t,
+                const protocol::flex_enb_config_reply& a,
                 const protocol::flex_ue_config_reply& b,
                 const protocol::flex_lc_config_reply& c,
                 const std::vector<mac_harq_info_t>& d)
-          : enb_config(a),
+          : time(t),
+            enb_config(a),
             ue_config(b),
             lc_config(c),
             ue_mac_harq_infos(d)
         { }
+        std::chrono::time_point<std::chrono::system_clock> time;
         protocol::flex_enb_config_reply                 enb_config;
         protocol::flex_ue_config_reply                  ue_config;
         protocol::flex_lc_config_reply                  lc_config;
@@ -118,7 +121,9 @@ namespace flexran {
         std::unique_ptr<std::vector<std::map<uint64_t, bs_dump>>> dump_;
         std::unique_ptr<job_info> current_job_;
 
-        bs_dump record_chunk(uint64_t bs_id);
+        bs_dump record_chunk(
+            const std::chrono::time_point<std::chrono::system_clock> t,
+            uint64_t bs_id);
 
         /**
          * method for writer thread, passes to right (JSON/binary)

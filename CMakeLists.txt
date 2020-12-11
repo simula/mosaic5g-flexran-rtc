@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.5)
 
-project (rt_controller VERSION 2.4.0 LANGUAGES CXX)
+project (rt_controller VERSION 2.4.1 LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 14)
 
 ### Require out-of-source builds
